@@ -1,6 +1,5 @@
 package org.cat.editor.ui
 
-import android.os.Environment
 import android.widget.Toast
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -70,22 +69,13 @@ fun IdeMainScreen(
             },
             onBrowseFolder = {
                 showProjectMenu = false
-                onTogglePicker(true)
+                onTogglePicker(true)  // ✅ Trigger native file picker dari MainActivity
             }
         )
         return
     }
 
-    if (showProjectPicker) {
-        FolderPickerDialog(
-            initialPath = Environment.getExternalStorageDirectory().absolutePath,
-            onDismiss = { onTogglePicker(false) },
-            onFolderPicked = { path ->
-                onProjectPicked(path)
-                onTogglePicker(false)
-            }
-        )
-    }
+    // ✅ Tidak perlu FolderPickerDialog lagi - pakai ActivityResultContracts di MainActivity
 
     ModalNavigationDrawer(
         drawerState = drawerState,
@@ -331,46 +321,4 @@ fun FileTreeView(root: File, level: Int = 0, onFileClick: (File) -> Unit) {
             FileTreeView(root = file, level = level + 1, onFileClick = onFileClick)
         }
     }
-}
-
-@Composable
-fun FolderPickerDialog(initialPath: String, onDismiss: () -> Unit, onFolderPicked: (String) -> Unit) {
-    var currentPath by remember { mutableStateOf(initialPath) }
-    val currentDir = File(currentPath)
-    val dirs = currentDir.listFiles { it.isDirectory }?.sortedBy { it.name } ?: emptyList()
-
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        title = { Text("Pilih Folder Project") },
-        text = {
-            Column(modifier = Modifier.fillMaxWidth().height(400.dp)) {
-                if (currentDir.parent != null) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth().clickable { currentPath = currentDir.parent!! }.padding(8.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text(".. (Kembali ke Induk)", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
-                    }
-                }
-                HorizontalDivider()
-                Text(text = currentPath, fontSize = 12.sp, color = Color.Gray, modifier = Modifier.padding(4.dp))
-                HorizontalDivider()
-                
-                LazyColumn(modifier = Modifier.fillMaxSize()) {
-                    items(dirs) { dir ->
-                        Row(
-                            modifier = Modifier.fillMaxWidth().clickable { currentPath = dir.absolutePath }.padding(12.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Icon(Icons.Default.Folder, contentDescription = null, tint = Color(0xFFFFCA28))
-                            Spacer(Modifier.width(8.dp))
-                            Text(dir.name, fontSize = 14.sp)
-                        }
-                    }
-                }
-            }
-        },
-        confirmButton = { Button(onClick = { onFolderPicked(currentPath) }) { Text("Pilih Folder Ini") } },
-        dismissButton = { TextButton(onClick = onDismiss) { Text("Batal") } }
-    )
 }

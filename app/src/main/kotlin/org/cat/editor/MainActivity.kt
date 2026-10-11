@@ -3,7 +3,6 @@ package org.cat.editor
 import android.Manifest
 import android.content.Context
 import android.content.Intent
-import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
@@ -15,6 +14,7 @@ import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -34,14 +34,34 @@ class MainActivity : ComponentActivity() {
     // Global States
     private var currentRootNode by mutableStateOf<ComposeNode.Layout>(ComposeNode.Layout("Root"))
     private var projectPath by mutableStateOf("")
-    private var activeFilePath by mutableStateOf("") // File yang sedang dibuka (Aktif)
-    private var openedFiles by mutableStateOf<List<String>>(emptyList()) // Daftar semua file di Tab
+    private var activeFilePath by mutableStateOf("")
+    private var openedFiles by mutableStateOf<List<String>>(emptyList())
     private var showProjectPicker by mutableStateOf(false)
+
+    // ✅ TAMBAHKAN INI - Activity Result Launcher untuk folder picker
+    private val folderPickerLauncher = registerForActivityResult(
+        ActivityResultContracts.OpenDocumentTree()
+    ) { uri: Uri? ->
+        uri?.let {
+            // Convert URI ke File path
+            val path = getRealPathFromURI(it)
+            if (path != null) {
+                projectPath = path
+                getSharedPreferences("app_data", Context.MODE_PRIVATE)
+                    .edit()
+                    .putString("last_project", path)
+                    .apply()
+                showProjectPicker = false
+                startAppLogic()
+            } else {
+                Toast.makeText(this, "Tidak bisa akses folder", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         
-        // Mengaktifkan Edge-to-Edge (Tampilan layar penuh menembus Status Bar)
         enableEdgeToEdge() 
         setContentView(R.layout.main)
 
@@ -49,7 +69,6 @@ class MainActivity : ComponentActivity() {
         projectPath = prefs.getString("last_project", "") ?: ""
         activeFilePath = prefs.getString("last_preview", "") ?: ""
         
-        // Memuat tab yang sebelumnya terbuka
         val savedTabs = prefs.getString("opened_files", "") ?: ""
         if (savedTabs.isNotEmpty()) {
             openedFiles = savedTabs.split(",")
@@ -79,7 +98,27 @@ class MainActivity : ComponentActivity() {
                                 setupPreview(path)
                             },
                             showProjectPicker = showProjectPicker,
-                            onTogglePicker = { show -> showProjectPicker = show }
+                            onTogglePicker = { show -> 
+                                if (show) {
+                                    // ✅ GANTI SINI - Pakai native folder picker
+                                    folderPickerLauncher.launch(null)
+                                }
+                                showProjectPicker = show 
+                            },
+                            onCloseFile = { path ->
+                                openedFiles = openedFiles.filter { it != path }
+                                prefs.edit()
+                                    .putString("opened_files", openedFiles.joinToString(","))
+                                    .apply()
+                                activeFilePath = openedFiles.lastOrNull() ?: ""
+                                if (activeFilePath.isNotEmpty()) setupPreview(activeFilePath)
+                            },
+                            onAddFile = {
+                                Toast.makeText(this@MainActivity, "Add file feature coming soon", Toast.LENGTH_SHORT).show()
+                            },
+                            onSaveFile = {
+                                Toast.makeText(this@MainActivity, "File updated", Toast.LENGTH_SHORT).show()
+                            }
                         )
                     }
                 }
@@ -89,8 +128,33 @@ class MainActivity : ComponentActivity() {
         checkPermissionsAndStart()
     }
 
+    // ✅ TAMBAHKAN INI - Function untuk convert URI ke file path
+    private fun getRealPathFromURI(uri: Uri): String? {
+        return when {
+            // Untuk DocumentProvider
+            uri.scheme == "content" -> {
+                try {
+                    val path = uri.path ?: return null
+                    // Format: /tree/primary:Documents/MyFolder
+                    if (path.contains("primary:")) {
+                        val parts = path.split("primary:")
+                        if (parts.size > 1) {
+                            return "${Environment.getExternalStorageDirectory()}/${parts[1]}"
+                        }
+                    }
+                    return null
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                    null
+                }
+            }
+            // Untuk file:// URI
+            uri.scheme == "file" -> uri.path
+            else -> null
+        }
+    }
+
     private fun openFileInTab(path: String) {
-        // Jika file belum ada di list tab, tambahkan
         if (!openedFiles.contains(path)) {
             openedFiles = openedFiles + path
             getSharedPreferences("app_data", Context.MODE_PRIVATE)
@@ -98,7 +162,6 @@ class MainActivity : ComponentActivity() {
                 .putString("opened_files", openedFiles.joinToString(","))
                 .apply()
         }
-        // Jadikan file tersebut sebagai tab aktif
         setupPreview(path)
     }
 
@@ -118,7 +181,6 @@ class MainActivity : ComponentActivity() {
                         if ((event and DELETE) != 0) {
                             runOnUiThread {
                                 fileObserver?.stopWatching()
-                                // Hapus dari tab jika file terhapus di memori
                                 openedFiles = openedFiles.filter { it != path }
                                 getSharedPreferences("app_data", Context.MODE_PRIVATE).edit()
                                     .putString("opened_files", openedFiles.joinToString(",")).apply()
@@ -150,8 +212,7 @@ class MainActivity : ComponentActivity() {
             e.printStackTrace()
         }
     }
-    
-    // ... (Fungsi Perizinan checkPermissionsAndStart, onActivityResult, onRequestPermissionsResult, startAppLogic TETAP SAMA SEPERTI SEBELUMNYA)
+
     private fun checkPermissionsAndStart() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
             if (!Environment.isExternalStorageManager()) {
@@ -164,7 +225,7 @@ class MainActivity : ComponentActivity() {
                 }
             } else startAppLogic()
         } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            if (checkSelfPermission(Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_DENIED) {
+            if (checkSelfPermission(Manifest.permission.READ_EXTERNAL_STORAGE) == android.content.pm.PackageManager.PERMISSION_DENIED) {
                 requestPermissions(arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE), 1000)
             } else startAppLogic()
         } else startAppLogic()
@@ -179,7 +240,7 @@ class MainActivity : ComponentActivity() {
 
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        if (requestCode == 1000 && grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+        if (requestCode == 1000 && grantResults.isNotEmpty() && grantResults[0] == android.content.pm.PackageManager.PERMISSION_GRANTED) {
             startAppLogic()
         }
     }

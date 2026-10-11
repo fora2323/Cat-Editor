@@ -75,7 +75,8 @@ dependencies {
     androidTestImplementation(composeBom)
     
     implementation("com.google.android.material:material:1.14.0")
-
+    
+    implementation("androidx.compose.material:material-icons-extended:1.5.0")
     implementation("androidx.compose.ui:ui")
     implementation("androidx.compose.ui:ui-graphics")
     implementation("androidx.compose.ui:ui-tooling-preview")

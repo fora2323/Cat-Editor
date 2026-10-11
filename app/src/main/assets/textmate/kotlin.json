@@ -1,0 +1,62 @@
+{
+  "name": "Kotlin",
+  "scopeName": "source.kotlin",
+  "fileTypes": ["kt", "kts"],
+  "patterns": [
+    {
+      "name": "comment.line.double-slash.kotlin",
+      "match": "//.*?$"
+    },
+    {
+      "name": "comment.block.kotlin",
+      "begin": "/\\*",
+      "end": "\\*/"
+    },
+    {
+      "name": "string.quoted.double.kotlin",
+      "begin": "\"",
+      "end": "\"",
+      "patterns": [
+        {
+          "name": "constant.character.escape.kotlin",
+          "match": "\\\\."
+        }
+      ]
+    },
+    {
+      "name": "string.quoted.single.kotlin",
+      "begin": "'",
+      "end": "'",
+      "patterns": [
+        {
+          "name": "constant.character.escape.kotlin",
+          "match": "\\\\."
+        }
+      ]
+    },
+    {
+      "name": "keyword.control.kotlin",
+      "match": "\\b(if|else|when|while|for|do|break|continue|return|try|catch|finally|throw|fun|class|interface|object|val|var|const|private|public|protected|internal|abstract|sealed|open|data|companion|by|delegate)\\b"
+    },
+    {
+      "name": "keyword.other.kotlin",
+      "match": "\\b(as|is|in|null|true|false|get|set|import|package|where)\\b"
+    },
+    {
+      "name": "storage.type.kotlin",
+      "match": "\\b(Int|String|Double|Float|Boolean|Long|Byte|Short|Char|Unit|Any|Nothing|List|Map|Set|Array)\\b"
+    },
+    {
+      "name": "constant.numeric.kotlin",
+      "match": "\\b(\\d+|0x[0-9a-fA-F]+|0b[01]+|\\d+\\.\\d+)\\b"
+    },
+    {
+      "name": "entity.name.function.kotlin",
+      "match": "\\b([a-zA-Z_][a-zA-Z0-9_]*)\\s*(?=\\()"
+    },
+    {
+      "name": "entity.name.class.kotlin",
+      "match": "\\b(class|interface|object)\\s+([a-zA-Z_][a-zA-Z0-9_]*)"
+    }
+  ]
+}

@@ -408,3 +408,20 @@ fun FileTreeNode(root: File, level: Int = 0, onFileClick: (File) -> Unit) {
         }
     }
 }
+
+@Composable
+fun FolderIcon(
+    folderName: String,
+    isExpanded: Boolean,
+    modifier: Modifier = Modifier
+) {
+    Icon(
+        painter = painterResource(
+            if (isExpanded) R.drawable.ic_folder_open
+            else R.drawable.ic_folder
+        ),
+        contentDescription = folderName,
+        modifier = modifier,
+        tint = Color.Unspecified
+    )
+}

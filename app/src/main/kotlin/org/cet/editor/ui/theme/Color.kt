@@ -1,4 +1,4 @@
-package com.compose.ui.theme
+package org.cet.editor.ui.theme
 
 import androidx.compose.ui.graphics.Color
 

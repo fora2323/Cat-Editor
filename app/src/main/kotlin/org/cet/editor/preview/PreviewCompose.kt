@@ -1,4 +1,4 @@
-package com.compose.preview
+package org.cet.editor.preview
 
 import android.graphics.Color as AndroidColor
 import androidx.compose.foundation.background
@@ -18,7 +18,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.compose.utility.ComposeNode
+import org.cet.editor.utility.ComposeNode
 
 @Composable
 fun PreviewScreen(currentPreviewPath: String, currentRootNode: ComposeNode.Layout) {

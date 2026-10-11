@@ -1,4 +1,4 @@
-package com.compose
+package org.cet.editor
 
 import android.app.Application
 

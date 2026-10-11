@@ -1,4 +1,4 @@
-package com.compose.ui
+package org.cet.editor.ui
 
 import android.os.Environment
 import android.widget.Toast
@@ -22,9 +22,9 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.compose.R
-import com.compose.preview.PreviewScreen
-import com.compose.utility.ComposeNode
+import org.cet.editor.R
+import org.cet.editor.preview.PreviewScreen
+import org.cet.editor.utility.ComposeNode
 import kotlinx.coroutines.launch
 import java.io.File
 

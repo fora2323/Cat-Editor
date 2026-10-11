@@ -1,4 +1,4 @@
-package com.compose
+package org.cet.editor
 
 import android.Manifest
 import android.content.Context
@@ -14,17 +14,17 @@ import android.widget.LinearLayout
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.activity.enableEdgeToEdge // Impor Edge-to-Edge
+import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.ComposeView
-import com.compose.ui.theme.AppTheme
-import com.compose.ui.IdeMainScreen
-import com.compose.utility.ComposeNode
-import com.compose.utility.IdComposeParser
+import org.cet.editor.ui.theme.AppTheme
+import org.cet.editor.ui.IdeMainScreen
+import org.cet.editor.utility.ComposeNode
+import org.cet.editor.utility.IdComposeParser
 import java.io.File
 
 class MainActivity : ComponentActivity() {

@@ -12,15 +12,23 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import org.cat.editor.R
+
+sealed class MenuIcon {
+    data class Vector(val icon: ImageVector) : MenuIcon()
+    data class Drawable(val resId: Int) : MenuIcon()
+}
 
 data class ProjectMenuItem(
     val title: String,
     val description: String,
-    val icon: ImageVector,
+    val icon: MenuIcon,
     val action: () -> Unit
 )
 
@@ -34,19 +42,19 @@ fun ProjectMenuScreen(
         ProjectMenuItem(
             title = "Proyek baru",
             description = "Pilih template",
-            icon = Icons.Default.Add,
+            icon = MenuIcon.Vector(Icons.Default.Add),
             action = onNewProject
         ),
         ProjectMenuItem(
             title = "Clone repositori",
             description = "Clone repositori jarak jauh",
-            icon = Icons.Default.GitBranch,
+            icon = MenuIcon.Drawable(R.drawable.ic_branch),
             action = onCloneRepository
         ),
         ProjectMenuItem(
             title = "Buka direktori",
             description = "Buka direktori melalui pemilih file sistem",
-            icon = Icons.Default.FolderOpen,
+            icon = MenuIcon.Vector(Icons.Default.FolderOpen),
             action = onBrowseFolder
         )
     )
@@ -63,7 +71,6 @@ fun ProjectMenuScreen(
                 .padding(16.dp),
             verticalArrangement = Arrangement.Top
         ) {
-            // Header
             Text(
                 text = "Penyimpanan",
                 fontSize = 18.sp,
@@ -72,7 +79,6 @@ fun ProjectMenuScreen(
                 modifier = Modifier.padding(bottom = 16.dp)
             )
 
-            // Menu Items
             menuItems.forEach { item ->
                 ProjectMenuItemCard(
                     item = item,
@@ -107,7 +113,6 @@ fun ProjectMenuItemCard(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.Start
         ) {
-            // Icon
             Box(
                 modifier = Modifier
                     .size(48.dp)
@@ -117,17 +122,24 @@ fun ProjectMenuItemCard(
                     ),
                 contentAlignment = Alignment.Center
             ) {
-                Icon(
-                    imageVector = item.icon,
-                    contentDescription = item.title,
-                    modifier = Modifier.size(24.dp),
-                    tint = MaterialTheme.colorScheme.primary
-                )
+                when (val icon = item.icon) {
+                    is MenuIcon.Vector -> Icon(
+                        imageVector = icon.icon,
+                        contentDescription = item.title,
+                        modifier = Modifier.size(24.dp),
+                        tint = MaterialTheme.colorScheme.primary
+                    )
+                    is MenuIcon.Drawable -> Icon(
+                        painter = painterResource(icon.resId),
+                        contentDescription = item.title,
+                        modifier = Modifier.size(24.dp),
+                        tint = MaterialTheme.colorScheme.primary
+                    )
+                }
             }
 
             Spacer(modifier = Modifier.width(16.dp))
 
-            // Text Content
             Column(
                 modifier = Modifier.weight(1f),
                 verticalArrangement = Arrangement.Center
@@ -145,7 +157,6 @@ fun ProjectMenuItemCard(
                 )
             }
 
-            // Arrow Icon
             Icon(
                 imageVector = Icons.Default.ChevronRight,
                 contentDescription = null,

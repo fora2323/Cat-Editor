@@ -12,14 +12,14 @@ android {
         getByName("debug") {
             storeFile = file("../test-compose.jks")
             storePassword = "testcompose"
-            keyAlias = "AndroidCompose"
+            keyAlias = "TestCompose"
             keyPassword = "testcompose"
         }
         
         create("release") {
             storeFile = file("../test-compose.jks")
             storePassword = "testcompose"
-            keyAlias = "AndroidCompose"
+            keyAlias = "TestCompose"
             keyPassword = "testcompose"
         }
     }
@@ -83,11 +83,9 @@ dependencies {
     implementation("androidx.activity:activity-compose:1.8.2")
     implementation("androidx.lifecycle:lifecycle-runtime-compose:2.7.0")
 
-    // Debugging Compose
     debugImplementation("androidx.compose.ui:ui-tooling")
     debugImplementation("androidx.compose.ui:ui-test-manifest")
 
-    // Core Android KTX
     implementation("androidx.core:core-ktx:1.12.0")
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.7.0")
 }

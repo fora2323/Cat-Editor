@@ -8,6 +8,22 @@ android {
     namespace = "com.compose"
     compileSdk = 37
 
+    signingConfigs {
+        create("release") {
+            storeFile = file("../test-compose.jks")
+            storePassword = "testcompose"
+            keyAlias = "AndroidCompose"
+            keyPassword = "testcompose"
+        }
+        
+        create("debug") {
+            storeFile = file("../test-compose.jks")
+            storePassword = "testcompose"
+            keyAlias = "AndroidCompose"
+            keyPassword = "testcompose"
+        }
+    }
+
     defaultConfig {
         applicationId = "com.compose"
         minSdk = 26
@@ -24,8 +40,12 @@ android {
     buildTypes {
         release {
             isMinifyEnabled = false
-            proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro"
-            )
+            proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
+            signingConfig = signingConfigs.getByName("release")
+        }
+        
+        debug {
+            signingConfig = signingConfigs.getByName("debug")
         }
     }
 
@@ -43,7 +63,6 @@ android {
     }
 
     composeOptions {
-        // Sesuaikan versi compiler jika Kotlin di bawah versi 2.0.0
         kotlinCompilerExtensionVersion = "1.5.8"
     }
 
@@ -55,9 +74,6 @@ android {
 }
 
 dependencies {
-    implementation(fileTree(mapOf("dir" to "libs", "include" to listOf("*.jar"))))
-
-    // Jetpack Compose BOM
     val composeBom = platform("androidx.compose:compose-bom:2024.02.00")
     implementation(composeBom)
     androidTestImplementation(composeBom)

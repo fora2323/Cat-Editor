@@ -268,7 +268,10 @@ fun FileIcon(fileName: String, modifier: Modifier = Modifier) {
         fileName.endsWith(".kt") || fileName.endsWith(".kts") -> Icon(painterResource(R.drawable.ic_kotlin), "Kotlin", modifier = modifier, tint = Color.Unspecified)
         fileName.endsWith(".java") -> Icon(painterResource(R.drawable.ic_java), "Java", modifier = modifier, tint = Color.Unspecified)
         fileName.endsWith(".xml") -> Icon(painterResource(R.drawable.ic_xml), "XML", modifier = modifier, tint = Color.Unspecified)
-        fileName.endsWith(".gradle") -> Icon(painterResource(R.drawable.ic_gradle), "Gradle", modifier = modifier, tint = Color.Unspecified)
+        fileName.endsWith(".gradle") || fileName.endsWith(".gradle.kts") -> Icon(painterResource(R.drawable.ic_gradle), "Gradle", modifier = modifier, tint = Color.Unspecified)
+        fileName.endsWith(".cpp") || fileName.endsWith(".cc") || fileName.endsWith(".cxx") || fileName.endsWith(".hpp") -> Icon(painterResource(R.drawable.ic_cpp), "C++", modifier = modifier, tint = Color.Unspecified)
+        fileName.endsWith(".c") || fileName.endsWith(".h") -> Icon(painterResource(R.drawable.ic_c), "C", modifier = modifier, tint = Color.Unspecified)
+        fileName == "CMakeLists.txt" || fileName.endsWith(".cmake") -> Icon(painterResource(R.drawable.ic_cmake), "CMake", modifier = modifier, tint = Color.Unspecified)
         else -> Icon(Icons.Default.Description, "File", modifier = modifier, tint = Color.Gray)
     }
 }

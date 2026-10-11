@@ -14,6 +14,7 @@ import android.widget.LinearLayout
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.activity.enableEdgeToEdge // Impor Edge-to-Edge
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -33,16 +34,26 @@ class MainActivity : ComponentActivity() {
     // Global States
     private var currentRootNode by mutableStateOf<ComposeNode.Layout>(ComposeNode.Layout("Root"))
     private var projectPath by mutableStateOf("")
-    private var currentPreviewPath by mutableStateOf("")
+    private var activeFilePath by mutableStateOf("") // File yang sedang dibuka (Aktif)
+    private var openedFiles by mutableStateOf<List<String>>(emptyList()) // Daftar semua file di Tab
     private var showProjectPicker by mutableStateOf(false)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        
+        // Mengaktifkan Edge-to-Edge (Tampilan layar penuh menembus Status Bar)
+        enableEdgeToEdge() 
         setContentView(R.layout.main)
 
         val prefs = getSharedPreferences("app_data", Context.MODE_PRIVATE)
         projectPath = prefs.getString("last_project", "") ?: ""
-        currentPreviewPath = prefs.getString("last_preview", "") ?: ""
+        activeFilePath = prefs.getString("last_preview", "") ?: ""
+        
+        // Memuat tab yang sebelumnya terbuka
+        val savedTabs = prefs.getString("opened_files", "") ?: ""
+        if (savedTabs.isNotEmpty()) {
+            openedFiles = savedTabs.split(",")
+        }
 
         val linear1 = findViewById<LinearLayout>(R.id.linear1)
         val composeView = ComposeView(this).apply {
@@ -54,14 +65,18 @@ class MainActivity : ComponentActivity() {
                     ) {
                         IdeMainScreen(
                             projectPath = projectPath,
-                            currentPreviewPath = currentPreviewPath,
+                            openedFiles = openedFiles,
+                            activeFilePath = activeFilePath,
                             currentRootNode = currentRootNode,
                             onProjectPicked = { path ->
                                 projectPath = path
                                 prefs.edit().putString("last_project", path).apply()
                             },
                             onFileSelected = { file ->
-                                setupPreview(file.absolutePath)
+                                openFileInTab(file.absolutePath)
+                            },
+                            onTabSelected = { path ->
+                                setupPreview(path)
                             },
                             showProjectPicker = showProjectPicker,
                             onTogglePicker = { show -> showProjectPicker = show }
@@ -74,6 +89,69 @@ class MainActivity : ComponentActivity() {
         checkPermissionsAndStart()
     }
 
+    private fun openFileInTab(path: String) {
+        // Jika file belum ada di list tab, tambahkan
+        if (!openedFiles.contains(path)) {
+            openedFiles = openedFiles + path
+            getSharedPreferences("app_data", Context.MODE_PRIVATE)
+                .edit()
+                .putString("opened_files", openedFiles.joinToString(","))
+                .apply()
+        }
+        // Jadikan file tersebut sebagai tab aktif
+        setupPreview(path)
+    }
+
+    private fun setupPreview(path: String) {
+        activeFilePath = path
+        getSharedPreferences("app_data", Context.MODE_PRIVATE).edit().putString("last_preview", path).apply()
+        loadFileAndParse()
+
+        fileObserver?.stopWatching()
+        val file = File(path)
+        val parentDir = file.parent
+
+        if (parentDir != null) {
+            fileObserver = object : FileObserver(parentDir, MODIFY or DELETE or MOVED_TO) {
+                override fun onEvent(event: Int, pathEvent: String?) {
+                    if (pathEvent == file.name) {
+                        if ((event and DELETE) != 0) {
+                            runOnUiThread {
+                                fileObserver?.stopWatching()
+                                // Hapus dari tab jika file terhapus di memori
+                                openedFiles = openedFiles.filter { it != path }
+                                getSharedPreferences("app_data", Context.MODE_PRIVATE).edit()
+                                    .putString("opened_files", openedFiles.joinToString(",")).apply()
+                                
+                                activeFilePath = openedFiles.lastOrNull() ?: ""
+                                if (activeFilePath.isNotEmpty()) setupPreview(activeFilePath)
+                                Toast.makeText(this@MainActivity, "File Preview Terhapus", Toast.LENGTH_SHORT).show()
+                            }
+                        } else {
+                            window.decorView.postDelayed({ loadFileAndParse() }, 300)
+                        }
+                    }
+                }
+            }
+            fileObserver?.startWatching()
+        }
+    }
+
+    private fun loadFileAndParse() {
+        try {
+            val file = File(activeFilePath)
+            if (!file.exists()) return
+            
+            val code = file.readText()
+            runOnUiThread { 
+                currentRootNode = IdComposeParser.parse(code)
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+    }
+    
+    // ... (Fungsi Perizinan checkPermissionsAndStart, onActivityResult, onRequestPermissionsResult, startAppLogic TETAP SAMA SEPERTI SEBELUMNYA)
     private fun checkPermissionsAndStart() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
             if (!Environment.isExternalStorageManager()) {
@@ -109,51 +187,8 @@ class MainActivity : ComponentActivity() {
     private fun startAppLogic() {
         if (projectPath.isEmpty() || !File(projectPath).exists()) {
             showProjectPicker = true
-        } else if (currentPreviewPath.isNotEmpty() && File(currentPreviewPath).exists()) {
-            setupPreview(currentPreviewPath)
-        }
-    }
-
-    private fun setupPreview(path: String) {
-        currentPreviewPath = path
-        getSharedPreferences("app_data", Context.MODE_PRIVATE).edit().putString("last_preview", path).apply()
-        loadFileAndParse()
-
-        fileObserver?.stopWatching()
-        val file = File(path)
-        val parentDir = file.parent
-
-        if (parentDir != null) {
-            fileObserver = object : FileObserver(parentDir, MODIFY or DELETE or MOVED_TO) {
-                override fun onEvent(event: Int, pathEvent: String?) {
-                    if (pathEvent == file.name) {
-                        if ((event and DELETE) != 0) {
-                            runOnUiThread {
-                                fileObserver?.stopWatching()
-                                currentPreviewPath = ""
-                                Toast.makeText(this@MainActivity, "File Preview Terhapus", Toast.LENGTH_SHORT).show()
-                            }
-                        } else {
-                            window.decorView.postDelayed({ loadFileAndParse() }, 300)
-                        }
-                    }
-                }
-            }
-            fileObserver?.startWatching()
-        }
-    }
-
-    private fun loadFileAndParse() {
-        try {
-            val file = File(currentPreviewPath)
-            if (!file.exists()) return
-            
-            val code = file.readText()
-            runOnUiThread { 
-                currentRootNode = IdComposeParser.parse(code)
-            }
-        } catch (e: Exception) {
-            e.printStackTrace()
+        } else if (activeFilePath.isNotEmpty() && File(activeFilePath).exists()) {
+            setupPreview(activeFilePath)
         }
     }
 

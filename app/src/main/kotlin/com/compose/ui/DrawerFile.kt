@@ -9,6 +9,8 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.Redo
+import androidx.compose.material.icons.automirrored.filled.Undo
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -30,10 +32,12 @@ import java.io.File
 @Composable
 fun IdeMainScreen(
     projectPath: String,
-    currentPreviewPath: String,
+    openedFiles: List<String>,
+    activeFilePath: String,
     currentRootNode: ComposeNode.Layout,
     onProjectPicked: (String) -> Unit,
     onFileSelected: (File) -> Unit,
+    onTabSelected: (String) -> Unit,
     showProjectPicker: Boolean,
     onTogglePicker: (Boolean) -> Unit
 ) {
@@ -88,30 +92,84 @@ fun IdeMainScreen(
     ) {
         Scaffold(
             topBar = {
-                TopAppBar(
-                    title = {
-                        Text(if (currentPreviewPath.isNotEmpty()) File(currentPreviewPath).name else "CodeAssist IDE")
-                    },
-                    navigationIcon = {
-                        IconButton(onClick = { scope.launch { drawerState.open() } }) {
-                            Icon(Icons.Default.Menu, contentDescription = "Menu")
-                        }
-                    },
-                    actions = {
-                        Button(onClick = { onTogglePicker(true) }) {
-                            Text("Open Project")
-                        }
-                    },
-                    colors = TopAppBarDefaults.topAppBarColors(
-                        containerColor = MaterialTheme.colorScheme.surfaceVariant
+                // Bungkus TopAppBar dan TabRow di dalam satu Column agar rapi
+                Column {
+                    TopAppBar(
+                        title = { /* Kosong, mengikuti UI Xed-Editor */ },
+                        navigationIcon = {
+                            IconButton(onClick = { scope.launch { drawerState.open() } }) {
+                                Icon(Icons.Default.Menu, contentDescription = "Menu")
+                            }
+                        },
+                        actions = {
+                            // Toolbar Action Icons (Belum ada fungsi)
+                            IconButton(onClick = { /* TODO: Undo */ }) {
+                                Icon(Icons.AutoMirrored.Filled.Undo, contentDescription = "Undo")
+                            }
+                            IconButton(onClick = { /* TODO: Redo */ }) {
+                                Icon(Icons.AutoMirrored.Filled.Redo, contentDescription = "Redo")
+                            }
+                            IconButton(onClick = { /* TODO: Save */ }) {
+                                Icon(Icons.Default.Save, contentDescription = "Save")
+                            }
+                            IconButton(onClick = { /* TODO: Add */ }) {
+                                Icon(Icons.Default.Add, contentDescription = "Add")
+                            }
+                            IconButton(onClick = { /* TODO: More */ }) {
+                                Icon(Icons.Default.MoreVert, contentDescription = "More Options")
+                            }
+                        },
+                        colors = TopAppBarDefaults.topAppBarColors(
+                            containerColor = MaterialTheme.colorScheme.surfaceVariant
+                        )
                     )
-                )
+                    
+                    // UI TAB ROW (Multi-File)
+                    if (openedFiles.isNotEmpty()) {
+                        val activeIndex = openedFiles.indexOf(activeFilePath).coerceAtLeast(0)
+                        
+                        ScrollableTabRow(
+                            selectedTabIndex = activeIndex,
+                            edgePadding = 0.dp,
+                            containerColor = MaterialTheme.colorScheme.surfaceVariant,
+                            divider = { HorizontalDivider() }
+                        ) {
+                            openedFiles.forEachIndexed { index, path ->
+                                val file = File(path)
+                                Tab(
+                                    selected = activeFilePath == path,
+                                    onClick = { onTabSelected(path) },
+                                    text = {
+                                        Row(verticalAlignment = Alignment.CenterVertically) {
+                                            FileIcon(fileName = file.name, modifier = Modifier.size(16.dp))
+                                            Spacer(modifier = Modifier.width(8.dp))
+                                            Text(text = file.name, fontSize = 12.sp)
+                                        }
+                                    }
+                                )
+                            }
+                        }
+                    }
+                }
             }
         ) { paddingValues ->
-            Box(modifier = Modifier.padding(paddingValues)) {
-                PreviewScreen(currentPreviewPath, currentRootNode)
+            Box(modifier = Modifier.padding(paddingValues).fillMaxSize()) {
+                PreviewScreen(activeFilePath, currentRootNode)
             }
         }
+    }
+}
+
+// Komponen Helper untuk Ikon File agar bisa dipakai di Tabs dan di FileTree
+@Composable
+fun FileIcon(fileName: String, modifier: Modifier = Modifier) {
+    when {
+        fileName == "AndroidManifest.xml" -> Icon(painterResource(R.drawable.ic_android), "Manifest", modifier = modifier, tint = Color.Unspecified)
+        fileName.endsWith(".kt") || fileName.endsWith(".kts") -> Icon(painterResource(R.drawable.ic_kotlin), "Kotlin", modifier = modifier, tint = Color.Unspecified)
+        fileName.endsWith(".java") -> Icon(painterResource(R.drawable.ic_java), "Java", modifier = modifier, tint = Color.Unspecified)
+        fileName.endsWith(".xml") -> Icon(painterResource(R.drawable.ic_xml), "XML", modifier = modifier, tint = Color.Unspecified)
+        fileName.endsWith(".gradle") -> Icon(painterResource(R.drawable.ic_gradle), "Gradle", modifier = modifier, tint = Color.Unspecified)
+        else -> Icon(Icons.Default.Description, "File", modifier = modifier, tint = Color.Gray)
     }
 }
 
@@ -148,15 +206,7 @@ fun FileTreeView(root: File, level: Int = 0, onFileClick: (File) -> Unit) {
                 )
             } else {
                 Spacer(Modifier.width(22.dp))
-                val iconModifier = Modifier.size(20.dp)
-                when {
-                    file.name == "AndroidManifest.xml" -> Icon(painterResource(R.drawable.ic_android), "Manifest", modifier = iconModifier, tint = Color.Unspecified)
-                    file.name.endsWith(".kt") || file.name.endsWith(".kts") -> Icon(painterResource(R.drawable.ic_kotlin), "Kotlin", modifier = iconModifier, tint = Color.Unspecified)
-                    file.name.endsWith(".java") -> Icon(painterResource(R.drawable.ic_java), "Java", modifier = iconModifier, tint = Color.Unspecified)
-                    file.name.endsWith(".xml") -> Icon(painterResource(R.drawable.ic_xml), "XML", modifier = iconModifier, tint = Color.Unspecified)
-                    file.name.endsWith(".gradle") -> Icon(painterResource(R.drawable.ic_gradle), "Gradle", modifier = iconModifier, tint = Color.Unspecified)
-                    else -> Icon(Icons.Default.Description, "File", modifier = iconModifier, tint = Color.Gray)
-                }
+                FileIcon(fileName = file.name, modifier = Modifier.size(20.dp))
             }
 
             Spacer(Modifier.width(8.dp))
@@ -173,6 +223,7 @@ fun FileTreeView(root: File, level: Int = 0, onFileClick: (File) -> Unit) {
     }
 }
 
+// ... (Fungsi FolderPickerDialog TETAP SAMA SEPERTI SEBELUMNYA)
 @Composable
 fun FolderPickerDialog(initialPath: String, onDismiss: () -> Unit, onFolderPicked: (String) -> Unit) {
     var currentPath by remember { mutableStateOf(initialPath) }

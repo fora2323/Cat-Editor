@@ -61,7 +61,7 @@ fun KotlinCodeEditor(
                     setText(codeContent)
                     isWordwrap = true
 
-                    subscribeAlways<ContentChangeEvent> {
+                    subscribeAlways(ContentChangeEvent::class.java) { _ ->
                         onCodeChange(text.toString())
                     }
                 }

@@ -1,0 +1,52 @@
+{
+  "name": "Darcula",
+  "settings": [
+    {
+      "settings": {
+        "background": "#2B2B2B",
+        "foreground": "#A9B7C6",
+        "caret": "#FFFFFF",
+        "selection": "#214283",
+        "lineHighlight": "#323232"
+      }
+    },
+    {
+      "scope": "comment",
+      "settings": {
+        "foreground": "#808080",
+        "fontStyle": "italic"
+      }
+    },
+    {
+      "scope": "keyword, storage.type",
+      "settings": {
+        "foreground": "#CC7832",
+        "fontStyle": "bold"
+      }
+    },
+    {
+      "scope": "string",
+      "settings": {
+        "foreground": "#6A8759"
+      }
+    },
+    {
+      "scope": "constant.numeric",
+      "settings": {
+        "foreground": "#6897BB"
+      }
+    },
+    {
+      "scope": "entity.name.function",
+      "settings": {
+        "foreground": "#FFC66D"
+      }
+    },
+    {
+      "scope": "entity.name.class",
+      "settings": {
+        "foreground": "#A9B7C6"
+      }
+    }
+  ]
+}

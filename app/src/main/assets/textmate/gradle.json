@@ -1,0 +1,32 @@
+{
+  "name": "Gradle",
+  "scopeName": "source.groovy",
+  "fileTypes": ["gradle"],
+  "patterns": [
+    { "include": "#comments" },
+    { "include": "#strings" },
+    { "include": "#keywords" }
+  ],
+  "repository": {
+    "comments": {
+      "patterns": [
+        { "name": "comment.line.double-slash.groovy", "match": "//.*$" },
+        { "name": "comment.block.groovy", "begin": "/\\*", "end": "\\*/" }
+      ]
+    },
+    "strings": {
+      "patterns": [
+        { "name": "string.quoted.double.groovy", "begin": "\"", "end": "\"" },
+        { "name": "string.quoted.single.groovy", "begin": "'", "end": "'" }
+      ]
+    },
+    "keywords": {
+      "patterns": [
+        {
+          "name": "keyword.control.groovy",
+          "match": "\\b(plugins|android|dependencies|implementation|api|compileOnly|testImplementation|buildTypes|defaultConfig|task|def)\\b"
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,40 @@
+{
+  "name": "C++",
+  "scopeName": "source.cpp",
+  "fileTypes": ["c", "cpp", "h", "hpp"],
+  "patterns": [
+    { "include": "#comments" },
+    { "include": "#strings" },
+    { "include": "#preprocessor" },
+    { "include": "#keywords" }
+  ],
+  "repository": {
+    "comments": {
+      "patterns": [
+        { "name": "comment.line.double-slash.cpp", "match": "//.*$" },
+        { "name": "comment.block.cpp", "begin": "/\\*", "end": "\\*/" }
+      ]
+    },
+    "strings": {
+      "patterns": [
+        { "name": "string.quoted.double.cpp", "begin": "\"", "end": "\"" }
+      ]
+    },
+    "preprocessor": {
+      "name": "keyword.control.directive.cpp",
+      "match": "^\\s*#\\s*(include|define|ifndef|endif|pragma|if|else|elif)\\b"
+    },
+    "keywords": {
+      "patterns": [
+        {
+          "name": "keyword.control.cpp",
+          "match": "\\b(if|else|for|while|do|return|break|continue|switch|case|try|catch)\\b"
+        },
+        {
+          "name": "storage.type.cpp",
+          "match": "\\b(int|float|double|char|void|bool|auto|class|struct|enum|union|namespace)\\b"
+        }
+      ]
+    }
+  }
+}

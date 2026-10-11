@@ -1,0 +1,39 @@
+{
+  "name": "Java",
+  "scopeName": "source.java",
+  "fileTypes": ["java"],
+  "patterns": [
+    { "include": "#comments" },
+    { "include": "#strings" },
+    { "include": "#keywords" }
+  ],
+  "repository": {
+    "comments": {
+      "patterns": [
+        { "name": "comment.line.double-slash.java", "match": "//.*$" },
+        { "name": "comment.block.java", "begin": "/\\*", "end": "\\*/" }
+      ]
+    },
+    "strings": {
+      "patterns": [
+        { "name": "string.quoted.double.java", "begin": "\"", "end": "\"" }
+      ]
+    },
+    "keywords": {
+      "patterns": [
+        {
+          "name": "keyword.control.java",
+          "match": "\\b(if|else|for|while|do|return|break|continue|switch|case|default|try|catch|finally|throw|throws)\\b"
+        },
+        {
+          "name": "storage.type.java",
+          "match": "\\b(class|interface|enum|byte|short|int|long|float|double|boolean|char|void)\\b"
+        },
+        {
+          "name": "storage.modifier.java",
+          "match": "\\b(public|protected|private|static|final|abstract|synchronized|volatile|transient)\\b"
+        }
+      ]
+    }
+  }
+}

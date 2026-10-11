@@ -1,0 +1,39 @@
+{
+  "name": "XML",
+  "scopeName": "text.xml",
+  "fileTypes": ["xml"],
+  "patterns": [
+    { "include": "#comments" },
+    { "include": "#tags" }
+  ],
+  "repository": {
+    "comments": {
+      "name": "comment.block.xml",
+      "begin": "<!--",
+      "end": "-->"
+    },
+    "tags": {
+      "patterns": [
+        {
+          "name": "meta.tag.xml",
+          "begin": "</?([a-zA-Z0-9_:\\.-]+)",
+          "beginCaptures": {
+            "1": { "name": "entity.name.tag.xml" }
+          },
+          "end": "/?>",
+          "patterns": [
+            {
+              "name": "entity.other.attribute-name.xml",
+              "match": "([a-zA-Z0-9_:\\.-]+)="
+            },
+            {
+              "name": "string.quoted.double.xml",
+              "begin": "\"",
+              "end": "\""
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

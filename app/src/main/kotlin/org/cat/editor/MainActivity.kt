@@ -1,4 +1,4 @@
-package org.cet.editor
+package org.cat.editor
 
 import android.Manifest
 import android.content.Context
@@ -21,10 +21,10 @@ import androidx.compose.material3.Surface
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.ComposeView
-import org.cet.editor.ui.theme.AppTheme
-import org.cet.editor.ui.IdeMainScreen
-import org.cet.editor.utility.ComposeNode
-import org.cet.editor.utility.IdComposeParser
+import org.cat.editor.ui.theme.AppTheme
+import org.cat.editor.ui.IdeMainScreen
+import org.cat.editor.utility.ComposeNode
+import org.cat.editor.utility.IdComposeParser
 import java.io.File
 
 class MainActivity : ComponentActivity() {

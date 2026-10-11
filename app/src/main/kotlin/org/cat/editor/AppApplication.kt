@@ -1,4 +1,4 @@
-package org.cet.editor
+package org.cat.editor
 
 import android.app.Application
 

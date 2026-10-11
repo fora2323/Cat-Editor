@@ -1,4 +1,4 @@
-package org.cet.editor.ui.theme
+package org.cat.editor.ui.theme
 
 import android.app.Activity
 import android.os.Build

@@ -1,4 +1,4 @@
-package org.cet.editor.preview
+package org.cat.editor.preview
 
 import android.graphics.Color as AndroidColor
 import androidx.compose.foundation.background

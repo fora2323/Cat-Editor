@@ -1,6 +1,8 @@
 plugins {
-    alias(libs.plugins.android.application) // atau id("com.android.application")
-    alias(libs.plugins.kotlin.android)     // atau id("org.jetbrains.kotlin.android")
+    id("com.android.application")
+    id("org.jetbrains.kotlin.android")
+    id("org.jetbrains.kotlin.plugin.compose")
+    id("com.google.gms.google-services")
 }
 
 android {

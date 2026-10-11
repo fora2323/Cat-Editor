@@ -61,6 +61,8 @@ dependencies {
     val composeBom = platform("androidx.compose:compose-bom:2024.02.00")
     implementation(composeBom)
     androidTestImplementation(composeBom)
+    
+    implementation("com.google.android.material:material:1.14.0")
 
     // Compose Dependencies
     implementation("androidx.compose.ui:ui")

@@ -17,5 +17,5 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "CatEditor"
+rootProject.name = "Cat-Editor"
 include(":app")

@@ -74,15 +74,14 @@ dependencies {
     implementation(composeBom)
     androidTestImplementation(composeBom)
     
-    implementation("io.github.rosemoe.sora-editor:editor:0.23.4")
-    implementation("io.github.rosemoe.sora-editor:language-treesitter:0.23.4")
-    implementation("io.github.rosemoe.sora-editor:themes:0.23.4")
+    implementation("io.github.Rosemoe.sora-editor:editor:0.23.4")
+    implementation("io.github.Rosemoe.sora-editor:language-treesitter:0.23.4")
+    implementation("io.github.Rosemoe.sora-editor:themes:0.23.4")
     
-    // Untuk syntax highlighting
-    implementation("io.github.rosemoe.sora-editor:language-html:0.23.4")
-    implementation("io.github.rosemoe.sora-editor:language-java:0.23.4")
-    implementation("io.github.rosemoe.sora-editor:language-kotlin:0.23.4")
-    implementation("io.github.rosemoe.sora-editor:language-xml:0.23.4")
+    implementation("io.github.Rosemoe.sora-editor:language-html:0.23.4")
+    implementation("io.github.Rosemoe.sora-editor:language-java:0.23.4")
+    implementation("io.github.Rosemoe.sora-editor:language-kotlin:0.23.4")
+    implementation("io.github.Rosemoe.sora-editor:language-xml:0.23.4")
     
     implementation("com.google.android.material:material:1.14.0")
     

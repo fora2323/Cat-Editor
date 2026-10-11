@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="assets/icon_compose.png" width="128" alt="App Icon">
+  <img src="assets/Cat-Editor.png" width="128" alt="App Icon">
 </p>
 
 <h1 align="center">ComposePriview</h1>

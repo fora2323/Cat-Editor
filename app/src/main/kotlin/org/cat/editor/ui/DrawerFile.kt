@@ -2,33 +2,84 @@ package org.cat.editor.ui
 
 import android.widget.Toast
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.defaultMinSize
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Redo
 import androidx.compose.material.icons.automirrored.filled.Undo
-import androidx.compose.material.icons.filled.*
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Code
+import androidx.compose.material.icons.filled.DataObject
+import androidx.compose.material.icons.filled.Description
+import androidx.compose.material.icons.filled.Key
+import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.icons.filled.KeyboardArrowRight
+import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material.icons.filled.Save
+import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.Shield
+import androidx.compose.material.icons.filled.Source
+import androidx.compose.material3.DrawerValue
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalDrawerSheet
+import androidx.compose.material3.ModalNavigationDrawer
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.ScrollableTabRow
+import androidx.compose.material3.Tab
+import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.VerticalDivider
+import androidx.compose.material3.rememberDrawerState
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import kotlinx.coroutines.launch
 import org.cat.editor.R
 import org.cat.editor.code.KotlinCodeEditor
-import org.cat.editor.preview.PreviewScreen
 import org.cat.editor.preview.ImagePreviewIcon
+import org.cat.editor.preview.PreviewScreen
 import org.cat.editor.preview.isImageFile
 import org.cat.editor.utility.ComposeNode
-import kotlinx.coroutines.launch
 import java.io.File
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -53,32 +104,28 @@ fun IdeMainScreen(
     var showProjectMenu by remember { mutableStateOf(false) }
     var currentCode by remember { mutableStateOf("") }
 
-    // Tampilkan welcome screen jika belum ada project
     if (projectPath.isEmpty()) {
         WelcomeScreen(onBrowseClick = { onTogglePicker(true) })
         return
     }
 
-    // Tampilkan project menu jika user klik add button
     if (showProjectMenu) {
         ProjectMenuScreen(
-            onNewProject = { 
+            onNewProject = {
                 showProjectMenu = false
                 onAddFile?.invoke()
             },
-            onCloneRepository = { 
+            onCloneRepository = {
                 showProjectMenu = false
                 Toast.makeText(context, "Clone repository akan diimplementasikan", Toast.LENGTH_SHORT).show()
             },
             onBrowseFolder = {
                 showProjectMenu = false
-                onTogglePicker(true)  // ✅ Trigger native file picker dari MainActivity
+                onTogglePicker(true)
             }
         )
         return
     }
-
-    // ✅ Tidak perlu FolderPickerDialog lagi - pakai ActivityResultContracts di MainActivity
 
     ModalNavigationDrawer(
         drawerState = drawerState,
@@ -92,13 +139,13 @@ fun IdeMainScreen(
                 )
                 HorizontalDivider()
                 if (projectPath.isNotEmpty()) {
-                    Column(modifier = Modifier.verticalScroll(rememberScrollState())) {
+                    Column {
                         FileTreeView(
                             root = File(projectPath),
                             onFileClick = { file ->
-    onFileSelected(file)
-    scope.launch { drawerState.close() }
-}
+                                onFileSelected(file)
+                                scope.launch { drawerState.close() }
+                            }
                         )
                     }
                 }
@@ -109,29 +156,26 @@ fun IdeMainScreen(
             topBar = {
                 Column {
                     TopAppBar(
-                        title = { /* Kosong */ },
+                        title = { },
                         navigationIcon = {
                             IconButton(onClick = { scope.launch { drawerState.open() } }) {
                                 Icon(Icons.Default.Menu, contentDescription = "Menu")
                             }
                         },
                         actions = {
-                            // Undo
-                            IconButton(onClick = { 
-                                Toast.makeText(context, "Undo", Toast.LENGTH_SHORT).show() 
+                            IconButton(onClick = {
+                                Toast.makeText(context, "Undo", Toast.LENGTH_SHORT).show()
                             }) {
                                 Icon(Icons.AutoMirrored.Filled.Undo, contentDescription = "Undo")
                             }
-                            
-                            // Redo
-                            IconButton(onClick = { 
+
+                            IconButton(onClick = {
                                 Toast.makeText(context, "Redo", Toast.LENGTH_SHORT).show()
                             }) {
                                 Icon(Icons.AutoMirrored.Filled.Redo, contentDescription = "Redo")
                             }
-                            
-                            // Save
-                            IconButton(onClick = { 
+
+                            IconButton(onClick = {
                                 if (activeFilePath.isNotEmpty()) {
                                     try {
                                         File(activeFilePath).writeText(currentCode)
@@ -144,16 +188,14 @@ fun IdeMainScreen(
                             }) {
                                 Icon(Icons.Default.Save, contentDescription = "Save")
                             }
-                            
-                            // Add (buka project menu)
-                            IconButton(onClick = { 
+
+                            IconButton(onClick = {
                                 showProjectMenu = true
                             }) {
                                 Icon(Icons.Default.Add, contentDescription = "Add")
                             }
-                            
-                            // More Options
-                            IconButton(onClick = { 
+
+                            IconButton(onClick = {
                                 Toast.makeText(context, "Menu lainnya", Toast.LENGTH_SHORT).show()
                             }) {
                                 Icon(Icons.Default.MoreVert, contentDescription = "More Options")
@@ -163,11 +205,10 @@ fun IdeMainScreen(
                             containerColor = MaterialTheme.colorScheme.surfaceVariant
                         )
                     )
-                    
-                    // TAB ROW - Multi-File dengan close button
+
                     if (openedFiles.isNotEmpty()) {
                         val activeIndex = openedFiles.indexOf(activeFilePath).coerceAtLeast(0)
-                        
+
                         ScrollableTabRow(
                             selectedTabIndex = activeIndex,
                             edgePadding = 0.dp,
@@ -187,10 +228,9 @@ fun IdeMainScreen(
                                             FileIcon(file = file, modifier = Modifier.size(16.dp))
                                             Spacer(modifier = Modifier.width(8.dp))
                                             Text(text = file.name, fontSize = 12.sp, maxLines = 1)
-                                            
-                                            // Close button
+
                                             IconButton(
-                                                onClick = { 
+                                                onClick = {
                                                     onCloseFile?.invoke(path)
                                                 },
                                                 modifier = Modifier
@@ -214,9 +254,7 @@ fun IdeMainScreen(
         ) { paddingValues ->
             Box(modifier = Modifier.padding(paddingValues).fillMaxSize()) {
                 if (activeFilePath.isNotEmpty()) {
-                    // SPLIT LAYOUT - Code Editor + Preview
                     Row(modifier = Modifier.fillMaxSize()) {
-                        // LEFT SIDE - Code Editor (50%)
                         Box(
                             modifier = Modifier
                                 .weight(1f)
@@ -229,14 +267,12 @@ fun IdeMainScreen(
                                 }
                             )
                         }
-                        
-                        // DIVIDER
+
                         VerticalDivider(
                             color = MaterialTheme.colorScheme.surfaceVariant,
                             thickness = 1.dp
                         )
-                        
-                        // RIGHT SIDE - Preview (50%)
+
                         Box(
                             modifier = Modifier
                                 .weight(1f)
@@ -246,7 +282,6 @@ fun IdeMainScreen(
                         }
                     }
                 } else {
-                    // Jika tidak ada file yang dibuka
                     PreviewScreen("", currentRootNode)
                 }
             }
@@ -254,7 +289,6 @@ fun IdeMainScreen(
     }
 }
 
-// Komponen Helper untuk Ikon File
 @Composable
 fun FileIcon(file: File, modifier: Modifier = Modifier) {
     val fileName = file.name
@@ -281,10 +315,9 @@ fun FileIcon(file: File, modifier: Modifier = Modifier) {
 @Composable
 fun FileTreeView(root: File, onFileClick: (File) -> Unit) {
     var searchQuery by remember { mutableStateOf("") }
-    var refreshTrigger by remember { mutableStateOf(0) }
+    var refreshTrigger by remember { mutableIntStateOf(0) }
 
     Column(modifier = Modifier.fillMaxSize()) {
-        // Search bar
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -305,7 +338,7 @@ fun FileTreeView(root: File, onFileClick: (File) -> Unit) {
                 },
                 modifier = Modifier.weight(1f).height(48.dp),
                 singleLine = true,
-                textStyle = androidx.compose.ui.text.TextStyle(fontSize = 12.sp)
+                textStyle = TextStyle(fontSize = 12.sp)
             )
             Spacer(Modifier.width(4.dp))
             IconButton(onClick = { refreshTrigger++ }) {
@@ -313,15 +346,16 @@ fun FileTreeView(root: File, onFileClick: (File) -> Unit) {
             }
         }
 
-        // File tree dengan horizontal scroll
         key(refreshTrigger) {
             val scrollStateH = rememberScrollState()
+            val scrollStateV = rememberScrollState()
             Box(
                 modifier = Modifier
                     .fillMaxSize()
                     .horizontalScroll(scrollStateH)
+                    .verticalScroll(scrollStateV)
             ) {
-                Column(modifier = Modifier.verticalScroll(rememberScrollState())) {
+                Column {
                     if (searchQuery.isEmpty()) {
                         FileTreeNode(root = root, level = 0, onFileClick = onFileClick)
                     } else {
@@ -373,11 +407,13 @@ fun FileTreeNode(root: File, level: Int = 0, onFileClick: (File) -> Unit) {
 
         Row(
             modifier = Modifier
+                .defaultMinSize(minWidth = 300.dp)
+                .wrapContentWidth(align = Alignment.Start, unbounded = true)
                 .clickable {
                     if (file.isDirectory) isExpanded = !isExpanded
                     else onFileClick(file)
                 }
-                .padding(start = (level * 16 + 8).dp, top = 6.dp, bottom = 6.dp, end = 8.dp),
+                .padding(start = (level * 16 + 8).dp, top = 6.dp, bottom = 6.dp, end = 24.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             if (file.isDirectory) {
@@ -399,6 +435,7 @@ fun FileTreeNode(root: File, level: Int = 0, onFileClick: (File) -> Unit) {
                 text = file.name,
                 fontSize = 14.sp,
                 color = MaterialTheme.colorScheme.onSurface,
+                maxLines = 1,
                 softWrap = false
             )
         }

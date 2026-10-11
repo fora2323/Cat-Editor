@@ -9,14 +9,14 @@ android {
     compileSdk = 37
 
     signingConfigs {
-        create("release") {
+        getByName("debug") {
             storeFile = file("../test-compose.jks")
             storePassword = "testcompose"
             keyAlias = "AndroidCompose"
             keyPassword = "testcompose"
         }
         
-        create("debug") {
+        create("release") {
             storeFile = file("../test-compose.jks")
             storePassword = "testcompose"
             keyAlias = "AndroidCompose"
@@ -33,10 +33,15 @@ android {
     }
 
     buildTypes {
+        debug {
+            signingConfig = signingConfigs.getByName("debug")
+        }
+        
         release {
             isMinifyEnabled = true
             isShrinkResources = true
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
+            signingConfig = signingConfigs.getByName("release")
         }
     }
 

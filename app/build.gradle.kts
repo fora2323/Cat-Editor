@@ -1,15 +1,11 @@
 plugins {
     alias(libs.plugins.android.application) // atau id("com.android.application")
     alias(libs.plugins.kotlin.android)     // atau id("org.jetbrains.kotlin.android")
-    // Catatan: Jika menggunakan Kotlin 2.0+, tambahkan plugin Compose Compiler:
-    // id("org.jetbrains.kotlin.plugin.compose")
 }
 
 android {
     namespace = "com.compose"
     compileSdk = 34
-
-    useLibrary("org.apache.http.legacy")
 
     defaultConfig {
         applicationId = "com.compose"
@@ -27,9 +23,7 @@ android {
     buildTypes {
         release {
             isMinifyEnabled = false
-            proguardFiles(
-                getDefaultProguardFile("proguard-android-optimize.txt"),
-                "proguard-rules.pro"
+            proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro"
             )
         }
     }

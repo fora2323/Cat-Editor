@@ -23,6 +23,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import org.cat.editor.R
+import org.cat.editor.code.KotlinCodeEditor
 import org.cat.editor.preview.PreviewScreen
 import org.cat.editor.utility.ComposeNode
 import kotlinx.coroutines.launch
@@ -39,11 +40,41 @@ fun IdeMainScreen(
     onFileSelected: (File) -> Unit,
     onTabSelected: (String) -> Unit,
     showProjectPicker: Boolean,
-    onTogglePicker: (Boolean) -> Unit
+    onTogglePicker: (Boolean) -> Unit,
+    onCloseFile: ((String) -> Unit)? = null,
+    onAddFile: (() -> Unit)? = null,
+    onSaveFile: (() -> Unit)? = null
 ) {
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val scope = rememberCoroutineScope()
     val context = LocalContext.current
+    var showProjectMenu by remember { mutableStateOf(false) }
+    var currentCode by remember { mutableStateOf("") }
+
+    // Tampilkan welcome screen jika belum ada project
+    if (projectPath.isEmpty()) {
+        WelcomeScreen(onBrowseClick = { onTogglePicker(true) })
+        return
+    }
+
+    // Tampilkan project menu jika user klik add button
+    if (showProjectMenu) {
+        ProjectMenuScreen(
+            onNewProject = { 
+                showProjectMenu = false
+                onAddFile?.invoke()
+            },
+            onCloneRepository = { 
+                showProjectMenu = false
+                Toast.makeText(context, "Clone repository akan diimplementasikan", Toast.LENGTH_SHORT).show()
+            },
+            onBrowseFolder = {
+                showProjectMenu = false
+                onTogglePicker(true)
+            }
+        )
+        return
+    }
 
     if (showProjectPicker) {
         FolderPickerDialog(
@@ -92,30 +123,55 @@ fun IdeMainScreen(
     ) {
         Scaffold(
             topBar = {
-                // Bungkus TopAppBar dan TabRow di dalam satu Column agar rapi
                 Column {
                     TopAppBar(
-                        title = { /* Kosong, mengikuti UI Xed-Editor */ },
+                        title = { /* Kosong */ },
                         navigationIcon = {
                             IconButton(onClick = { scope.launch { drawerState.open() } }) {
                                 Icon(Icons.Default.Menu, contentDescription = "Menu")
                             }
                         },
                         actions = {
-                            // Toolbar Action Icons (Belum ada fungsi)
-                            IconButton(onClick = { /* TODO: Undo */ }) {
+                            // Undo
+                            IconButton(onClick = { 
+                                Toast.makeText(context, "Undo", Toast.LENGTH_SHORT).show() 
+                            }) {
                                 Icon(Icons.AutoMirrored.Filled.Undo, contentDescription = "Undo")
                             }
-                            IconButton(onClick = { /* TODO: Redo */ }) {
+                            
+                            // Redo
+                            IconButton(onClick = { 
+                                Toast.makeText(context, "Redo", Toast.LENGTH_SHORT).show()
+                            }) {
                                 Icon(Icons.AutoMirrored.Filled.Redo, contentDescription = "Redo")
                             }
-                            IconButton(onClick = { /* TODO: Save */ }) {
+                            
+                            // Save
+                            IconButton(onClick = { 
+                                if (activeFilePath.isNotEmpty()) {
+                                    try {
+                                        File(activeFilePath).writeText(currentCode)
+                                        Toast.makeText(context, "File Disimpan", Toast.LENGTH_SHORT).show()
+                                        onSaveFile?.invoke()
+                                    } catch (e: Exception) {
+                                        Toast.makeText(context, "Gagal menyimpan: ${e.message}", Toast.LENGTH_SHORT).show()
+                                    }
+                                }
+                            }) {
                                 Icon(Icons.Default.Save, contentDescription = "Save")
                             }
-                            IconButton(onClick = { /* TODO: Add */ }) {
+                            
+                            // Add (buka project menu)
+                            IconButton(onClick = { 
+                                showProjectMenu = true
+                            }) {
                                 Icon(Icons.Default.Add, contentDescription = "Add")
                             }
-                            IconButton(onClick = { /* TODO: More */ }) {
+                            
+                            // More Options
+                            IconButton(onClick = { 
+                                Toast.makeText(context, "Menu lainnya", Toast.LENGTH_SHORT).show()
+                            }) {
                                 Icon(Icons.Default.MoreVert, contentDescription = "More Options")
                             }
                         },
@@ -124,7 +180,7 @@ fun IdeMainScreen(
                         )
                     )
                     
-                    // UI TAB ROW (Multi-File)
+                    // TAB ROW - Multi-File dengan close button
                     if (openedFiles.isNotEmpty()) {
                         val activeIndex = openedFiles.indexOf(activeFilePath).coerceAtLeast(0)
                         
@@ -140,10 +196,29 @@ fun IdeMainScreen(
                                     selected = activeFilePath == path,
                                     onClick = { onTabSelected(path) },
                                     text = {
-                                        Row(verticalAlignment = Alignment.CenterVertically) {
+                                        Row(
+                                            verticalAlignment = Alignment.CenterVertically,
+                                            modifier = Modifier.wrapContentWidth()
+                                        ) {
                                             FileIcon(fileName = file.name, modifier = Modifier.size(16.dp))
                                             Spacer(modifier = Modifier.width(8.dp))
-                                            Text(text = file.name, fontSize = 12.sp)
+                                            Text(text = file.name, fontSize = 12.sp, maxLines = 1)
+                                            
+                                            // Close button
+                                            IconButton(
+                                                onClick = { 
+                                                    onCloseFile?.invoke(path)
+                                                },
+                                                modifier = Modifier
+                                                    .size(24.dp)
+                                                    .padding(0.dp)
+                                            ) {
+                                                Icon(
+                                                    Icons.Default.Close,
+                                                    contentDescription = "Close",
+                                                    modifier = Modifier.size(14.dp)
+                                                )
+                                            }
                                         }
                                     }
                                 )
@@ -154,13 +229,48 @@ fun IdeMainScreen(
             }
         ) { paddingValues ->
             Box(modifier = Modifier.padding(paddingValues).fillMaxSize()) {
-                PreviewScreen(activeFilePath, currentRootNode)
+                if (activeFilePath.isNotEmpty()) {
+                    // SPLIT LAYOUT - Code Editor + Preview
+                    Row(modifier = Modifier.fillMaxSize()) {
+                        // LEFT SIDE - Code Editor (50%)
+                        Box(
+                            modifier = Modifier
+                                .weight(1f)
+                                .fillMaxHeight()
+                        ) {
+                            KotlinCodeEditor(
+                                filePath = activeFilePath,
+                                onCodeChange = { newCode ->
+                                    currentCode = newCode
+                                }
+                            )
+                        }
+                        
+                        // DIVIDER
+                        VerticalDivider(
+                            color = MaterialTheme.colorScheme.surfaceVariant,
+                            thickness = 1.dp
+                        )
+                        
+                        // RIGHT SIDE - Preview (50%)
+                        Box(
+                            modifier = Modifier
+                                .weight(1f)
+                                .fillMaxHeight()
+                        ) {
+                            PreviewScreen(activeFilePath, currentRootNode)
+                        }
+                    }
+                } else {
+                    // Jika tidak ada file yang dibuka
+                    PreviewScreen("", currentRootNode)
+                }
             }
         }
     }
 }
 
-// Komponen Helper untuk Ikon File agar bisa dipakai di Tabs dan di FileTree
+// Komponen Helper untuk Ikon File
 @Composable
 fun FileIcon(fileName: String, modifier: Modifier = Modifier) {
     when {
@@ -223,7 +333,6 @@ fun FileTreeView(root: File, level: Int = 0, onFileClick: (File) -> Unit) {
     }
 }
 
-// ... (Fungsi FolderPickerDialog TETAP SAMA SEPERTI SEBELUMNYA)
 @Composable
 fun FolderPickerDialog(initialPath: String, onDismiss: () -> Unit, onFolderPicked: (String) -> Unit) {
     var currentPath by remember { mutableStateOf(initialPath) }

@@ -4,7 +4,6 @@ import android.Manifest
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
-import android.graphics.Color as AndroidColor
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
@@ -14,79 +13,67 @@ import android.provider.Settings
 import android.widget.LinearLayout
 import android.widget.Toast
 import androidx.activity.ComponentActivity
-import androidx.compose.foundation.background
-import androidx.compose.foundation.border
-import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.*
+import androidx.activity.compose.setContent
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.ComposeView
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import com.compose.ui.theme.AppTheme // Impor tema kustom Anda
+import com.compose.ui.theme.AppTheme
+import com.compose.ui.IdeMainScreen
+import com.compose.utility.ComposeNode
+import com.compose.utility.IdComposeParser
 import java.io.File
-import java.util.Stack
-import java.util.regex.Pattern
-
-// --- 1. STRUKTUR DATA NODE UNTUK AST (Abstract Syntax Tree) ---
-sealed class ComposeNode {
-    data class Layout(
-        val name: String,
-        val children: MutableList<ComposeNode> = mutableListOf(),
-        val isHorizontal: Boolean = false,
-        val colorHex: String = "#757575"
-    ) : ComposeNode()
-
-    data class Leaf(
-        var text: String,
-        val colorHex: String = "#B0BEC5"
-    ) : ComposeNode()
-}
 
 class MainActivity : ComponentActivity() {
 
     private var fileObserver: FileObserver? = null
     
-    private var currentRootNode by mutableStateOf(ComposeNode.Layout("Root"))
-    private var showDialog by mutableStateOf(false)
-    private var currentPath by mutableStateOf("")
+    // Global States
+    private var currentRootNode by mutableStateOf<ComposeNode.Layout>(ComposeNode.Layout("Root"))
+    private var projectPath by mutableStateOf("")
+    private var currentPreviewPath by mutableStateOf("")
+    private var showProjectPicker by mutableStateOf(false)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.main)
 
         val prefs = getSharedPreferences("app_data", Context.MODE_PRIVATE)
-        currentPath = prefs.getString("last_path", "") ?: ""
+        projectPath = prefs.getString("last_project", "") ?: ""
+        currentPreviewPath = prefs.getString("last_preview", "") ?: ""
 
         val linear1 = findViewById<LinearLayout>(R.id.linear1)
         val composeView = ComposeView(this).apply {
             setContent {
-                // Terapkan AppTheme dari Theme.kt[span_0](start_span)[span_0](end_span)
-                AppTheme { 
-                    // Gunakan Surface agar background mengikuti warna dari skema tema (Color.kt)[span_1](start_span)[span_1](end_span)[span_2](start_span)[span_2](end_span)
+                AppTheme {
                     Surface(
                         modifier = Modifier.fillMaxSize(),
                         color = MaterialTheme.colorScheme.background
                     ) {
-                        AppContent(
-                            prefs = prefs,
-                            onCheckPermission = { checkPermissionsAndStart() }
+                        IdeMainScreen(
+                            projectPath = projectPath,
+                            currentPreviewPath = currentPreviewPath,
+                            currentRootNode = currentRootNode,
+                            onProjectPicked = { path ->
+                                projectPath = path
+                                prefs.edit().putString("last_project", path).apply()
+                            },
+                            onFileSelected = { file ->
+                                setupPreview(file.absolutePath)
+                            },
+                            showProjectPicker = showProjectPicker,
+                            onTogglePicker = { show -> showProjectPicker = show }
                         )
                     }
                 }
             }
         }
         linear1.addView(composeView)
-
         checkPermissionsAndStart()
     }
 
-    // --- 2. MANAJEMEN PERIZINAN ---
     private fun checkPermissionsAndStart() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
             if (!Environment.isExternalStorageManager()) {
@@ -95,33 +82,20 @@ class MainActivity : ComponentActivity() {
                     intent.data = Uri.parse("package:$packageName")
                     startActivityForResult(intent, 2000)
                 } catch (e: Exception) {
-                    val intent = Intent(Settings.ACTION_MANAGE_ALL_FILES_ACCESS_PERMISSION)
-                    startActivityForResult(intent, 2000)
+                    startActivityForResult(Intent(Settings.ACTION_MANAGE_ALL_FILES_ACCESS_PERMISSION), 2000)
                 }
-            } else {
-                startAppLogic()
-            }
-        } else {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                if (checkSelfPermission(Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_DENIED) {
-                    requestPermissions(arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE), 1000)
-                } else {
-                    startAppLogic()
-                }
-            } else {
-                startAppLogic()
-            }
-        }
+            } else startAppLogic()
+        } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            if (checkSelfPermission(Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_DENIED) {
+                requestPermissions(arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE), 1000)
+            } else startAppLogic()
+        } else startAppLogic()
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
-        if (requestCode == 2000) {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R && Environment.isExternalStorageManager()) {
-                startAppLogic()
-            } else {
-                Toast.makeText(this, "Izin akses ditolak!", Toast.LENGTH_SHORT).show()
-            }
+        if (requestCode == 2000 && Build.VERSION.SDK_INT >= Build.VERSION_CODES.R && Environment.isExternalStorageManager()) {
+            startAppLogic()
         }
     }
 
@@ -132,34 +106,32 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-    // --- 3. LOGIKA FILE & OBSERVER ---
     private fun startAppLogic() {
-        if (currentPath.isEmpty() || !File(currentPath).exists()) {
-            showDialog = true
-        } else {
-            setupPreview(currentPath)
+        if (projectPath.isEmpty() || !File(projectPath).exists()) {
+            showProjectPicker = true
+        } else if (currentPreviewPath.isNotEmpty() && File(currentPreviewPath).exists()) {
+            setupPreview(currentPreviewPath)
         }
     }
 
     private fun setupPreview(path: String) {
-        currentPath = path
+        currentPreviewPath = path
+        getSharedPreferences("app_data", Context.MODE_PRIVATE).edit().putString("last_preview", path).apply()
         loadFileAndParse()
 
         fileObserver?.stopWatching()
         val file = File(path)
         val parentDir = file.parent
-        val fileName = file.name
 
         if (parentDir != null) {
             fileObserver = object : FileObserver(parentDir, MODIFY or DELETE or MOVED_TO) {
                 override fun onEvent(event: Int, pathEvent: String?) {
-                    if (pathEvent == fileName) {
+                    if (pathEvent == file.name) {
                         if ((event and DELETE) != 0) {
                             runOnUiThread {
                                 fileObserver?.stopWatching()
-                                getSharedPreferences("app_data", Context.MODE_PRIVATE).edit().remove("last_path").apply()
-                                Toast.makeText(this@MainActivity, "File terhapus!", Toast.LENGTH_SHORT).show()
-                                showDialog = true
+                                currentPreviewPath = ""
+                                Toast.makeText(this@MainActivity, "File Preview Terhapus", Toast.LENGTH_SHORT).show()
                             }
                         } else {
                             window.decorView.postDelayed({ loadFileAndParse() }, 300)
@@ -173,197 +145,20 @@ class MainActivity : ComponentActivity() {
 
     private fun loadFileAndParse() {
         try {
-            val file = File(currentPath)
+            val file = File(currentPreviewPath)
             if (!file.exists()) return
             
             val code = file.readText()
-            runOnUiThread {
-                currentRootNode = parseComposeCode(code)
+            runOnUiThread { 
+                currentRootNode = IdComposeParser.parse(code)
             }
         } catch (e: Exception) {
             e.printStackTrace()
         }
     }
 
-    // --- 4. ENGINE PARSER STRING KE DATA NODE ---
-    private fun parseComposeCode(rawCode: String): ComposeNode.Layout {
-        var code = rawCode.replace(Regex("/\\*([\\s\\S]*?)\\*/"), "")
-        code = code.replace(Regex("//.*"), "")
-
-        val root = ComposeNode.Layout("Root", colorHex = "#121212")
-        val stack = Stack<ComposeNode.Layout>()
-        stack.push(root)
-
-        var lastCreatedLayout: ComposeNode.Layout? = null
-        var lastCreatedLeaf: ComposeNode.Leaf? = null
-
-        val p = Pattern.compile("\"([^\"]*)\"|\\b([A-Z][a-zA-Z0-9_]+)\\b(?=\\s*[\\(\\{])|(\\{|\\})")
-        val m = p.matcher(code)
-
-        while (m.find()) {
-            val strGrp = m.group(1)
-            val compGrp = m.group(2)
-            val braceGrp = m.group(3)
-
-            val currentParent = stack.peek()
-
-            if (strGrp != null) {
-                lastCreatedLeaf?.text = strGrp
-            } else if (braceGrp != null) {
-                if (braceGrp == "{") {
-                    if (lastCreatedLayout != null) {
-                        stack.push(lastCreatedLayout)
-                    } else {
-                        stack.push(currentParent)
-                    }
-                    lastCreatedLayout = null
-                    lastCreatedLeaf = null
-                } else if (braceGrp == "}") {
-                    if (stack.size > 1) {
-                        stack.pop()
-                    }
-                    lastCreatedLayout = null
-                    lastCreatedLeaf = null
-                }
-            } else if (compGrp != null) {
-                var isLayout = true
-                var colorHex = "#757575"
-                var isHorizontal = false
-
-                when (compGrp) {
-                    "Column", "LazyColumn" -> colorHex = "#FF9800"
-                    "Row", "LazyRow" -> { colorHex = "#E040FB"; isHorizontal = true }
-                    "Box", "Surface", "Card" -> colorHex = "#03A9F4"
-                    "Button", "OutlinedButton" -> { colorHex = "#00E676"; isHorizontal = true }
-                    "Text", "Icon", "Image", "Spacer" -> { isLayout = false; colorHex = "#B0BEC5" }
-                    else -> colorHex = "#F48FB1"
-                }
-
-                if (isLayout) {
-                    val newLayout = ComposeNode.Layout(compGrp, colorHex = colorHex, isHorizontal = isHorizontal)
-                    currentParent.children.add(newLayout)
-                    lastCreatedLayout = newLayout
-                } else {
-                    val newLeaf = ComposeNode.Leaf(compGrp, colorHex = colorHex)
-                    currentParent.children.add(newLeaf)
-                    lastCreatedLeaf = newLeaf
-                }
-            }
-        }
-        return root
-    }
-
     override fun onDestroy() {
         super.onDestroy()
         fileObserver?.stopWatching()
-    }
-
-    // --- 5. UI JETPACK COMPOSE UTAMA ---
-    @Composable
-    fun AppContent(prefs: android.content.SharedPreferences, onCheckPermission: () -> Unit) {
-        // Box ini akan otomatis mewarisi warna background karena dibungkus oleh Surface di onCreate
-        Box(modifier = Modifier.fillMaxSize()) {
-            
-            Column(modifier = Modifier.fillMaxSize()) {
-                Button(
-                    onClick = { showDialog = true },
-                    // Tombol kini menggunakan primary color & onPrimary dari skema warna tema Anda[span_3](start_span)[span_3](end_span)
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = MaterialTheme.colorScheme.primary,
-                        contentColor = MaterialTheme.colorScheme.onPrimary
-                    ),
-                    modifier = Modifier.fillMaxWidth().padding(16.dp)
-                ) {
-                    Text("GANTI PATH CLASS", fontWeight = FontWeight.Bold)
-                }
-
-                val scrollState = rememberScrollState()
-                Column(modifier = Modifier.verticalScroll(scrollState).padding(16.dp)) {
-                    currentRootNode.children.forEach { childNode ->
-                        WireframeNode(childNode)
-                    }
-                }
-            }
-
-            if (showDialog) {
-                var inputText by remember { mutableStateOf(currentPath) }
-                
-                AlertDialog(
-                    onDismissRequest = { 
-                        if (currentPath.isNotEmpty()) showDialog = false 
-                    },
-                    // AlertDialog otomatis menggunakan warna surface dan tipografi dari tema Anda[span_4](start_span)[span_4](end_span)[span_5](start_span)[span_5](end_span)
-                    title = { Text("Input Path Compose (.kt)") },
-                    text = {
-                        OutlinedTextField(
-                            value = inputText,
-                            onValueChange = { inputText = it },
-                            label = { Text("/storage/emulated/0/...") },
-                            modifier = Modifier.fillMaxWidth()
-                        )
-                    },
-                    confirmButton = {
-                        Button(onClick = {
-                            if (File(inputText).exists()) {
-                                prefs.edit().putString("last_path", inputText).apply()
-                                showDialog = false
-                                setupPreview(inputText)
-                            } else {
-                                Toast.makeText(this@MainActivity, "File tidak ditemukan!", Toast.LENGTH_SHORT).show()
-                            }
-                        }) {
-                            Text("Preview")
-                        }
-                    }
-                )
-            }
-        }
-    }
-
-    // --- 6. RENDER WIREFRAME NODE SECARA REKURSIF ---
-    @Composable
-    fun WireframeNode(node: ComposeNode) {
-        when (node) {
-            is ComposeNode.Layout -> {
-                Box(
-                    modifier = Modifier
-                        .padding(4.dp)
-                        .border(1.dp, Color(AndroidColor.parseColor(node.colorHex)), RoundedCornerShape(8.dp))
-                        // Background wireframe mengikuti warna surface variant dari tema Anda[span_6](start_span)[span_6](end_span)
-                        .background(MaterialTheme.colorScheme.surfaceVariant) 
-                ) {
-                    Column(modifier = Modifier.padding(8.dp)) {
-                        Text(
-                            text = node.name,
-                            color = Color(AndroidColor.parseColor(node.colorHex)),
-                            fontSize = 10.sp,
-                            fontWeight = FontWeight.Bold,
-                            modifier = Modifier.padding(bottom = 4.dp)
-                        )
-                        
-                        if (node.children.isNotEmpty()) {
-                            if (node.isHorizontal) {
-                                Row {
-                                    node.children.forEach { WireframeNode(it) }
-                                }
-                            } else {
-                                Column {
-                                    node.children.forEach { WireframeNode(it) }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-            
-            is ComposeNode.Leaf -> {
-                Text(
-                    text = node.text,
-                    color = Color(AndroidColor.parseColor(node.colorHex)),
-                    fontSize = 12.sp,
-                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
-                )
-            }
-        }
     }
 }

@@ -93,18 +93,9 @@ fun IdeMainScreen(
                         FileTreeView(
                             root = File(projectPath),
                             onFileClick = { file ->
-                                if (!file.name.endsWith(".kt")) {
-                                    Toast.makeText(context, "Hanya mendukung file Kotlin (.kt)", Toast.LENGTH_SHORT).show()
-                                    return@FileTreeView
-                                }
-                                val content = file.readText()
-                                if (content.contains("@Preview")) {
-                                    onFileSelected(file)
-                                    scope.launch { drawerState.close() }
-                                } else {
-                                    Toast.makeText(context, "File ini tidak memiliki anotasi @Preview", Toast.LENGTH_SHORT).show()
-                                }
-                            }
+    onFileSelected(file)
+    scope.launch { drawerState.close() }
+}
                         )
                     }
                 }
@@ -262,30 +253,123 @@ fun IdeMainScreen(
 
 // Komponen Helper untuk Ikon File
 @Composable
-fun FileIcon(fileName: String, modifier: Modifier = Modifier) {
+fun FileIcon(file: File, modifier: Modifier = Modifier) {
+    val fileName = file.name
     when {
+        isImageFile(fileName) -> ImagePreviewIcon(file = file, modifier = modifier)
         fileName == "AndroidManifest.xml" -> Icon(painterResource(R.drawable.ic_android), "Manifest", modifier = modifier, tint = Color.Unspecified)
-        fileName.endsWith(".kt") || fileName.endsWith(".kts") -> Icon(painterResource(R.drawable.ic_kotlin), "Kotlin", modifier = modifier, tint = Color.Unspecified)
+        fileName.endsWith(".kt") -> Icon(painterResource(R.drawable.ic_kotlin), "Kotlin", modifier = modifier, tint = Color.Unspecified)
+        fileName.endsWith(".kts") || fileName == "gradlew" || fileName == "gradlew.bat" || fileName.endsWith(".gradle") || fileName == "gradle.properties" || fileName == "local.properties" -> Icon(painterResource(R.drawable.ic_gradle), "Gradle", modifier = modifier, tint = Color.Unspecified)
         fileName.endsWith(".java") -> Icon(painterResource(R.drawable.ic_java), "Java", modifier = modifier, tint = Color.Unspecified)
         fileName.endsWith(".xml") -> Icon(painterResource(R.drawable.ic_xml), "XML", modifier = modifier, tint = Color.Unspecified)
-        fileName.endsWith(".gradle") || fileName.endsWith(".gradle.kts") -> Icon(painterResource(R.drawable.ic_gradle), "Gradle", modifier = modifier, tint = Color.Unspecified)
         fileName.endsWith(".cpp") || fileName.endsWith(".cc") || fileName.endsWith(".cxx") || fileName.endsWith(".hpp") -> Icon(painterResource(R.drawable.ic_cpp), "C++", modifier = modifier, tint = Color.Unspecified)
         fileName.endsWith(".c") || fileName.endsWith(".h") -> Icon(painterResource(R.drawable.ic_c), "C", modifier = modifier, tint = Color.Unspecified)
         fileName == "CMakeLists.txt" || fileName.endsWith(".cmake") -> Icon(painterResource(R.drawable.ic_cmake), "CMake", modifier = modifier, tint = Color.Unspecified)
+        fileName.endsWith(".py") -> Icon(Icons.Default.Code, "Python", modifier = modifier, tint = Color(0xFF3776AB))
+        fileName.endsWith(".md") -> Icon(Icons.Default.Description, "Markdown", modifier = modifier, tint = Color(0xFF42A5F5))
+        fileName.endsWith(".json") -> Icon(Icons.Default.DataObject, "JSON", modifier = modifier, tint = Color(0xFFFFCA28))
+        fileName.endsWith(".jks") || fileName.endsWith(".keystore") -> Icon(Icons.Default.Key, "Keystore", modifier = modifier, tint = Color(0xFFFFCA28))
+        fileName.startsWith(".git") -> Icon(Icons.Default.Source, "Git", modifier = modifier, tint = Color(0xFFF05032))
+        fileName.endsWith(".pro") -> Icon(Icons.Default.Shield, "Proguard", modifier = modifier, tint = Color(0xFF7E57C2))
         else -> Icon(Icons.Default.Description, "File", modifier = modifier, tint = Color.Gray)
     }
 }
 
 @Composable
-fun FileTreeView(root: File, level: Int = 0, onFileClick: (File) -> Unit) {
-    val files = root.listFiles()?.sortedWith(compareBy({ !it.isDirectory }, { it.name })) ?: emptyList()
+fun FileTreeView(root: File, onFileClick: (File) -> Unit) {
+    var searchQuery by remember { mutableStateOf("") }
+    var refreshTrigger by remember { mutableStateOf(0) }
+
+    Column(modifier = Modifier.fillMaxSize()) {
+        // Search bar
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 8.dp, vertical = 4.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            OutlinedTextField(
+                value = searchQuery,
+                onValueChange = { searchQuery = it },
+                placeholder = { Text("Cari file...", fontSize = 12.sp) },
+                leadingIcon = { Icon(Icons.Default.Search, null, modifier = Modifier.size(18.dp)) },
+                trailingIcon = {
+                    if (searchQuery.isNotEmpty()) {
+                        IconButton(onClick = { searchQuery = "" }) {
+                            Icon(Icons.Default.Close, null, modifier = Modifier.size(18.dp))
+                        }
+                    }
+                },
+                modifier = Modifier.weight(1f).height(48.dp),
+                singleLine = true,
+                textStyle = androidx.compose.ui.text.TextStyle(fontSize = 12.sp)
+            )
+            Spacer(Modifier.width(4.dp))
+            IconButton(onClick = { refreshTrigger++ }) {
+                Icon(Icons.Default.Refresh, "Refresh", modifier = Modifier.size(20.dp))
+            }
+        }
+
+        // File tree dengan horizontal scroll
+        key(refreshTrigger) {
+            val scrollStateH = rememberScrollState()
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .horizontalScroll(scrollStateH)
+            ) {
+                Column(modifier = Modifier.verticalScroll(rememberScrollState())) {
+                    if (searchQuery.isEmpty()) {
+                        FileTreeNode(root = root, level = 0, onFileClick = onFileClick)
+                    } else {
+                        SearchResults(root = root, query = searchQuery, onFileClick = onFileClick)
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun SearchResults(root: File, query: String, onFileClick: (File) -> Unit) {
+    val results = remember(query) {
+        root.walkTopDown()
+            .filter { it.isFile && it.name.contains(query, ignoreCase = true) }
+            .toList()
+    }
+    if (results.isEmpty()) {
+        Text("Tidak ditemukan", modifier = Modifier.padding(16.dp), color = Color.Gray, fontSize = 12.sp)
+    } else {
+        results.forEach { file ->
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable { onFileClick(file) }
+                    .padding(horizontal = 8.dp, vertical = 6.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                FileIcon(file = file, modifier = Modifier.size(20.dp))
+                Spacer(Modifier.width(8.dp))
+                Column {
+                    Text(file.name, fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurface)
+                    Text(file.parent ?: "", fontSize = 10.sp, color = Color.Gray)
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun FileTreeNode(root: File, level: Int = 0, onFileClick: (File) -> Unit) {
+    val files = root.listFiles()
+        ?.sortedWith(compareBy({ !it.isDirectory }, { it.name }))
+        ?: emptyList()
 
     files.forEach { file ->
         var isExpanded by remember { mutableStateOf(false) }
 
         Row(
             modifier = Modifier
-                .fillMaxWidth()
                 .clickable {
                     if (file.isDirectory) isExpanded = !isExpanded
                     else onFileClick(file)
@@ -301,27 +385,23 @@ fun FileTreeView(root: File, level: Int = 0, onFileClick: (File) -> Unit) {
                     tint = MaterialTheme.colorScheme.onSurfaceVariant
                 )
                 Spacer(Modifier.width(4.dp))
-                Icon(
-                    Icons.Default.Folder,
-                    contentDescription = "Folder",
-                    tint = Color(0xFFFFCA28),
-                    modifier = Modifier.size(20.dp)
-                )
+                FolderIcon(folderName = file.name, isExpanded = isExpanded, modifier = Modifier.size(20.dp))
             } else {
                 Spacer(Modifier.width(22.dp))
-                FileIcon(fileName = file.name, modifier = Modifier.size(20.dp))
+                FileIcon(file = file, modifier = Modifier.size(20.dp))
             }
 
             Spacer(Modifier.width(8.dp))
             Text(
                 text = file.name,
                 fontSize = 14.sp,
-                color = if (!file.isDirectory && !file.name.endsWith(".kt")) Color.Gray else MaterialTheme.colorScheme.onSurface
+                color = MaterialTheme.colorScheme.onSurface,
+                softWrap = false
             )
         }
 
         if (file.isDirectory && isExpanded) {
-            FileTreeView(root = file, level = level + 1, onFileClick = onFileClick)
+            FileTreeNode(root = file, level = level + 1, onFileClick = onFileClick)
         }
     }
 }

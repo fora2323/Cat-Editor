@@ -49,8 +49,8 @@ Changes:
         
         data = {
             'chat_id': str(chat_id),
-            'caption': caption,
-            'parse_mode': 'Markdown'
+            'caption': caption
+            # ❌ HAPUS INI: 'parse_mode': 'Markdown'
         }
         
         # Add topic ID jika ada
@@ -72,8 +72,8 @@ Changes:
                     
                     data_fallback = {
                         'chat_id': str(chat_id),
-                        'caption': caption,
-                        'parse_mode': 'Markdown'
+                        'caption': caption
+                        # ❌ HAPUS INI: 'parse_mode': 'Markdown'
                     }
                     
                     response = requests.post(url, files=files, data=data_fallback, timeout=30)

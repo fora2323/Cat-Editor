@@ -50,8 +50,8 @@ Type: Debug Build
         
         data = {
             'chat_id': str(chat_id),
-            'caption': caption,
-            'parse_mode': 'Markdown'
+            'caption': caption
+            # ❌ HAPUS INI: 'parse_mode': 'Markdown'
         }
         
         # Add topic ID jika ada

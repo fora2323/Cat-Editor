@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Redo
@@ -24,6 +25,8 @@ import androidx.compose.ui.unit.sp
 import org.cat.editor.R
 import org.cat.editor.code.KotlinCodeEditor
 import org.cat.editor.preview.PreviewScreen
+import org.cat.editor.preview.ImagePreviewIcon
+import org.cat.editor.preview.isImageFile
 import org.cat.editor.utility.ComposeNode
 import kotlinx.coroutines.launch
 import java.io.File
@@ -181,7 +184,7 @@ fun IdeMainScreen(
                                             verticalAlignment = Alignment.CenterVertically,
                                             modifier = Modifier.wrapContentWidth()
                                         ) {
-                                            FileIcon(fileName = file.name, modifier = Modifier.size(16.dp))
+                                            FileIcon(file = file, modifier = Modifier.size(16.dp))
                                             Spacer(modifier = Modifier.width(8.dp))
                                             Text(text = file.name, fontSize = 12.sp, maxLines = 1)
                                             

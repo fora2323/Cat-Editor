@@ -8,6 +8,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.viewinterop.AndroidView
 import io.github.rosemoe.sora.event.ContentChangeEvent
+import io.github.rosemoe.sora.event.Unsubscribe
 import io.github.rosemoe.sora.langs.textmate.TextMateLanguage
 import io.github.rosemoe.sora.widget.CodeEditor
 import io.github.rosemoe.sora.widget.schemes.EditorColorScheme
@@ -18,6 +19,7 @@ private fun getScopeForFile(filePath: String): String {
         "kt", "kts" -> "source.kotlin"
         "java" -> "source.java"
         "cpp", "cc", "cxx", "hpp", "h" -> "source.cpp"
+        "c" -> "source.c"
         "gradle", "gradle.kts" -> "source.groovy"
         "xml" -> "text.xml"
         "cmake" -> "source.cmake"
@@ -60,13 +62,12 @@ fun KotlinCodeEditor(
                     setText(codeContent)
                     isWordwrap = true
 
-                    subscribeEvent<ContentChangeEvent> { _, _ ->
+                    subscribeEvent<ContentChangeEvent> { _: ContentChangeEvent, _: Unsubscribe ->
                         onCodeChange(text.toString())
                     }
                 }
             },
             update = { editor ->
-                // Update language kalau filePath berubah (ganti tab)
                 val scope = getScopeForFile(filePath)
                 editor.setEditorLanguage(TextMateLanguage.create(scope, true))
                 editor.setText(codeContent)

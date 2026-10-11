@@ -75,13 +75,8 @@ dependencies {
     androidTestImplementation(composeBom)
     
     implementation("io.github.Rosemoe.sora-editor:editor:0.23.4")
-    implementation("io.github.Rosemoe.sora-editor:language-treesitter:0.23.4")
     implementation("io.github.Rosemoe.sora-editor:themes:0.23.4")
-    
-    implementation("io.github.Rosemoe.sora-editor:language-html:0.23.4")
-    implementation("io.github.Rosemoe.sora-editor:language-java:0.23.4")
-    implementation("io.github.Rosemoe.sora-editor:language-kotlin:0.23.4")
-    implementation("io.github.Rosemoe.sora-editor:language-xml:0.23.4")
+    implementation("io.github.Rosemoe.sora-editor:language-textmate:0.23.4")
     
     implementation("com.google.android.material:material:1.14.0")
     

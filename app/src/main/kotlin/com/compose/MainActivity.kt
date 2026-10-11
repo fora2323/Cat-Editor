@@ -28,6 +28,7 @@ import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.compose.ui.theme.AppTheme // Impor tema kustom Anda
 import java.io.File
 import java.util.Stack
 import java.util.regex.Pattern
@@ -51,28 +52,32 @@ class MainActivity : ComponentActivity() {
 
     private var fileObserver: FileObserver? = null
     
-    // State Compose untuk Re-render Real-time
     private var currentRootNode by mutableStateOf(ComposeNode.Layout("Root"))
     private var showDialog by mutableStateOf(false)
     private var currentPath by mutableStateOf("")
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        // Gunakan layout XML bawaan Anda
         setContentView(R.layout.main)
 
         val prefs = getSharedPreferences("app_data", Context.MODE_PRIVATE)
         currentPath = prefs.getString("last_path", "") ?: ""
 
-        // Menemukan linear1 di XML dan menyematkan UI Compose di dalamnya
         val linear1 = findViewById<LinearLayout>(R.id.linear1)
         val composeView = ComposeView(this).apply {
             setContent {
-                MaterialTheme(colorScheme = darkColorScheme()) {
-                    AppContent(
-                        prefs = prefs,
-                        onCheckPermission = { checkPermissionsAndStart() }
-                    )
+                // Terapkan AppTheme dari Theme.kt[span_0](start_span)[span_0](end_span)
+                AppTheme { 
+                    // Gunakan Surface agar background mengikuti warna dari skema tema (Color.kt)[span_1](start_span)[span_1](end_span)[span_2](start_span)[span_2](end_span)
+                    Surface(
+                        modifier = Modifier.fillMaxSize(),
+                        color = MaterialTheme.colorScheme.background
+                    ) {
+                        AppContent(
+                            prefs = prefs,
+                            onCheckPermission = { checkPermissionsAndStart() }
+                        )
+                    }
                 }
             }
         }
@@ -157,7 +162,6 @@ class MainActivity : ComponentActivity() {
                                 showDialog = true
                             }
                         } else {
-                            // Delay sebentar agar save editor selesai
                             window.decorView.postDelayed({ loadFileAndParse() }, 300)
                         }
                     }
@@ -173,7 +177,6 @@ class MainActivity : ComponentActivity() {
             if (!file.exists()) return
             
             val code = file.readText()
-            // Parsing dilakukan di thread utama agar UI langsung merespons
             runOnUiThread {
                 currentRootNode = parseComposeCode(code)
             }
@@ -184,7 +187,6 @@ class MainActivity : ComponentActivity() {
 
     // --- 4. ENGINE PARSER STRING KE DATA NODE ---
     private fun parseComposeCode(rawCode: String): ComposeNode.Layout {
-        // Bersihkan Komentar
         var code = rawCode.replace(Regex("/\\*([\\s\\S]*?)\\*/"), "")
         code = code.replace(Regex("//.*"), "")
 
@@ -234,7 +236,7 @@ class MainActivity : ComponentActivity() {
                     "Box", "Surface", "Card" -> colorHex = "#03A9F4"
                     "Button", "OutlinedButton" -> { colorHex = "#00E676"; isHorizontal = true }
                     "Text", "Icon", "Image", "Spacer" -> { isLayout = false; colorHex = "#B0BEC5" }
-                    else -> colorHex = "#F48FB1" // Custom Composable
+                    else -> colorHex = "#F48FB1"
                 }
 
                 if (isLayout) {
@@ -259,28 +261,30 @@ class MainActivity : ComponentActivity() {
     // --- 5. UI JETPACK COMPOSE UTAMA ---
     @Composable
     fun AppContent(prefs: android.content.SharedPreferences, onCheckPermission: () -> Unit) {
-        Box(modifier = Modifier.fillMaxSize().background(Color(0xFF121212))) {
+        // Box ini akan otomatis mewarisi warna background karena dibungkus oleh Surface di onCreate
+        Box(modifier = Modifier.fillMaxSize()) {
             
-            // Tampilan Wireframe
             Column(modifier = Modifier.fillMaxSize()) {
                 Button(
                     onClick = { showDialog = true },
-                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF333333)),
+                    // Tombol kini menggunakan primary color & onPrimary dari skema warna tema Anda[span_3](start_span)[span_3](end_span)
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.primary,
+                        contentColor = MaterialTheme.colorScheme.onPrimary
+                    ),
                     modifier = Modifier.fillMaxWidth().padding(16.dp)
                 ) {
-                    Text("GANTI PATH CLASS", color = Color.White)
+                    Text("GANTI PATH CLASS", fontWeight = FontWeight.Bold)
                 }
 
                 val scrollState = rememberScrollState()
                 Column(modifier = Modifier.verticalScroll(scrollState).padding(16.dp)) {
-                    // Render isi dari Root (hindari merender kotak Root itu sendiri)
                     currentRootNode.children.forEach { childNode ->
                         WireframeNode(childNode)
                     }
                 }
             }
 
-            // Dialog Input Path
             if (showDialog) {
                 var inputText by remember { mutableStateOf(currentPath) }
                 
@@ -288,6 +292,7 @@ class MainActivity : ComponentActivity() {
                     onDismissRequest = { 
                         if (currentPath.isNotEmpty()) showDialog = false 
                     },
+                    // AlertDialog otomatis menggunakan warna surface dan tipografi dari tema Anda[span_4](start_span)[span_4](end_span)[span_5](start_span)[span_5](end_span)
                     title = { Text("Input Path Compose (.kt)") },
                     text = {
                         OutlinedTextField(
@@ -324,7 +329,8 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier
                         .padding(4.dp)
                         .border(1.dp, Color(AndroidColor.parseColor(node.colorHex)), RoundedCornerShape(8.dp))
-                        .background(Color(0xFF1E1E1E))
+                        // Background wireframe mengikuti warna surface variant dari tema Anda[span_6](start_span)[span_6](end_span)
+                        .background(MaterialTheme.colorScheme.surfaceVariant) 
                 ) {
                     Column(modifier = Modifier.padding(8.dp)) {
                         Text(

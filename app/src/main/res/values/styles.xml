@@ -1,8 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <style name="AppTheme" parent="Theme.Material3.Dark.NoActionBar">
-        <item name="colorPrimary">@color/colorPrimary</item>
-        <item name="colorSecondary">@color/colorAccent</item>
-        <item name="android:textColorPrimary">@color/colorControlNormal</item>
     </style>
 </resources>

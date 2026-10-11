@@ -5,7 +5,7 @@ plugins {
 }
 
 android {
-    namespace = "org.cet.editor"
+    namespace = "org.cat.editor"
     compileSdk = 37
 
     signingConfigs {
@@ -25,7 +25,7 @@ android {
     }
 
     defaultConfig {
-        applicationId = "org.cet.editor"
+        applicationId = "org.cat.editor"
         minSdk = 26
         targetSdk = 36
         versionCode = 1

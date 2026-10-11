@@ -2,8 +2,8 @@
   <img src="assets/Cat-Editor.png" width="128" alt="App Icon">
 </p>
 
-<h1 align="center">ComposePriview</h1>
+<h1 align="center">Cat-Editor</h1>
 
 <p align="center">
-  <b>ComposePreview is built with heart♥️</b>
+  <b>Cat-Editor is built with heart♥️</b>
 </p>

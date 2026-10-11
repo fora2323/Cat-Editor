@@ -2,7 +2,7 @@ name: Build Debug
 
 on:
   push:
-    branches: [ "main", "master" ] # Sesuaikan dengan branch default kamu
+    branches: [ "main", "master" ]
 
 jobs:
   build:
@@ -31,46 +31,35 @@ jobs:
 
       - name: Prepare APK & Extract Commit Metadata
         run: |
-          # 1. Ambil 7 karakter short SHA commit
           SHORT_SHA=$(echo "${{ github.sha }}" | cut -c1-7)
-          
-          # 2. Path output APK default Gradle
           ORIGINAL_APK="app/build/outputs/apk/debug/app-debug.apk"
           NEW_APK_NAME="app-debug-${SHORT_SHA}.apk"
           
-          # 3. Rename file
           cp "$ORIGINAL_APK" "$NEW_APK_NAME"
           
-          # 4. Ambil author commit dan commit message
           AUTHOR_NAME="${{ github.event.head_commit.author.name }}"
           COMMIT_MSG="${{ github.event.head_commit.message }}"
           
-          # Simpan ke env untuk dipakai di step curl
           echo "APK_PATH=$NEW_APK_NAME" >> $GITHUB_ENV
           echo "SHORT_SHA=$SHORT_SHA" >> $GITHUB_ENV
           echo "AUTHOR_NAME=$AUTHOR_NAME" >> $GITHUB_ENV
           echo "COMMIT_MSG=$COMMIT_MSG" >> $GITHUB_ENV
 
-      - name: Send APK to Telegram Topic
-        env:
-          BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
-          CHAT_ID: "-1003914493532"
-          TOPIC_ID: "352"
-        run: |
-          # Buat format caption dengan rapi (Markdown)
-          CAPTION=$(cat <<EOF
-          🚀 *New Build Compiled!*
-          
-          👤 *Committer:* ${AUTHOR_NAME}
-          🔖 *Commit ID:* \`${SHORT_SHA}\`
-          💬 *Message:* ${COMMIT_MSG}
-          EOF
-          )
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
 
-          # Kirim ke Telegram API
-          curl -s -X POST "https://api.telegram.org/bot${BOT_TOKEN}/sendDocument" \
-            -F chat_id="${CHAT_ID}" \
-            -F message_thread_id="${TOPIC_ID}" \
-            -F document=@"${APK_PATH}" \
-            -F caption="${CAPTION}" \
-            -F parse_mode="Markdown"
+      - name: Install Python Dependencies
+        run: pip install requests
+
+      - name: Send Debug APK to Telegram
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          TELEGRAM_TOPIC_ID: ${{ secrets.TELEGRAM_TOPIC_ID }}
+          APK_PATH: ${{ env.APK_PATH }}
+          SHORT_SHA: ${{ env.SHORT_SHA }}
+          AUTHOR_NAME: ${{ env.AUTHOR_NAME }}
+          COMMIT_MSG: ${{ env.COMMIT_MSG }}
+        run: python send_telegram_debug.py

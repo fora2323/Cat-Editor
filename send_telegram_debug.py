@@ -13,6 +13,12 @@ def send_debug_apk_to_telegram():
     author_name = os.getenv('AUTHOR_NAME')
     commit_msg = os.getenv('COMMIT_MSG')
     
+    # Debug print
+    print(f"Bot Token: {'***' if bot_token else 'MISSING'}")
+    print(f"Chat ID: {chat_id or 'MISSING'}")
+    print(f"Topic ID: {topic_id or 'MISSING'}")
+    print(f"APK Path: {apk_path}")
+    
     # Validasi
     if not all([bot_token, chat_id, apk_path]):
         print("Missing required environment variables")
@@ -43,17 +49,22 @@ Type: Debug Build
         }
         
         data = {
-            'chat_id': chat_id,
+            'chat_id': str(chat_id),
             'caption': caption,
             'parse_mode': 'Markdown'
         }
         
         # Add topic ID jika ada
         if topic_id:
-            data['message_thread_id'] = topic_id
+            data['message_thread_id'] = str(topic_id)
+        
+        print(f"Sending to URL: {url}")
+        print(f"Data keys: {list(data.keys())}")
         
         try:
             response = requests.post(url, files=files, data=data, timeout=30)
+            print(f"Response Status: {response.status_code}")
+            print(f"Response Text: {response.text}")
             response.raise_for_status()
             
             result = response.json()

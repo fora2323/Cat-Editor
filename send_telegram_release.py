@@ -24,16 +24,18 @@ def send_release_apk_to_telegram():
         print(f"APK file not found: {apk_path}")
         return False
     
-    # Prepare caption
+    # Prepare caption - ambil full commit message
     caption = f"""RELEASE BUILD COMPILED
 
 Committer: {author_name or 'Unknown'}
 Commit ID: {short_sha}
-Message: {commit_msg or 'No message'}
-File: {Path(apk_path).name}
 Version: {version_name}
+File: {Path(apk_path).name}
 Type: Release Build
 Status: Ready for Distribution
+
+Changes:
+{commit_msg or 'No message'}
 """
     
     # Telegram API URL
@@ -46,20 +48,39 @@ Status: Ready for Distribution
         }
         
         data = {
-            'chat_id': chat_id,
+            'chat_id': str(chat_id),
             'caption': caption,
             'parse_mode': 'Markdown'
         }
         
         # Add topic ID jika ada
         if topic_id:
-            data['message_thread_id'] = topic_id
+            data['message_thread_id'] = str(topic_id)
         
         try:
             response = requests.post(url, files=files, data=data, timeout=30)
+            result = response.json()
+            
+            # Fallback jika topic closed
+            if not result.get('ok') and 'TOPIC_CLOSED' in result.get('description', ''):
+                print("Topic is closed, sending to main chat instead...")
+                
+                with open(apk_path, 'rb') as apk_file2:
+                    files = {
+                        'document': apk_file2
+                    }
+                    
+                    data_fallback = {
+                        'chat_id': str(chat_id),
+                        'caption': caption,
+                        'parse_mode': 'Markdown'
+                    }
+                    
+                    response = requests.post(url, files=files, data=data_fallback, timeout=30)
+                    result = response.json()
+            
             response.raise_for_status()
             
-            result = response.json()
             if result.get('ok'):
                 print(f"Release APK sent successfully! Message ID: {result.get('result', {}).get('message_id')}")
                 return True

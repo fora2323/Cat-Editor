@@ -17,5 +17,5 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "ComposePriview"
+rootProject.name = "CatEditor"
 include(":app")

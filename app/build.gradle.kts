@@ -5,7 +5,7 @@ plugins {
 }
 
 android {
-    namespace = "com.compose"
+    namespace = "org.cet.editor"
     compileSdk = 37
 
     signingConfigs {
@@ -25,7 +25,7 @@ android {
     }
 
     defaultConfig {
-        applicationId = "com.compose"
+        applicationId = "org.cet.editor"
         minSdk = 26
         targetSdk = 36
         versionCode = 1

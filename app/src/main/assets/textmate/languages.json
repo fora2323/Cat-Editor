@@ -1,5 +1,5 @@
 {
-  "grammars": [
+  "languages": [
     {
       "name": "Kotlin",
       "scopeName": "source.kotlin",

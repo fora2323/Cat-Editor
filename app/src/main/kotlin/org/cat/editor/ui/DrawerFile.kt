@@ -8,7 +8,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -17,8 +16,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentWidth
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -101,29 +98,10 @@ fun IdeMainScreen(
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val scope = rememberCoroutineScope()
     val context = LocalContext.current
-    var showProjectMenu by remember { mutableStateOf(false) }
     var currentCode by remember { mutableStateOf("") }
 
     if (projectPath.isEmpty()) {
         WelcomeScreen(onBrowseClick = { onTogglePicker(true) })
-        return
-    }
-
-    if (showProjectMenu) {
-        ProjectMenuScreen(
-            onNewProject = {
-                showProjectMenu = false
-                onAddFile?.invoke()
-            },
-            onCloneRepository = {
-                showProjectMenu = false
-                Toast.makeText(context, "Clone repository akan diimplementasikan", Toast.LENGTH_SHORT).show()
-            },
-            onBrowseFolder = {
-                showProjectMenu = false
-                onTogglePicker(true)
-            }
-        )
         return
     }
 
@@ -196,7 +174,7 @@ fun IdeMainScreen(
                             }
 
                             IconButton(onClick = {
-                                showProjectMenu = true
+                                onAddFile?.invoke()
                             }) {
                                 Icon(Icons.Default.Add, contentDescription = "Add")
                             }
@@ -313,10 +291,12 @@ fun FileIcon(file: File, modifier: Modifier = Modifier) {
         fileName.endsWith(".json") -> Icon(Icons.Default.DataObject, "JSON", modifier = modifier, tint = Color(0xFFFFCA28))
         fileName.endsWith(".jks") || fileName.endsWith(".keystore") -> Icon(Icons.Default.Key, "Keystore", modifier = modifier, tint = Color(0xFFFFCA28))
         fileName.startsWith(".git") -> Icon(Icons.Default.Source, "Git", modifier = modifier, tint = Color(0xFFF05032))
-        fileName.endsWith(".pro") -> Icon(Icons.Default.Shield, "Proguard", modifier = modifier, tint = Color(0xFF7E57C2))
+        fileName.endsWith(".pro") -> Icon(Icons.Default.Shield, "Proguard", modifier = borderModifier(false), tint = Color(0xFF7E57C2))
         else -> Icon(Icons.Default.Description, "File", modifier = modifier, tint = Color.Gray)
     }
 }
+
+private fun borderModifier(selected: Boolean): Modifier = Modifier
 
 @Composable
 fun FileTreeView(root: File, onFileClick: (File) -> Unit) {

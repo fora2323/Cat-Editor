@@ -17,10 +17,12 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
-import androidx.compose.runtime.*
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import org.cat.editor.ui.theme.AppTheme
 import org.cat.editor.ui.IdeMainScreen
+import org.cat.editor.ui.theme.AppTheme
 import org.cat.editor.utility.ComposeNode
 import org.cat.editor.utility.IdComposeParser
 import java.io.File
@@ -58,6 +60,13 @@ class MainActivity : ComponentActivity() {
 
         val prefs = getSharedPreferences("app_data", Context.MODE_PRIVATE)
         projectPath = prefs.getString("last_project", "") ?: ""
+
+        val intentPath = intent.getStringExtra("project_path")
+        if (!intentPath.isNullOrEmpty()) {
+            projectPath = intentPath
+            prefs.edit().putString("last_project", intentPath).apply()
+        }
+
         activeFilePath = prefs.getString("last_preview", "") ?: ""
 
         val savedTabs = prefs.getString("opened_files", "") ?: ""

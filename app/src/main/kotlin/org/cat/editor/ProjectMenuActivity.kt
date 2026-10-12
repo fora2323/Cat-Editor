@@ -51,7 +51,6 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExtendedFloatingActionButton
-import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -104,7 +103,10 @@ class ProjectMenuActivity : ComponentActivity() {
             AppTheme {
                 ProjectMenuScreen(
                     onProjectSelected = { project ->
-                        Toast.makeText(this, "Buka proyek: ${project.name}", Toast.LENGTH_SHORT).show()
+                        val intent = Intent(this, MainActivity::class.java).apply {
+                            putExtra("project_path", project.path)
+                        }
+                        startActivity(intent)
                     }
                 )
             }
@@ -125,7 +127,6 @@ fun ProjectMenuScreen(
     var projects by remember { mutableStateOf<List<ProjectItem>>(emptyList()) }
     var isFabExpanded by remember { mutableStateOf(false) }
 
-    // Launcher untuk Android 10 kebawah (runtime permissions)
     val legacyPermissionLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestMultiplePermissions()
     ) { results ->
@@ -139,7 +140,6 @@ fun ProjectMenuScreen(
         }
     }
 
-    // Launcher SAF (Buka folder direktori)
     val openDocumentTreeLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.OpenDocumentTree()
     ) { uri: Uri? ->
@@ -148,7 +148,6 @@ fun ProjectMenuScreen(
         }
     }
 
-    // Cek ulang izin ketika aplikasi kembali dari Settings (onResume)
     DisposableEffect(lifecycleOwner) {
         val observer = LifecycleEventObserver { _, event ->
             if (event == Lifecycle.Event.ON_RESUME) {
@@ -166,7 +165,6 @@ fun ProjectMenuScreen(
         }
     }
 
-    // Muat data jika izin sudah ada sejak awal
     LaunchedEffect(hasPermission) {
         if (hasPermission) {
             projects = scanProjects(ConfigPath.VAR_PROJECTS_PATH)
@@ -184,7 +182,7 @@ fun ProjectMenuScreen(
                     )
                 },
                 actions = {
-                    IconButton(onClick = { /* Belum diberi fungsi sesuai permintaan */ }) {
+                    IconButton(onClick = { }) {
                         Icon(
                             imageVector = Icons.Default.Settings,
                             contentDescription = "Pengaturan",
@@ -202,7 +200,6 @@ fun ProjectMenuScreen(
                 horizontalAlignment = Alignment.End,
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                // Sub-FABs saat expanded
                 AnimatedVisibility(
                     visible = isFabExpanded,
                     enter = fadeIn() + slideInVertically(initialOffsetY = { it / 2 }),
@@ -212,7 +209,6 @@ fun ProjectMenuScreen(
                         horizontalAlignment = Alignment.End,
                         verticalArrangement = Arrangement.spacedBy(10.dp)
                     ) {
-                        // Opsi 1: Git Clone
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.End
@@ -244,7 +240,6 @@ fun ProjectMenuScreen(
                             }
                         }
 
-                        // Opsi 2: Buka Folder via SAF
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.End
@@ -278,7 +273,6 @@ fun ProjectMenuScreen(
                     }
                 }
 
-                // Main FAB: New Project
                 ExtendedFloatingActionButton(
                     text = { Text(text = if (isFabExpanded) "Tutup" else "New Project") },
                     icon = {
@@ -329,10 +323,9 @@ fun ProjectMenuScreen(
         }
     }
 
-    // BottomSheet Dialog Permintaan Izin Penyimpanan
     if (showPermissionDialog) {
         BottomSheetDialog(
-            onDismissRequest = { /* Tidak diizinkan tutup klik luar sebelum aksi */ }
+            onDismissRequest = { }
         ) {
             Text(
                 text = "Akses Penyimpanan Diperlukan",
@@ -407,7 +400,6 @@ fun ProjectItemRow(
                 .padding(14.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Render icon dari bitmap jika ditemukan, jika tidak fallback ke R.drawable.ic_vanilla_android
             if (project.iconBitmap != null) {
                 Image(
                     bitmap = project.iconBitmap.asImageBitmap(),
@@ -419,7 +411,8 @@ fun ProjectItemRow(
                 )
             } else {
                 Image(
-                    painter = painterResource(id = R.drawable.ic_android),                    contentDescription = project.name,
+                    painter = painterResource(id = R.drawable.ic_android),
+                    contentDescription = project.name,
                     modifier = Modifier
                         .size(46.dp)
                         .clip(RoundedCornerShape(8.dp)),
@@ -453,7 +446,6 @@ fun ProjectItemRow(
     }
 }
 
-// Cek status izin penyimpanan
 fun checkStoragePermission(context: Context): Boolean {
     return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
         Environment.isExternalStorageManager()
@@ -464,7 +456,6 @@ fun checkStoragePermission(context: Context): Boolean {
     }
 }
 
-// Memindai folder proyek
 fun scanProjects(basePath: String): List<ProjectItem> {
     val directory = File(basePath)
     if (!directory.exists() || !directory.isDirectory) {
@@ -485,7 +476,6 @@ fun scanProjects(basePath: String): List<ProjectItem> {
     }.sortedBy { it.name.lowercase() }
 }
 
-// Logika pemindaian icon: cari di mipmap, lalu cari di drawable dengan kata "launcher"
 fun findProjectIcon(projectDir: File): Bitmap? {
     val candidateResDirs = listOf(
         File(projectDir, "app/src/main/res"),
@@ -495,7 +485,6 @@ fun findProjectIcon(projectDir: File): Bitmap? {
     val resDir = candidateResDirs.firstOrNull { it.exists() && it.isDirectory } ?: return null
     val bitmapExtensions = listOf("png", "webp", "jpg", "jpeg")
 
-    // 1. Scan folder mipmap
     val mipmapDirs = resDir.listFiles { file -> file.isDirectory && file.name.startsWith("mipmap") }
     if (mipmapDirs != null) {
         val sortedMipmaps = mipmapDirs.sortedByDescending { it.name }
@@ -511,7 +500,6 @@ fun findProjectIcon(projectDir: File): Bitmap? {
         }
     }
 
-    // 2. Scan folder drawable jika di mipmap tidak ditemukan
     val drawableDirs = resDir.listFiles { file -> file.isDirectory && file.name.startsWith("drawable") }
     if (drawableDirs != null) {
         val sortedDrawables = drawableDirs.sortedByDescending { it.name }

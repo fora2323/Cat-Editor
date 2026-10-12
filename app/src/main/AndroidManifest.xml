@@ -38,6 +38,12 @@
 			android:configChanges="orientation|screenSize|keyboardHidden|smallestScreenSize|screenLayout|locale|layoutDirection"
 			android:screenOrientation="portrait"
 			android:exported="false" />
+            
+        <activity
+			android:name=".DebugActivity"
+			android:configChanges="orientation|screenSize|keyboardHidden|smallestScreenSize|screenLayout"
+			android:screenOrientation="portrait"
+			android:exported="false" />    
 
 	</application>
 </manifest>

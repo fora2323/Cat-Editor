@@ -9,7 +9,6 @@ import android.os.Bundle
 import android.os.Environment
 import android.os.FileObserver
 import android.provider.Settings
-import android.widget.LinearLayout
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -20,7 +19,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.ComposeView
 import org.cat.editor.ui.theme.AppTheme
 import org.cat.editor.ui.IdeMainScreen
 import org.cat.editor.utility.ComposeNode
@@ -30,27 +28,22 @@ import java.io.File
 class MainActivity : ComponentActivity() {
 
     private var fileObserver: FileObserver? = null
-    
-    // Global States
+
     private var currentRootNode by mutableStateOf<ComposeNode.Layout>(ComposeNode.Layout("Root"))
     private var projectPath by mutableStateOf("")
     private var activeFilePath by mutableStateOf("")
     private var openedFiles by mutableStateOf<List<String>>(emptyList())
     private var showProjectPicker by mutableStateOf(false)
 
-    // ✅ TAMBAHKAN INI - Activity Result Launcher untuk folder picker
     private val folderPickerLauncher = registerForActivityResult(
         ActivityResultContracts.OpenDocumentTree()
     ) { uri: Uri? ->
         uri?.let {
-            // Convert URI ke File path
             val path = getRealPathFromURI(it)
             if (path != null) {
                 projectPath = path
                 getSharedPreferences("app_data", Context.MODE_PRIVATE)
-                    .edit()
-                    .putString("last_project", path)
-                    .apply()
+                    .edit().putString("last_project", path).apply()
                 showProjectPicker = false
                 startAppLogic()
             } else {
@@ -61,94 +54,82 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        
-        enableEdgeToEdge() 
-        setContentView(R.layout.main)
+        enableEdgeToEdge()
 
         val prefs = getSharedPreferences("app_data", Context.MODE_PRIVATE)
         projectPath = prefs.getString("last_project", "") ?: ""
         activeFilePath = prefs.getString("last_preview", "") ?: ""
-        
+
         val savedTabs = prefs.getString("opened_files", "") ?: ""
         if (savedTabs.isNotEmpty()) {
             openedFiles = savedTabs.split(",")
         }
 
-        val linear1 = findViewById<LinearLayout>(R.id.linear1)
-        val composeView = ComposeView(this).apply {
-            setContent {
-                AppTheme {
-                    Surface(
-                        modifier = Modifier.fillMaxSize(),
-                        color = MaterialTheme.colorScheme.background
-                    ) {
-                        IdeMainScreen(
-                            projectPath = projectPath,
-                            openedFiles = openedFiles,
-                            activeFilePath = activeFilePath,
-                            currentRootNode = currentRootNode,
-                            onProjectPicked = { path ->
-                                projectPath = path
-                                prefs.edit().putString("last_project", path).apply()
-                            },
-                            onFileSelected = { file ->
-                                openFileInTab(file.absolutePath)
-                            },
-                            onTabSelected = { path ->
-                                setupPreview(path)
-                            },
-                            showProjectPicker = showProjectPicker,
-                            onTogglePicker = { show -> 
-                                if (show) {
-                                    // ✅ GANTI SINI - Pakai native folder picker
-                                    folderPickerLauncher.launch(null)
-                                }
-                                showProjectPicker = show 
-                            },
-                            onCloseFile = { path ->
-                                openedFiles = openedFiles.filter { it != path }
-                                prefs.edit()
-                                    .putString("opened_files", openedFiles.joinToString(","))
-                                    .apply()
-                                activeFilePath = openedFiles.lastOrNull() ?: ""
-                                if (activeFilePath.isNotEmpty()) setupPreview(activeFilePath)
-                            },
-                            onAddFile = {
-                                Toast.makeText(this@MainActivity, "Add file feature coming soon", Toast.LENGTH_SHORT).show()
-                            },
-                            onSaveFile = {
-                                Toast.makeText(this@MainActivity, "File updated", Toast.LENGTH_SHORT).show()
-                            }
-                        )
-                    }
+        setContent {
+            AppTheme {
+                Surface(
+                    modifier = Modifier.fillMaxSize(),
+                    color = MaterialTheme.colorScheme.background
+                ) {
+                    IdeMainScreen(
+                        projectPath = projectPath,
+                        openedFiles = openedFiles,
+                        activeFilePath = activeFilePath,
+                        currentRootNode = currentRootNode,
+                        onProjectPicked = { path ->
+                            projectPath = path
+                            prefs.edit().putString("last_project", path).apply()
+                        },
+                        onFileSelected = { file ->
+                            openFileInTab(file.absolutePath)
+                        },
+                        onTabSelected = { path ->
+                            setupPreview(path)
+                        },
+                        showProjectPicker = showProjectPicker,
+                        onTogglePicker = { show ->
+                            if (show) folderPickerLauncher.launch(null)
+                            showProjectPicker = show
+                        },
+                        onCloseFile = { path ->
+                            openedFiles = openedFiles.filter { it != path }
+                            prefs.edit()
+                                .putString("opened_files", openedFiles.joinToString(","))
+                                .apply()
+                            activeFilePath = openedFiles.lastOrNull() ?: ""
+                            if (activeFilePath.isNotEmpty()) setupPreview(activeFilePath)
+                        },
+                        onAddFile = {
+                            Toast.makeText(this@MainActivity, "Add file feature coming soon", Toast.LENGTH_SHORT).show()
+                        },
+                        onSaveFile = {
+                            Toast.makeText(this@MainActivity, "File updated", Toast.LENGTH_SHORT).show()
+                        }
+                    )
                 }
             }
         }
-        linear1.addView(composeView)
+
         checkPermissionsAndStart()
     }
 
-    // ✅ TAMBAHKAN INI - Function untuk convert URI ke file path
     private fun getRealPathFromURI(uri: Uri): String? {
         return when {
-            // Untuk DocumentProvider
             uri.scheme == "content" -> {
                 try {
                     val path = uri.path ?: return null
-                    // Format: /tree/primary:Documents/MyFolder
                     if (path.contains("primary:")) {
                         val parts = path.split("primary:")
                         if (parts.size > 1) {
                             return "${Environment.getExternalStorageDirectory()}/${parts[1]}"
                         }
                     }
-                    return null
+                    null
                 } catch (e: Exception) {
                     e.printStackTrace()
                     null
                 }
             }
-            // Untuk file:// URI
             uri.scheme == "file" -> uri.path
             else -> null
         }
@@ -158,16 +139,15 @@ class MainActivity : ComponentActivity() {
         if (!openedFiles.contains(path)) {
             openedFiles = openedFiles + path
             getSharedPreferences("app_data", Context.MODE_PRIVATE)
-                .edit()
-                .putString("opened_files", openedFiles.joinToString(","))
-                .apply()
+                .edit().putString("opened_files", openedFiles.joinToString(",")).apply()
         }
         setupPreview(path)
     }
 
     private fun setupPreview(path: String) {
         activeFilePath = path
-        getSharedPreferences("app_data", Context.MODE_PRIVATE).edit().putString("last_preview", path).apply()
+        getSharedPreferences("app_data", Context.MODE_PRIVATE)
+            .edit().putString("last_preview", path).apply()
         loadFileAndParse()
 
         fileObserver?.stopWatching()
@@ -182,9 +162,8 @@ class MainActivity : ComponentActivity() {
                             runOnUiThread {
                                 fileObserver?.stopWatching()
                                 openedFiles = openedFiles.filter { it != path }
-                                getSharedPreferences("app_data", Context.MODE_PRIVATE).edit()
-                                    .putString("opened_files", openedFiles.joinToString(",")).apply()
-                                
+                                getSharedPreferences("app_data", Context.MODE_PRIVATE)
+                                    .edit().putString("opened_files", openedFiles.joinToString(",")).apply()
                                 activeFilePath = openedFiles.lastOrNull() ?: ""
                                 if (activeFilePath.isNotEmpty()) setupPreview(activeFilePath)
                                 Toast.makeText(this@MainActivity, "File Preview Terhapus", Toast.LENGTH_SHORT).show()
@@ -203,9 +182,8 @@ class MainActivity : ComponentActivity() {
         try {
             val file = File(activeFilePath)
             if (!file.exists()) return
-            
             val code = file.readText()
-            runOnUiThread { 
+            runOnUiThread {
                 currentRootNode = IdComposeParser.parse(code)
             }
         } catch (e: Exception) {

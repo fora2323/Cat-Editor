@@ -49,10 +49,18 @@ jobs:
           AUTHOR_NAME=$(git log -1 --format='%an')
           COMMIT_MSG=$(git log -1 --format='%B')
           
+          DELIMITER="EOF_${SHORT_SHA}"
+          
           echo "APK_PATH=$NEW_APK_NAME" >> $GITHUB_ENV
           echo "SHORT_SHA=$SHORT_SHA" >> $GITHUB_ENV
-          echo "AUTHOR_NAME=$AUTHOR_NAME" >> $GITHUB_ENV
-          echo "COMMIT_MSG=$COMMIT_MSG" >> $GITHUB_ENV
+          
+          echo "AUTHOR_NAME<<${DELIMITER}" >> $GITHUB_ENV
+          echo "$AUTHOR_NAME" >> $GITHUB_ENV
+          echo "${DELIMITER}" >> $GITHUB_ENV
+          
+          echo "COMMIT_MSG<<${DELIMITER}" >> $GITHUB_ENV
+          echo "$COMMIT_MSG" >> $GITHUB_ENV
+          echo "${DELIMITER}" >> $GITHUB_ENV
 
       - name: Set up Python
         uses: actions/setup-python@v4

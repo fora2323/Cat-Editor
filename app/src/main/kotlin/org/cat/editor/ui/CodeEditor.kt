@@ -1,4 +1,4 @@
-package org.cat.editor.code
+package org.cat.editor.ui
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box

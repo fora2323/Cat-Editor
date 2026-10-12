@@ -25,9 +25,14 @@ import org.cat.editor.ui.IdeMainScreen
 import org.cat.editor.ui.theme.AppTheme
 import org.cat.editor.utility.ComposeNode
 import org.cat.editor.utility.IdComposeParser
+import org.cat.editor.utils.LocaleHelper
 import java.io.File
 
 class MainActivity : ComponentActivity() {
+
+    override fun attachBaseContext(newBase: Context) {
+        super.attachBaseContext(LocaleHelper.wrap(newBase))
+    }
 
     private var fileObserver: FileObserver? = null
 
@@ -49,7 +54,7 @@ class MainActivity : ComponentActivity() {
                 showProjectPicker = false
                 startAppLogic()
             } else {
-                Toast.makeText(this, "Tidak bisa akses folder", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, getString(R.string.cannot_access_folder), Toast.LENGTH_SHORT).show()
             }
         }
     }
@@ -109,10 +114,10 @@ class MainActivity : ComponentActivity() {
                             if (activeFilePath.isNotEmpty()) setupPreview(activeFilePath)
                         },
                         onAddFile = {
-                            Toast.makeText(this@MainActivity, "Add file feature coming soon", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(this@MainActivity, getString(R.string.add_file_coming_soon), Toast.LENGTH_SHORT).show()
                         },
                         onSaveFile = {
-                            Toast.makeText(this@MainActivity, "File updated", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(this@MainActivity, getString(R.string.file_updated), Toast.LENGTH_SHORT).show()
                         }
                     )
                 }
@@ -175,7 +180,7 @@ class MainActivity : ComponentActivity() {
                                     .edit().putString("opened_files", openedFiles.joinToString(",")).apply()
                                 activeFilePath = openedFiles.lastOrNull() ?: ""
                                 if (activeFilePath.isNotEmpty()) setupPreview(activeFilePath)
-                                Toast.makeText(this@MainActivity, "File Preview Terhapus", Toast.LENGTH_SHORT).show()
+                                Toast.makeText(this@MainActivity, getString(R.string.file_preview_deleted), Toast.LENGTH_SHORT).show()
                             }
                         } else {
                             window.decorView.postDelayed({ loadFileAndParse() }, 300)

@@ -95,6 +95,7 @@ import kotlinx.coroutines.launch
 import org.cat.editor.ui.BottomSheetDialog
 import org.cat.editor.ui.theme.AppTheme
 import org.cat.editor.utils.ConfigPath
+import org.cat.editor.utils.LocaleHelper
 import java.io.File
 
 data class ProjectItem(
@@ -104,6 +105,10 @@ data class ProjectItem(
 )
 
 class ProjectMenuActivity : ComponentActivity() {
+
+    override fun attachBaseContext(newBase: Context) {
+        super.attachBaseContext(LocaleHelper.wrap(newBase))
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -157,7 +162,7 @@ fun ProjectMenuScreen(
             showPermissionDialog = false
             projects = scanProjects(ConfigPath.VAR_PROJECTS_PATH)
         } else {
-            Toast.makeText(context, "Izin penyimpanan ditolak", Toast.LENGTH_SHORT).show()
+            Toast.makeText(context, context.getString(R.string.storage_permission_denied), Toast.LENGTH_SHORT).show()
         }
     }
 
@@ -165,7 +170,7 @@ fun ProjectMenuScreen(
         contract = ActivityResultContracts.OpenDocumentTree()
     ) { uri: Uri? ->
         uri?.let {
-            Toast.makeText(context, "Folder terpilih: ${it.path}", Toast.LENGTH_SHORT).show()
+            Toast.makeText(context, context.getString(R.string.folder_selected, it.path), Toast.LENGTH_SHORT).show()
         }
     }
 
@@ -205,10 +210,12 @@ fun ProjectMenuScreen(
                     )
                 },
                 actions = {
-                    IconButton(onClick = { }) {
+                    IconButton(onClick = {
+                        context.startActivity(Intent(context, SettingsActivity::class.java))
+                    }) {
                         Icon(
                             imageVector = Icons.Default.Settings,
-                            contentDescription = "Pengaturan",
+                            contentDescription = stringResource(id = R.string.settings),
                             tint = MaterialTheme.colorScheme.onSurface
                         )
                     }
@@ -237,7 +244,7 @@ fun ProjectMenuScreen(
                             horizontalArrangement = Arrangement.End
                         ) {
                             Text(
-                                text = "Git Clone",
+                                text = stringResource(id = R.string.git_clone),
                                 style = MaterialTheme.typography.labelLarge,
                                 color = MaterialTheme.colorScheme.onSurface,
                                 modifier = Modifier
@@ -251,14 +258,14 @@ fun ProjectMenuScreen(
                             SmallFloatingActionButton(
                                 onClick = {
                                     isFabExpanded = false
-                                    Toast.makeText(context, "Fitur Git Clone", Toast.LENGTH_SHORT).show()
+                                    Toast.makeText(context, context.getString(R.string.feature_git_clone), Toast.LENGTH_SHORT).show()
                                 },
                                 containerColor = MaterialTheme.colorScheme.secondaryContainer,
                                 contentColor = MaterialTheme.colorScheme.onSecondaryContainer
                             ) {
                                 Icon(
                                     imageVector = Icons.Default.CloudDownload,
-                                    contentDescription = "Git Clone"
+                                    contentDescription = stringResource(id = R.string.git_clone)
                                 )
                             }
                         }
@@ -268,7 +275,7 @@ fun ProjectMenuScreen(
                             horizontalArrangement = Arrangement.End
                         ) {
                             Text(
-                                text = "Buka Folder (SAF)",
+                                text = stringResource(id = R.string.open_folder_saf),
                                 style = MaterialTheme.typography.labelLarge,
                                 color = MaterialTheme.colorScheme.onSurface,
                                 modifier = Modifier
@@ -289,7 +296,7 @@ fun ProjectMenuScreen(
                             ) {
                                 Icon(
                                     imageVector = Icons.Default.FolderOpen,
-                                    contentDescription = "Pilih Folder"
+                                    contentDescription = stringResource(id = R.string.select_folder)
                                 )
                             }
                         }
@@ -297,7 +304,7 @@ fun ProjectMenuScreen(
                 }
 
                 ExtendedFloatingActionButton(
-                    text = { Text(text = if (isFabExpanded) "Tutup" else "New Project") },
+                    text = { Text(text = if (isFabExpanded) stringResource(id = R.string.close) else stringResource(id = R.string.new_project)) },
                     icon = {
                         Icon(
                             imageVector = if (isFabExpanded) Icons.Default.Close else Icons.Default.Add,
@@ -320,7 +327,9 @@ fun ProjectMenuScreen(
             ExpressivePullToRefreshBox(
                 isRefreshing = isRefreshing,
                 onRefresh = { scope.launch { refresh() } },
-                modifier = Modifier.fillMaxSize()
+                modifier = Modifier.fillMaxSize(),
+                indicatorColor = MaterialTheme.colorScheme.primary,
+                containerColor = MaterialTheme.colorScheme.surfaceContainerHigh
             ) {
                 if (isLoading) {
                     Box(
@@ -337,8 +346,8 @@ fun ProjectMenuScreen(
                         contentAlignment = Alignment.Center
                     ) {
                         Text(
-                            text = if (!hasPermission) "Menunggu izin penyimpanan..."
-                            else "Tidak ada proyek ditemukan",
+                            text = if (!hasPermission) stringResource(id = R.string.waiting_storage_permission)
+                            else stringResource(id = R.string.no_projects_found),
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                             style = MaterialTheme.typography.bodyLarge
                         )
@@ -372,7 +381,7 @@ fun ProjectMenuScreen(
             sheetState = permissionSheetState
         ) {
             Text(
-                text = "Akses Penyimpanan Diperlukan",
+                text = stringResource(id = R.string.storage_access_required),
                 style = MaterialTheme.typography.titleLarge,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.onSurface
@@ -381,7 +390,7 @@ fun ProjectMenuScreen(
             Spacer(modifier = Modifier.height(8.dp))
 
             Text(
-                text = "Aplikasi membutuhkan izin membaca file eksternal untuk memindai proyek dan ikon launcher pada folder ${ConfigPath.VAR_PROJECTS_PATH}.",
+                text = stringResource(id = R.string.storage_access_desc, ConfigPath.VAR_PROJECTS_PATH),
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
@@ -415,7 +424,7 @@ fun ProjectMenuScreen(
                     contentColor = MaterialTheme.colorScheme.onPrimary
                 )
             ) {
-                Text(text = "Berikan Izin")
+                Text(text = stringResource(id = R.string.grant_permission))
             }
 
             Spacer(modifier = Modifier.height(16.dp))

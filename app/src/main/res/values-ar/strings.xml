@@ -1,0 +1,81 @@
+<resources>
+    <string name="app_name" translatable="false">Cat Editor</string>
+
+    <!-- General Navigation & Actions -->
+    <string name="settings">الإعدادات</string>
+    <string name="back">رجوع</string>
+    <string name="close">إغلاق</string>
+    <string name="cancel">إلغاء</string>
+    <string name="apply">تطبيق</string>
+    <string name="menu">القائمة</string>
+    <string name="undo">تراجع</string>
+    <string name="redo">إعادة</string>
+    <string name="save">حفظ</string>
+    <string name="add">إضافة</string>
+    <string name="refresh">تحديث</string>
+    <string name="clear">مسح</string>
+    <string name="more_options">خيارات إضافية</string>
+
+    <!-- Settings & Language -->
+    <string name="language">اللغة</string>
+    <string name="language_desc">اختر لغة عرض التطبيق</string>
+    <string name="choose_language">اختر اللغة</string>
+    <string name="lang_system_default">افتراضي للنظام</string>
+    <string name="lang_english">English</string>
+    <string name="lang_indonesian">Bahasa Indonesia</string>
+    <string name="lang_arabic">العربية</string>
+    <string name="lang_russian">Русский</string>
+    <string name="about">حول التطبيق</string>
+    <string name="version">الإصدار %1$s</string>
+
+    <!-- Project Menu Screen -->
+    <string name="git_clone">استنساخ Git</string>
+    <string name="feature_git_clone">ميزة استنساخ Git</string>
+    <string name="open_folder_saf">فتح مجلد (SAF)</string>
+    <string name="select_folder">تحديد مجلد</string>
+    <string name="folder_selected">المجلد المحدد: %1$s</string>
+    <string name="storage_permission_denied">تم رفض إذن الوصول للتخزين</string>
+    <string name="new_project">مشروع جديد</string>
+    <string name="waiting_storage_permission">في انتظار إذن التخزين...</string>
+    <string name="no_projects_found">لم يتم العثور على أي مشروع</string>
+    <string name="storage_access_required">مطلوب إذن الوصول للتخزين</string>
+    <string name="storage_access_desc">يتطلب التطبيق إذن قراءة الملفات الخارجية لفحص المشاريع وأيقونات التشغيل في المجلد %1$s.</string>
+    <string name="grant_permission">منح الإذن</string>
+
+    <!-- MainActivity & Editor -->
+    <string name="cannot_access_folder">تعذر الوصول إلى المجلد</string>
+    <string name="add_file_coming_soon">ميزة إضافة ملف ستتوفر قريبًا</string>
+    <string name="file_updated">تم تحديث الملف</string>
+    <string name="file_preview_deleted">تم حذف ملف المعاينة</string>
+    <string name="file_saved">تم حفظ الملف</string>
+    <string name="failed_to_save">فشل الحفظ: %1$s</string>
+
+    <!-- Welcome Screen -->
+    <string name="welcome">مرحبًا</string>
+    <string name="welcome_title">مرحبًا بك في Cat Editor</string>
+    <string name="no_project_selected">لم يتم تحديد أي مشروع</string>
+    <string name="open_file">فتح ملف</string>
+
+    <!-- Drawer & Preview -->
+    <string name="project_files">ملفات المشروع</string>
+    <string name="search_files">البحث عن الملفات...</string>
+    <string name="not_found">لم يتم العثور على نتائج</string>
+    <string name="preview_hint">افتح القائمة الجانبية (يسار) واختر ملف .kt يحتوي على @Preview</string>
+
+    <!-- File Types Content Description -->
+    <string name="manifest">البيان</string>
+    <string name="file_kotlin">كوتلن</string>
+    <string name="file_gradle">غرادل</string>
+    <string name="file_java">جافا</string>
+    <string name="file_xml">XML</string>
+    <string name="file_cpp">C++</string>
+    <string name="file_c">C</string>
+    <string name="file_cmake">CMake</string>
+    <string name="file_python">بايثون</string>
+    <string name="file_markdown">ماركداون</string>
+    <string name="file_json">جيسون</string>
+    <string name="file_keystore">مخزن المفاتيح</string>
+    <string name="file_git">جت</string>
+    <string name="file_proguard">برو جارد</string>
+    <string name="file_generic">ملف</string>
+</resources>

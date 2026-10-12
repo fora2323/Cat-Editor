@@ -1,5 +1,6 @@
 package org.cat.editor.ui
 
+import android.content.Intent
 import android.widget.Toast
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
@@ -34,11 +35,14 @@ import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Save
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Shield
 import androidx.compose.material.icons.filled.Source
 import androidx.compose.material3.DismissibleDrawerSheet
 import androidx.compose.material3.DismissibleNavigationDrawer
 import androidx.compose.material3.DrawerValue
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -66,12 +70,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.launch
 import org.cat.editor.R
+import org.cat.editor.SettingsActivity
 import org.cat.editor.ui.KotlinCodeEditor
 import org.cat.editor.ui.preview.ImagePreviewIcon
 import org.cat.editor.ui.preview.PreviewScreen
@@ -99,6 +105,7 @@ fun IdeMainScreen(
     val scope = rememberCoroutineScope()
     val context = LocalContext.current
     var currentCode by remember { mutableStateOf("") }
+    var showMoreMenu by remember { mutableStateOf(false) }
 
     if (projectPath.isEmpty()) {
         WelcomeScreen(onBrowseClick = { onTogglePicker(true) })
@@ -110,7 +117,7 @@ fun IdeMainScreen(
         drawerContent = {
             DismissibleDrawerSheet(modifier = Modifier.width(300.dp)) {
                 Text(
-                    text = "Project Files",
+                    text = stringResource(id = R.string.project_files),
                     modifier = Modifier.padding(16.dp),
                     fontWeight = FontWeight.Bold,
                     fontSize = 18.sp
@@ -143,46 +150,64 @@ fun IdeMainScreen(
                                     if (drawerState.isClosed) drawerState.open() else drawerState.close() 
                                 } 
                             }) {
-                                Icon(Icons.Default.Menu, contentDescription = "Menu")
+                                Icon(Icons.Default.Menu, contentDescription = stringResource(id = R.string.menu))
                             }
                         },
                         actions = {
                             IconButton(onClick = {
-                                Toast.makeText(context, "Undo", Toast.LENGTH_SHORT).show()
+                                Toast.makeText(context, context.getString(R.string.undo), Toast.LENGTH_SHORT).show()
                             }) {
-                                Icon(Icons.AutoMirrored.Filled.Undo, contentDescription = "Undo")
+                                Icon(Icons.AutoMirrored.Filled.Undo, contentDescription = stringResource(id = R.string.undo))
                             }
 
                             IconButton(onClick = {
-                                Toast.makeText(context, "Redo", Toast.LENGTH_SHORT).show()
+                                Toast.makeText(context, context.getString(R.string.redo), Toast.LENGTH_SHORT).show()
                             }) {
-                                Icon(Icons.AutoMirrored.Filled.Redo, contentDescription = "Redo")
+                                Icon(Icons.AutoMirrored.Filled.Redo, contentDescription = stringResource(id = R.string.redo))
                             }
 
                             IconButton(onClick = {
                                 if (activeFilePath.isNotEmpty()) {
                                     try {
                                         File(activeFilePath).writeText(currentCode)
-                                        Toast.makeText(context, "File Disimpan", Toast.LENGTH_SHORT).show()
+                                        Toast.makeText(context, context.getString(R.string.file_saved), Toast.LENGTH_SHORT).show()
                                         onSaveFile?.invoke()
                                     } catch (e: Exception) {
-                                        Toast.makeText(context, "Gagal menyimpan: ${e.message}", Toast.LENGTH_SHORT).show()
+                                        Toast.makeText(context, context.getString(R.string.failed_to_save, e.message ?: ""), Toast.LENGTH_SHORT).show()
                                     }
                                 }
                             }) {
-                                Icon(Icons.Default.Save, contentDescription = "Save")
+                                Icon(Icons.Default.Save, contentDescription = stringResource(id = R.string.save))
                             }
 
                             IconButton(onClick = {
                                 onAddFile?.invoke()
                             }) {
-                                Icon(Icons.Default.Add, contentDescription = "Add")
+                                Icon(Icons.Default.Add, contentDescription = stringResource(id = R.string.add))
                             }
 
-                            IconButton(onClick = {
-                                Toast.makeText(context, "Menu lainnya", Toast.LENGTH_SHORT).show()
-                            }) {
-                                Icon(Icons.Default.MoreVert, contentDescription = "More Options")
+                            Box {
+                                IconButton(onClick = {
+                                    showMoreMenu = true
+                                }) {
+                                    Icon(Icons.Default.MoreVert, contentDescription = stringResource(id = R.string.more_options))
+                                }
+
+                                DropdownMenu(
+                                    expanded = showMoreMenu,
+                                    onDismissRequest = { showMoreMenu = false }
+                                ) {
+                                    DropdownMenuItem(
+                                        text = { Text(stringResource(id = R.string.settings)) },
+                                        leadingIcon = {
+                                            Icon(Icons.Default.Settings, contentDescription = null)
+                                        },
+                                        onClick = {
+                                            showMoreMenu = false
+                                            context.startActivity(Intent(context, SettingsActivity::class.java))
+                                        }
+                                    )
+                                }
                             }
                         },
                         colors = TopAppBarDefaults.topAppBarColors(
@@ -223,7 +248,7 @@ fun IdeMainScreen(
                                             ) {
                                                 Icon(
                                                     Icons.Default.Close,
-                                                    contentDescription = "Close",
+                                                    contentDescription = stringResource(id = R.string.close),
                                                     modifier = Modifier.size(14.dp)
                                                 )
                                             }
@@ -278,21 +303,21 @@ fun FileIcon(file: File, modifier: Modifier = Modifier) {
     val fileName = file.name
     when {
         isImageFile(fileName) -> ImagePreviewIcon(file = file, modifier = modifier)
-        fileName == "AndroidManifest.xml" -> Icon(painterResource(R.drawable.ic_android), "Manifest", modifier = modifier, tint = Color.Unspecified)
-        fileName.endsWith(".kt") -> Icon(painterResource(R.drawable.ic_kotlin), "Kotlin", modifier = modifier, tint = Color.Unspecified)
-        fileName.endsWith(".kts") || fileName == "gradlew" || fileName == "gradlew.bat" || fileName.endsWith(".gradle") || fileName == "gradle.properties" || fileName == "local.properties" -> Icon(painterResource(R.drawable.ic_gradle), "Gradle", modifier = modifier, tint = Color.Unspecified)
-        fileName.endsWith(".java") -> Icon(painterResource(R.drawable.ic_java), "Java", modifier = modifier, tint = Color.Unspecified)
-        fileName.endsWith(".xml") -> Icon(painterResource(R.drawable.ic_xml), "XML", modifier = modifier, tint = Color.Unspecified)
-        fileName.endsWith(".cpp") || fileName.endsWith(".cc") || fileName.endsWith(".cxx") || fileName.endsWith(".hpp") -> Icon(painterResource(R.drawable.ic_cpp), "C++", modifier = modifier, tint = Color.Unspecified)
-        fileName.endsWith(".c") || fileName.endsWith(".h") -> Icon(painterResource(R.drawable.ic_c), "C", modifier = modifier, tint = Color.Unspecified)
-        fileName == "CMakeLists.txt" || fileName.endsWith(".cmake") -> Icon(painterResource(R.drawable.ic_cmake), "CMake", modifier = modifier, tint = Color.Unspecified)
-        fileName.endsWith(".py") -> Icon(Icons.Default.Code, "Python", modifier = modifier, tint = Color(0xFF3776AB))
-        fileName.endsWith(".md") -> Icon(Icons.Default.Description, "Markdown", modifier = modifier, tint = Color(0xFF42A5F5))
-        fileName.endsWith(".json") -> Icon(Icons.Default.DataObject, "JSON", modifier = modifier, tint = Color(0xFFFFCA28))
-        fileName.endsWith(".jks") || fileName.endsWith(".keystore") -> Icon(Icons.Default.Key, "Keystore", modifier = modifier, tint = Color(0xFFFFCA28))
-        fileName.startsWith(".git") -> Icon(Icons.Default.Source, "Git", modifier = modifier, tint = Color(0xFFF05032))
-        fileName.endsWith(".pro") -> Icon(Icons.Default.Shield, "Proguard", modifier = borderModifier(false), tint = Color(0xFF7E57C2))
-        else -> Icon(Icons.Default.Description, "File", modifier = modifier, tint = Color.Gray)
+        fileName == "AndroidManifest.xml" -> Icon(painterResource(R.drawable.ic_android), stringResource(id = R.string.manifest), modifier = modifier, tint = Color.Unspecified)
+        fileName.endsWith(".kt") -> Icon(painterResource(R.drawable.ic_kotlin), stringResource(id = R.string.file_kotlin), modifier = modifier, tint = Color.Unspecified)
+        fileName.endsWith(".kts") || fileName == "gradlew" || fileName == "gradlew.bat" || fileName.endsWith(".gradle") || fileName == "gradle.properties" || fileName == "local.properties" -> Icon(painterResource(R.drawable.ic_gradle), stringResource(id = R.string.file_gradle), modifier = modifier, tint = Color.Unspecified)
+        fileName.endsWith(".java") -> Icon(painterResource(R.drawable.ic_java), stringResource(id = R.string.file_java), modifier = modifier, tint = Color.Unspecified)
+        fileName.endsWith(".xml") -> Icon(painterResource(R.drawable.ic_xml), stringResource(id = R.string.file_xml), modifier = modifier, tint = Color.Unspecified)
+        fileName.endsWith(".cpp") || fileName.endsWith(".cc") || fileName.endsWith(".cxx") || fileName.endsWith(".hpp") -> Icon(painterResource(R.drawable.ic_cpp), stringResource(id = R.string.file_cpp), modifier = modifier, tint = Color.Unspecified)
+        fileName.endsWith(".c") || fileName.endsWith(".h") -> Icon(painterResource(R.drawable.ic_c), stringResource(id = R.string.file_c), modifier = modifier, tint = Color.Unspecified)
+        fileName == "CMakeLists.txt" || fileName.endsWith(".cmake") -> Icon(painterResource(R.drawable.ic_cmake), stringResource(id = R.string.file_cmake), modifier = modifier, tint = Color.Unspecified)
+        fileName.endsWith(".py") -> Icon(Icons.Default.Code, stringResource(id = R.string.file_python), modifier = modifier, tint = Color(0xFF3776AB))
+        fileName.endsWith(".md") -> Icon(Icons.Default.Description, stringResource(id = R.string.file_markdown), modifier = modifier, tint = Color(0xFF42A5F5))
+        fileName.endsWith(".json") -> Icon(Icons.Default.DataObject, stringResource(id = R.string.file_json), modifier = modifier, tint = Color(0xFFFFCA28))
+        fileName.endsWith(".jks") || fileName.endsWith(".keystore") -> Icon(Icons.Default.Key, stringResource(id = R.string.file_keystore), modifier = modifier, tint = Color(0xFFFFCA28))
+        fileName.startsWith(".git") -> Icon(Icons.Default.Source, stringResource(id = R.string.file_git), modifier = modifier, tint = Color(0xFFF05032))
+        fileName.endsWith(".pro") -> Icon(Icons.Default.Shield, stringResource(id = R.string.file_proguard), modifier = borderModifier(false), tint = Color(0xFF7E57C2))
+        else -> Icon(Icons.Default.Description, stringResource(id = R.string.file_generic), modifier = modifier, tint = Color.Gray)
     }
 }
 
@@ -313,7 +338,7 @@ fun FileTreeView(root: File, onFileClick: (File) -> Unit) {
             OutlinedTextField(
                 value = searchQuery,
                 onValueChange = { searchQuery = it },
-                placeholder = { Text("Cari file...", fontSize = 12.sp) },
+                placeholder = { Text(stringResource(id = R.string.search_files), fontSize = 12.sp) },
                 leadingIcon = { Icon(Icons.Default.Search, null, modifier = Modifier.size(18.dp)) },
                 trailingIcon = {
                     if (searchQuery.isNotEmpty()) {
@@ -328,7 +353,7 @@ fun FileTreeView(root: File, onFileClick: (File) -> Unit) {
             )
             Spacer(Modifier.width(4.dp))
             IconButton(onClick = { refreshTrigger++ }) {
-                Icon(Icons.Default.Refresh, "Refresh", modifier = Modifier.size(20.dp))
+                Icon(Icons.Default.Refresh, stringResource(id = R.string.refresh), modifier = Modifier.size(20.dp))
             }
         }
 
@@ -361,7 +386,7 @@ fun SearchResults(root: File, query: String, onFileClick: (File) -> Unit) {
             .toList()
     }
     if (results.isEmpty()) {
-        Text("Tidak ditemukan", modifier = Modifier.padding(16.dp), color = Color.Gray, fontSize = 12.sp)
+        Text(stringResource(id = R.string.not_found), modifier = Modifier.padding(16.dp), color = Color.Gray, fontSize = 12.sp)
     } else {
         results.forEach { file ->
             Row(

@@ -1,4 +1,22 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <color name="splash_background">#FFF8F3</color>
+
+    <!-- App Theme Colors (Light) matching Color.kt -->
+    <color name="colorPrimary">#7C580D</color>
+    <color name="colorOnPrimary">#FFFFFF</color>
+    <color name="colorPrimaryContainer">#FFDEAA</color>
+    <color name="colorOnPrimaryContainer">#5F4100</color>
+    <color name="colorSecondary">#6D5C3F</color>
+    <color name="colorOnSecondary">#FFFFFF</color>
+    <color name="colorSecondaryContainer">#F8DFBB</color>
+    <color name="colorOnSecondaryContainer">#54442A</color>
+    <color name="colorSurface">#FFF8F3</color>
+    <color name="colorOnSurface">#201B13</color>
+    <color name="colorSurfaceVariant">#EEE0CF</color>
+    <color name="colorOnSurfaceVariant">#4E4539</color>
+    <color name="colorSurfaceContainer">#F8ECDF</color>
+    <color name="colorSurfaceContainerHigh">#F2E6D9</color>
+    <color name="colorBackground">#FFF8F3</color>
+    <color name="colorOnBackground">#201B13</color>
 </resources>

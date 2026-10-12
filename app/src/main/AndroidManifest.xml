@@ -13,11 +13,12 @@
 		android:name=".AppApplication"
 		android:requestLegacyExternalStorage="true"
 		android:usesCleartextTraffic="true"
+		android:supportsRtl="true"
 		android:theme="@style/AppTheme">
 
 		<activity
 			android:name=".ProjectMenuActivity"
-			android:configChanges="orientation|screenSize|keyboardHidden|smallestScreenSize|screenLayout"
+			android:configChanges="orientation|screenSize|keyboardHidden|smallestScreenSize|screenLayout|locale|layoutDirection"
 			android:screenOrientation="portrait"
 			android:exported="true">
 			<intent-filter>
@@ -28,7 +29,13 @@
 
 		<activity
 			android:name=".MainActivity"
-			android:configChanges="orientation|screenSize|keyboardHidden|smallestScreenSize|screenLayout"
+			android:configChanges="orientation|screenSize|keyboardHidden|smallestScreenSize|screenLayout|locale|layoutDirection"
+			android:screenOrientation="portrait"
+			android:exported="false" />
+
+		<activity
+			android:name=".SettingsActivity"
+			android:configChanges="orientation|screenSize|keyboardHidden|smallestScreenSize|screenLayout|locale|layoutDirection"
 			android:screenOrientation="portrait"
 			android:exported="false" />
 

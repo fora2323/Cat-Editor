@@ -1,0 +1,81 @@
+<resources>
+    <string name="app_name" translatable="false">Cat Editor</string>
+
+    <!-- General Navigation & Actions -->
+    <string name="settings">Pengaturan</string>
+    <string name="back">Kembali</string>
+    <string name="close">Tutup</string>
+    <string name="cancel">Batal</string>
+    <string name="apply">Terapkan</string>
+    <string name="menu">Menu</string>
+    <string name="undo">Urungkan</string>
+    <string name="redo">Ulangi</string>
+    <string name="save">Simpan</string>
+    <string name="add">Tambah</string>
+    <string name="refresh">Segarkan</string>
+    <string name="clear">Hapus</string>
+    <string name="more_options">Opsi Lainnya</string>
+
+    <!-- Settings & Language -->
+    <string name="language">Bahasa</string>
+    <string name="language_desc">Pilih bahasa tampilan aplikasi</string>
+    <string name="choose_language">Pilih Bahasa</string>
+    <string name="lang_system_default">Default Sistem</string>
+    <string name="lang_english">English</string>
+    <string name="lang_indonesian">Bahasa Indonesia</string>
+    <string name="lang_arabic">العربية</string>
+    <string name="lang_russian">Русский</string>
+    <string name="about">Tentang</string>
+    <string name="version">Versi %1$s</string>
+
+    <!-- Project Menu Screen -->
+    <string name="git_clone">Git Clone</string>
+    <string name="feature_git_clone">Fitur Git Clone</string>
+    <string name="open_folder_saf">Buka Folder (SAF)</string>
+    <string name="select_folder">Pilih Folder</string>
+    <string name="folder_selected">Folder terpilih: %1$s</string>
+    <string name="storage_permission_denied">Izin penyimpanan ditolak</string>
+    <string name="new_project">Proyek Baru</string>
+    <string name="waiting_storage_permission">Menunggu izin penyimpanan...</string>
+    <string name="no_projects_found">Tidak ada proyek ditemukan</string>
+    <string name="storage_access_required">Akses Penyimpanan Diperlukan</string>
+    <string name="storage_access_desc">Aplikasi membutuhkan izin membaca file eksternal untuk memindai proyek dan ikon launcher pada folder %1$s.</string>
+    <string name="grant_permission">Berikan Izin</string>
+
+    <!-- MainActivity & Editor -->
+    <string name="cannot_access_folder">Tidak bisa akses folder</string>
+    <string name="add_file_coming_soon">Fitur tambah file segera hadir</string>
+    <string name="file_updated">File diperbarui</string>
+    <string name="file_preview_deleted">File Preview Terhapus</string>
+    <string name="file_saved">File Disimpan</string>
+    <string name="failed_to_save">Gagal menyimpan: %1$s</string>
+
+    <!-- Welcome Screen -->
+    <string name="welcome">Selamat Datang</string>
+    <string name="welcome_title">Selamat datang di Cat Editor</string>
+    <string name="no_project_selected">Tidak ada proyek yang dipilih</string>
+    <string name="open_file">Buka file</string>
+
+    <!-- Drawer & Preview -->
+    <string name="project_files">File Proyek</string>
+    <string name="search_files">Cari file...</string>
+    <string name="not_found">Tidak ditemukan</string>
+    <string name="preview_hint">Buka Drawer (Kiri) dan pilih File .kt dengan @Preview</string>
+
+    <!-- File Types Content Description -->
+    <string name="manifest">Manifest</string>
+    <string name="file_kotlin">Kotlin</string>
+    <string name="file_gradle">Gradle</string>
+    <string name="file_java">Java</string>
+    <string name="file_xml">XML</string>
+    <string name="file_cpp">C++</string>
+    <string name="file_c">C</string>
+    <string name="file_cmake">CMake</string>
+    <string name="file_python">Python</string>
+    <string name="file_markdown">Markdown</string>
+    <string name="file_json">JSON</string>
+    <string name="file_keystore">Keystore</string>
+    <string name="file_git">Git</string>
+    <string name="file_proguard">Proguard</string>
+    <string name="file_generic">File</string>
+</resources>

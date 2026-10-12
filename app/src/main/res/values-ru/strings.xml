@@ -1,0 +1,81 @@
+<resources>
+    <string name="app_name" translatable="false">Cat Editor</string>
+
+    <!-- General Navigation & Actions -->
+    <string name="settings">Настройки</string>
+    <string name="back">Назад</string>
+    <string name="close">Закрыть</string>
+    <string name="cancel">Отмена</string>
+    <string name="apply">Применить</string>
+    <string name="menu">Меню</string>
+    <string name="undo">Отменить</string>
+    <string name="redo">Повторить</string>
+    <string name="save">Сохранить</string>
+    <string name="add">Добавить</string>
+    <string name="refresh">Обновить</string>
+    <string name="clear">Очистить</string>
+    <string name="more_options">Дополнительные параметры</string>
+
+    <!-- Settings & Language -->
+    <string name="language">Язык</string>
+    <string name="language_desc">Выберите язык интерфейса приложения</string>
+    <string name="choose_language">Выберите язык</string>
+    <string name="lang_system_default">По умолчанию</string>
+    <string name="lang_english">English</string>
+    <string name="lang_indonesian">Bahasa Indonesia</string>
+    <string name="lang_arabic">العربية</string>
+    <string name="lang_russian">Русский</string>
+    <string name="about">О приложении</string>
+    <string name="version">Версия %1$s</string>
+
+    <!-- Project Menu Screen -->
+    <string name="git_clone">Клонировать Git</string>
+    <string name="feature_git_clone">Функция Git Clone</string>
+    <string name="open_folder_saf">Открыть папку (SAF)</string>
+    <string name="select_folder">Выбрать папку</string>
+    <string name="folder_selected">Выбранная папка: %1$s</string>
+    <string name="storage_permission_denied">В доступе к хранилищу отказано</string>
+    <string name="new_project">Новый проект</string>
+    <string name="waiting_storage_permission">Ожидание разрешения на доступ к хранилищу...</string>
+    <string name="no_projects_found">Проекты не найдены</string>
+    <string name="storage_access_required">Требуется доступ к хранилищу</string>
+    <string name="storage_access_desc">Приложению требуется разрешение на чтение внешних файлов для сканирования проектов и значков в папке %1$s.</string>
+    <string name="grant_permission">Предоставить разрешение</string>
+
+    <!-- MainActivity & Editor -->
+    <string name="cannot_access_folder">Не удается получить доступ к папке</string>
+    <string name="add_file_coming_soon">Функция добавления файлов скоро появится</string>
+    <string name="file_updated">Файл обновлен</string>
+    <string name="file_preview_deleted">Файл предпросмотра удален</string>
+    <string name="file_saved">Файл сохранен</string>
+    <string name="failed_to_save">Не удалось сохранить: %1$s</string>
+
+    <!-- Welcome Screen -->
+    <string name="welcome">Добро пожаловать</string>
+    <string name="welcome_title">Добро пожаловать в Cat Editor</string>
+    <string name="no_project_selected">Проект не выбран</string>
+    <string name="open_file">Открыть файл</string>
+
+    <!-- Drawer & Preview -->
+    <string name="project_files">Файлы проекта</string>
+    <string name="search_files">Поиск файлов...</string>
+    <string name="not_found">Ничего не найдено</string>
+    <string name="preview_hint">Откройте боковое меню (слева) и выберите файл .kt с @Preview</string>
+
+    <!-- File Types Content Description -->
+    <string name="manifest">Манифест</string>
+    <string name="file_kotlin">Kotlin</string>
+    <string name="file_gradle">Gradle</string>
+    <string name="file_java">Java</string>
+    <string name="file_xml">XML</string>
+    <string name="file_cpp">C++</string>
+    <string name="file_c">C</string>
+    <string name="file_cmake">CMake</string>
+    <string name="file_python">Python</string>
+    <string name="file_markdown">Markdown</string>
+    <string name="file_json">JSON</string>
+    <string name="file_keystore">Хранилище ключей</string>
+    <string name="file_git">Git</string>
+    <string name="file_proguard">Proguard</string>
+    <string name="file_generic">Файл</string>
+</resources>

@@ -10,9 +10,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import org.cat.editor.R
 
 @Composable
 fun WelcomeScreen(onBrowseClick: () -> Unit) {
@@ -41,7 +43,7 @@ fun WelcomeScreen(onBrowseClick: () -> Unit) {
             ) {
                 Icon(
                     imageVector = Icons.Default.FolderOpen,
-                    contentDescription = "Welcome",
+                    contentDescription = stringResource(id = R.string.welcome),
                     modifier = Modifier.size(60.dp),
                     tint = MaterialTheme.colorScheme.primary
                 )
@@ -51,7 +53,7 @@ fun WelcomeScreen(onBrowseClick: () -> Unit) {
 
             // Title
             Text(
-                text = "Selamat datang di Xed-Editor",
+                text = stringResource(id = R.string.welcome_title),
                 fontSize = 24.sp,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.onBackground,
@@ -63,7 +65,7 @@ fun WelcomeScreen(onBrowseClick: () -> Unit) {
 
             // Subtitle
             Text(
-                text = "Tidak ada proyek yang dipilih",
+                text = stringResource(id = R.string.no_project_selected),
                 fontSize = 14.sp,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.fillMaxWidth(),
@@ -92,7 +94,7 @@ fun WelcomeScreen(onBrowseClick: () -> Unit) {
                     tint = MaterialTheme.colorScheme.onPrimary
                 )
                 Text(
-                    text = "Buka file",
+                    text = stringResource(id = R.string.open_file),
                     fontSize = 16.sp,
                     fontWeight = FontWeight.SemiBold,
                     color = MaterialTheme.colorScheme.onPrimary

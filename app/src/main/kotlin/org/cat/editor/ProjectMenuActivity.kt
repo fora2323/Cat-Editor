@@ -25,6 +25,8 @@ import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.indication
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -45,6 +47,7 @@ import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.CloudDownload
 import androidx.compose.material.icons.filled.FolderOpen
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.ripple.rememberRipple
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -60,12 +63,17 @@ import androidx.compose.material3.SmallFloatingActionButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
+import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
+import androidx.compose.material3.rememberModalBottomSheetState
+import androidx.compose.material3.ripple
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -84,6 +92,7 @@ import androidx.core.view.WindowCompat
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
+import kotlinx.coroutines.launch
 import org.cat.editor.ui.BottomSheetDialog
 import org.cat.editor.ui.theme.AppTheme
 import org.cat.editor.utils.ConfigPath
@@ -125,12 +134,21 @@ fun ProjectMenuScreen(
 ) {
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
+    val scope = rememberCoroutineScope()
 
     var hasPermission by remember { mutableStateOf(checkStoragePermission(context)) }
     var showPermissionDialog by remember { mutableStateOf(!hasPermission) }
     var projects by remember { mutableStateOf<List<ProjectItem>>(emptyList()) }
-    var isLoading by remember { mutableStateOf(false) }
+    var isLoading by remember { mutableStateOf(hasPermission) }
+    var isRefreshing by remember { mutableStateOf(false) }
+    val pullToRefreshState = rememberPullToRefreshState()
     var isFabExpanded by remember { mutableStateOf(false) }
+
+    suspend fun refresh() {
+        isRefreshing = true
+        projects = scanProjects(ConfigPath.VAR_PROJECTS_PATH)
+        isRefreshing = false
+    }
 
     val legacyPermissionLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestMultiplePermissions()
@@ -301,39 +319,46 @@ fun ProjectMenuScreen(
                 .fillMaxSize()
                 .padding(innerPadding)
         ) {
-            if (isLoading) {
-                Box(
-                    modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center
-                ) {
-                    CircularProgressIndicator(
-                        color = MaterialTheme.colorScheme.primary
-                    )
-                }
-            } else if (projects.isEmpty()) {
-                Box(
-                    modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(
-                        text = if (!hasPermission) "Menunggu izin penyimpanan..."
-                        else "Tidak ada proyek ditemukan",
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        style = MaterialTheme.typography.bodyLarge
-                    )
-                }
-            } else {
-                LazyColumn(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(horizontal = 16.dp, vertical = 8.dp),
-                    verticalArrangement = Arrangement.spacedBy(10.dp)
-                ) {
-                    items(projects, key = { it.path }) { item ->
-                        ProjectItemRow(
-                            project = item,
-                            onClick = { onProjectSelected(item) }
+            PullToRefreshBox(
+                isRefreshing = isRefreshing,
+                onRefresh = { scope.launch { refresh() } },
+                state = pullToRefreshState,
+                modifier = Modifier.fillMaxSize()
+            ) {
+                if (isLoading) {
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        CircularProgressIndicator(
+                            color = MaterialTheme.colorScheme.primary
                         )
+                    }
+                } else if (projects.isEmpty()) {
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = if (!hasPermission) "Menunggu izin penyimpanan..."
+                            else "Tidak ada proyek ditemukan",
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            style = MaterialTheme.typography.bodyLarge
+                        )
+                    }
+                } else {
+                    LazyColumn(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(horizontal = 16.dp, vertical = 8.dp),
+                        verticalArrangement = Arrangement.spacedBy(10.dp)
+                    ) {
+                        items(projects, key = { it.path }) { item ->
+                            ProjectItemRow(
+                                project = item,
+                                onClick = { onProjectSelected(item) }
+                            )
+                        }
                     }
                 }
             }
@@ -341,8 +366,13 @@ fun ProjectMenuScreen(
     }
 
     if (showPermissionDialog) {
+        val permissionSheetState = rememberModalBottomSheetState(
+            skipPartiallyExpanded = true,
+            confirmValueChange = { false }
+        )
         BottomSheetDialog(
-            onDismissRequest = { showPermissionDialog = false }
+            onDismissRequest = { },
+            sheetState = permissionSheetState
         ) {
             Text(
                 text = "Akses Penyimpanan Diperlukan",
@@ -392,6 +422,7 @@ fun ProjectMenuScreen(
             }
 
             Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(32.dp))
         }
     }
 }
@@ -402,9 +433,7 @@ fun ProjectItemRow(
     onClick: () -> Unit
 ) {
     Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable { onClick() },
+        modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(12.dp),
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surfaceContainer
@@ -414,6 +443,10 @@ fun ProjectItemRow(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
+                .clickable(
+                    interactionSource = remember { MutableInteractionSource() },
+                    indication = ripple(bounded = true)
+                ) { onClick() }
                 .padding(14.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {

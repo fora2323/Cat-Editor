@@ -419,8 +419,7 @@ fun ProjectItemRow(
                 )
             } else {
                 Image(
-                    painter = painterResource(id = R.drawable.ic_vanilla_android),
-                    contentDescription = project.name,
+                    painter = painterResource(id = R.drawable.ic_android),                    contentDescription = project.name,
                     modifier = Modifier
                         .size(46.dp)
                         .clip(RoundedCornerShape(8.dp)),

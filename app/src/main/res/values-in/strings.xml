@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+	<string name="tag_close">Tutup</string>
+    <string name="tag_new_project">Proyek baru</string>
+    <string name="tag_create_project">Buat Proyek</string>
+    <string name="tag_open_folder">Buka Folder</string>
+    <string name="tag_git_clone">Kloning Git</string>
+    <string name="tag_delete">Hapus</string>
+</resources>

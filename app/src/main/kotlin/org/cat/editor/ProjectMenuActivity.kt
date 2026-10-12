@@ -232,6 +232,8 @@ fun ProjectMenuScreen(
                         horizontalAlignment = Alignment.End,
                         verticalArrangement = Arrangement.spacedBy(10.dp)
                     ) {
+                        
+                        // Menu FAB 1: Git Clone
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.End
@@ -263,6 +265,7 @@ fun ProjectMenuScreen(
                             }
                         }
 
+                        // Menu FAB 2: Buka Folder (SAF)
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.End
@@ -293,9 +296,42 @@ fun ProjectMenuScreen(
                                 )
                             }
                         }
+
+                        // Menu FAB 3: Create project
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.End
+                        ) {
+                            Text(
+                                text = "Create project",
+                                style = MaterialTheme.typography.labelLarge,
+                                color = MaterialTheme.colorScheme.onSurface,
+                                modifier = Modifier
+                                    .background(
+                                        color = MaterialTheme.colorScheme.surfaceContainerHigh,
+                                        shape = RoundedCornerShape(6.dp)
+                                    )
+                                    .padding(horizontal = 8.dp, vertical = 4.dp)
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            SmallFloatingActionButton(
+                                onClick = {
+                                    isFabExpanded = false
+                                    Toast.makeText(context, "Fitur Create project", Toast.LENGTH_SHORT).show()
+                                },
+                                containerColor = MaterialTheme.colorScheme.tertiaryContainer,
+                                contentColor = MaterialTheme.colorScheme.onTertiaryContainer
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Add,
+                                    contentDescription = "Create project"
+                                )
+                            }
+                        }
                     }
                 }
 
+                // Main FAB
                 ExtendedFloatingActionButton(
                     text = { Text(text = if (isFabExpanded) "Tutup" else "New Project") },
                     icon = {
@@ -320,7 +356,8 @@ fun ProjectMenuScreen(
             ExpressivePullToRefreshBox(
                 isRefreshing = isRefreshing,
                 onRefresh = { scope.launch { refresh() } },
-                modifier = Modifier.fillMaxSize()
+                modifier = Modifier.fillMaxSize(),
+                indicatorColor = 0xFF7C580D.toInt() // Mengatur warna pull to refresh di sini
             ) {
                 if (isLoading) {
                     Box(

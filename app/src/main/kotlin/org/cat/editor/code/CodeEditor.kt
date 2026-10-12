@@ -9,6 +9,9 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.viewinterop.AndroidView
 import io.github.rosemoe.sora.event.ContentChangeEvent
 import io.github.rosemoe.sora.langs.textmate.TextMateLanguage
+import io.github.rosemoe.sora.langs.textmate.registry.FileProviderRegistry
+import io.github.rosemoe.sora.langs.textmate.registry.GrammarRegistry
+import io.github.rosemoe.sora.langs.textmate.registry.provider.AssetsFileResolver
 import io.github.rosemoe.sora.widget.CodeEditor
 import io.github.rosemoe.sora.widget.schemes.EditorColorScheme
 import java.io.File
@@ -25,6 +28,8 @@ private fun getScopeForFile(filePath: String): String {
         else -> "source.kotlin"
     }
 }
+
+private var grammarRegistered = false
 
 @Composable
 fun KotlinCodeEditor(
@@ -54,6 +59,21 @@ fun KotlinCodeEditor(
     ) {
         AndroidView(
             factory = { ctx ->
+                // Register sekali aja, jangan register ulang tiap factory
+                if (!grammarRegistered) {
+                    FileProviderRegistry.getInstance().addFileProvider(
+                        AssetsFileResolver(ctx.assets)
+                    )
+                    val grammarRegistry = GrammarRegistry.getInstance()
+                    grammarRegistry.loadGrammars("textmate/kotlin.json")
+                    grammarRegistry.loadGrammars("textmate/java.json")
+                    grammarRegistry.loadGrammars("textmate/cpp.json")
+                    grammarRegistry.loadGrammars("textmate/cmake.json")
+                    grammarRegistry.loadGrammars("textmate/gradle.json")
+                    grammarRegistry.loadGrammars("textmate/xml.json")
+                    grammarRegistered = true
+                }
+
                 CodeEditor(ctx).apply {
                     val scope = getScopeForFile(filePath)
                     setEditorLanguage(TextMateLanguage.create(scope, true))

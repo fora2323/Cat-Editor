@@ -1,8 +1,14 @@
 package org.cat.editor.code
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.*
-import androidx.compose.runtime.*
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
@@ -20,8 +26,7 @@ private fun getScopeForFile(filePath: String): String {
     return when (File(filePath).extension.lowercase()) {
         "kt", "kts" -> "source.kotlin"
         "java" -> "source.java"
-        "cpp", "cc", "cxx", "hpp" -> "source.cpp"
-        "c", "h" -> "source.c"
+        "cpp", "cc", "cxx", "hpp", "c", "h" -> "source.cpp"
         "gradle", "gradle.kts" -> "source.groovy"
         "xml" -> "text.xml"
         "cmake" -> "source.cmake"

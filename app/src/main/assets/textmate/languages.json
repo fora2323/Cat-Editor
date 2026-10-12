@@ -18,11 +18,6 @@
       "grammar": "textmate/cpp.json"
     },
     {
-      "name": "C",
-      "scopeName": "source.c",
-      "grammar": "textmate/cpp.json"
-    },
-    {
       "name": "Gradle",
       "scopeName": "source.groovy",
       "grammar": "textmate/gradle.json"

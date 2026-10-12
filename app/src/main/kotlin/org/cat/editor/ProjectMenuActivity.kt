@@ -1,4 +1,4 @@
-package org.cat.editor.ui
+package org.cat.editor
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -18,7 +18,6 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import org.cat.editor.R
 
 sealed class MenuIcon {
     data class Vector(val icon: ImageVector) : MenuIcon()

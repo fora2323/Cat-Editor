@@ -59,18 +59,11 @@ fun KotlinCodeEditor(
     ) {
         AndroidView(
             factory = { ctx ->
-                // Register sekali aja, jangan register ulang tiap factory
                 if (!grammarRegistered) {
                     FileProviderRegistry.getInstance().addFileProvider(
                         AssetsFileResolver(ctx.assets)
                     )
-                    val grammarRegistry = GrammarRegistry.getInstance()
-                    grammarRegistry.loadGrammars("textmate/kotlin.json")
-                    grammarRegistry.loadGrammars("textmate/java.json")
-                    grammarRegistry.loadGrammars("textmate/cpp.json")
-                    grammarRegistry.loadGrammars("textmate/cmake.json")
-                    grammarRegistry.loadGrammars("textmate/gradle.json")
-                    grammarRegistry.loadGrammars("textmate/xml.json")
+                    GrammarRegistry.getInstance().loadGrammars("textmate/languages.json")
                     grammarRegistered = true
                 }
 

@@ -1,0 +1,41 @@
+{
+  "grammars": [
+    {
+      "name": "Kotlin",
+      "scopeName": "source.kotlin",
+      "grammar": "textmate/kotlin.json",
+      "languageConfiguration": "textmate/language-configuration.json"
+    },
+    {
+      "name": "Java",
+      "scopeName": "source.java",
+      "grammar": "textmate/java.json",
+      "languageConfiguration": "textmate/language-configuration.json"
+    },
+    {
+      "name": "C++",
+      "scopeName": "source.cpp",
+      "grammar": "textmate/cpp.json"
+    },
+    {
+      "name": "C",
+      "scopeName": "source.c",
+      "grammar": "textmate/cpp.json"
+    },
+    {
+      "name": "Gradle",
+      "scopeName": "source.groovy",
+      "grammar": "textmate/gradle.json"
+    },
+    {
+      "name": "XML",
+      "scopeName": "text.xml",
+      "grammar": "textmate/xml.json"
+    },
+    {
+      "name": "CMake",
+      "scopeName": "source.cmake",
+      "grammar": "textmate/cmake.json"
+    }
+  ]
+}

@@ -63,10 +63,9 @@ import androidx.compose.material3.SmallFloatingActionButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.material3.pulltorefresh.PullToRefreshBox
-import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.material3.ripple
+import org.cat.editor.ui.ExpressivePullToRefreshBox
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -141,7 +140,6 @@ fun ProjectMenuScreen(
     var projects by remember { mutableStateOf<List<ProjectItem>>(emptyList()) }
     var isLoading by remember { mutableStateOf(hasPermission) }
     var isRefreshing by remember { mutableStateOf(false) }
-    val pullToRefreshState = rememberPullToRefreshState()
     var isFabExpanded by remember { mutableStateOf(false) }
 
     suspend fun refresh() {
@@ -319,10 +317,9 @@ fun ProjectMenuScreen(
                 .fillMaxSize()
                 .padding(innerPadding)
         ) {
-            PullToRefreshBox(
+            ExpressivePullToRefreshBox(
                 isRefreshing = isRefreshing,
                 onRefresh = { scope.launch { refresh() } },
-                state = pullToRefreshState,
                 modifier = Modifier.fillMaxSize()
             ) {
                 if (isLoading) {

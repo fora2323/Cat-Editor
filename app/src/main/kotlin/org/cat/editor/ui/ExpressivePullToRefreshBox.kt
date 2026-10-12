@@ -16,7 +16,7 @@ fun ExpressivePullToRefreshBox(
     onRefresh: () -> Unit,
     modifier: Modifier = Modifier,
     indicatorStyle: Int = ExpressivePullToRefresh.STYLE_CONTAINED,
-    indicatorColor: Int = 0xFF7C580D.toInt(), // Default warna Primary App
+    indicatorColor: Int = 0xFF7C580D.toInt(),
     content: @Composable () -> Unit
 ) {
     val currentContent by rememberUpdatedState(content)
@@ -28,7 +28,7 @@ fun ExpressivePullToRefreshBox(
         factory = { context ->
             ExpressivePullToRefresh(context).apply {
                 setIndicatorStyle(indicatorStyle)
-                setIndicatorColor(indicatorColor) // Menerapkan warna saat dibuat
+                setIndicatorColor(indicatorColor)
                 
                 val composeView = ComposeView(context).apply {
                     setParentCompositionContext(parentComposition)
@@ -53,7 +53,7 @@ fun ExpressivePullToRefreshBox(
                 view.isRefreshing = isRefreshing
             }
             view.setIndicatorStyle(indicatorStyle)
-            view.setIndicatorColor(indicatorColor) // Memperbarui warna jika ada perubahan
+            view.setIndicatorColor(indicatorColor)
             
             val composeView = view.getChildAt(0) as? ComposeView
             composeView?.setContent {

@@ -112,6 +112,12 @@ fun IdeMainScreen(
         return
     }
 
+    LaunchedEffect(projectPath) {
+        if (projectPath.isNotEmpty()) {
+            drawerState.open()
+        }
+    }
+
     DismissibleNavigationDrawer(
         drawerState = drawerState,
         drawerContent = {
@@ -410,8 +416,19 @@ fun SearchResults(root: File, query: String, onFileClick: (File) -> Unit) {
 @Composable
 fun FileTreeNode(root: File, level: Int = 0, onFileClick: (File) -> Unit) {
     val files = root.listFiles()
-        ?.sortedWith(compareBy({ !it.isDirectory }, { it.name }))
+        ?.filter { !it.name.startsWith(".") }
+        ?.sortedWith(compareBy({ !it.isDirectory }, { it.name.lowercase() }))
         ?: emptyList()
+
+    if (files.isEmpty() && level == 0) {
+        Text(
+            text = stringResource(id = R.string.not_found),
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            fontSize = 13.sp,
+            modifier = Modifier.padding(16.dp)
+        )
+        return
+    }
 
     files.forEach { file ->
         var isExpanded by remember { mutableStateOf(false) }

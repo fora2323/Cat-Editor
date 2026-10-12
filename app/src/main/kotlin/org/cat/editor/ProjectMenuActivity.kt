@@ -91,11 +91,15 @@ import androidx.core.view.WindowCompat
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import org.cat.editor.ui.BottomSheetDialog
 import org.cat.editor.ui.theme.AppTheme
 import org.cat.editor.utils.ConfigPath
 import org.cat.editor.utils.LocaleHelper
+import org.cat.editor.utils.StorageUtils
 import java.io.File
 
 data class ProjectItem(
@@ -149,8 +153,14 @@ fun ProjectMenuScreen(
 
     suspend fun refresh() {
         isRefreshing = true
-        projects = scanProjects(ConfigPath.VAR_PROJECTS_PATH)
-        isRefreshing = false
+        try {
+            delay(600)
+            projects = withContext(Dispatchers.IO) {
+                scanProjects(ConfigPath.VAR_PROJECTS_PATH)
+            }
+        } finally {
+            isRefreshing = false
+        }
     }
 
     val legacyPermissionLauncher = rememberLauncherForActivityResult(
@@ -160,7 +170,11 @@ fun ProjectMenuScreen(
         if (granted) {
             hasPermission = true
             showPermissionDialog = false
-            projects = scanProjects(ConfigPath.VAR_PROJECTS_PATH)
+            scope.launch {
+                projects = withContext(Dispatchers.IO) {
+                    scanProjects(ConfigPath.VAR_PROJECTS_PATH)
+                }
+            }
         } else {
             Toast.makeText(context, context.getString(R.string.storage_permission_denied), Toast.LENGTH_SHORT).show()
         }
@@ -170,7 +184,15 @@ fun ProjectMenuScreen(
         contract = ActivityResultContracts.OpenDocumentTree()
     ) { uri: Uri? ->
         uri?.let {
-            Toast.makeText(context, context.getString(R.string.folder_selected, it.path), Toast.LENGTH_SHORT).show()
+            val path = StorageUtils.getRealPathFromTreeUri(context, it)
+            if (path != null && File(path).exists()) {
+                val intent = Intent(context, MainActivity::class.java).apply {
+                    putExtra("project_path", path)
+                }
+                context.startActivity(intent)
+            } else {
+                Toast.makeText(context, context.getString(R.string.cannot_access_folder), Toast.LENGTH_SHORT).show()
+            }
         }
     }
 
@@ -194,7 +216,9 @@ fun ProjectMenuScreen(
     LaunchedEffect(hasPermission) {
         if (hasPermission) {
             isLoading = true
-            projects = scanProjects(ConfigPath.VAR_PROJECTS_PATH)
+            projects = withContext(Dispatchers.IO) {
+                scanProjects(ConfigPath.VAR_PROJECTS_PATH)
+            }
             isLoading = false
         }
     }
@@ -342,7 +366,9 @@ fun ProjectMenuScreen(
                     }
                 } else if (projects.isEmpty()) {
                     Box(
-                        modifier = Modifier.fillMaxSize(),
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .verticalScroll(rememberScrollState()),
                         contentAlignment = Alignment.Center
                     ) {
                         Text(

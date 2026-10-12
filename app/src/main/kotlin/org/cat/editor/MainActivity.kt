@@ -26,12 +26,26 @@ import org.cat.editor.ui.theme.AppTheme
 import org.cat.editor.utility.ComposeNode
 import org.cat.editor.utility.IdComposeParser
 import org.cat.editor.utils.LocaleHelper
+import org.cat.editor.utils.StorageUtils
 import java.io.File
 
 class MainActivity : ComponentActivity() {
 
     override fun attachBaseContext(newBase: Context) {
         super.attachBaseContext(LocaleHelper.wrap(newBase))
+    }
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        setIntent(intent)
+        val intentPath = intent.getStringExtra("project_path")
+        if (!intentPath.isNullOrEmpty()) {
+            projectPath = intentPath
+            getSharedPreferences("app_data", Context.MODE_PRIVATE)
+                .edit().putString("last_project", intentPath).apply()
+            showProjectPicker = false
+            startAppLogic()
+        }
     }
 
     private var fileObserver: FileObserver? = null
@@ -128,25 +142,7 @@ class MainActivity : ComponentActivity() {
     }
 
     private fun getRealPathFromURI(uri: Uri): String? {
-        return when {
-            uri.scheme == "content" -> {
-                try {
-                    val path = uri.path ?: return null
-                    if (path.contains("primary:")) {
-                        val parts = path.split("primary:")
-                        if (parts.size > 1) {
-                            return "${Environment.getExternalStorageDirectory()}/${parts[1]}"
-                        }
-                    }
-                    null
-                } catch (e: Exception) {
-                    e.printStackTrace()
-                    null
-                }
-            }
-            uri.scheme == "file" -> uri.path
-            else -> null
-        }
+        return StorageUtils.getRealPathFromTreeUri(this, uri)
     }
 
     private fun openFileInTab(path: String) {

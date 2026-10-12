@@ -58,7 +58,9 @@ fun ExpressivePullToRefreshBox(
         },
         update = { view ->
             if (view.isRefreshing != isRefreshing) {
-                view.isRefreshing = isRefreshing
+                view.post {
+                    view.isRefreshing = isRefreshing
+                }
             }
             if (view.indicatorStyle != indicatorStyle) {
                 view.indicatorStyle = indicatorStyle

@@ -1,4 +1,4 @@
-package org.cat.editor.preview
+package org.cat.editor.ui.preview
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background

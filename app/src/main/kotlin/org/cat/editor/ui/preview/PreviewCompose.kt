@@ -1,4 +1,4 @@
-package org.cat.editor.preview
+package org.cat.editor.ui.preview
 
 import android.graphics.Color as AndroidColor
 import androidx.compose.foundation.background

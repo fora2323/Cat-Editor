@@ -75,10 +75,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.launch
 import org.cat.editor.R
-import org.cat.editor.code.KotlinCodeEditor
-import org.cat.editor.preview.ImagePreviewIcon
-import org.cat.editor.preview.PreviewScreen
-import org.cat.editor.preview.isImageFile
+import org.cat.editor.ui.KotlinCodeEditor
+import org.cat.editor.ui.preview.ImagePreviewIcon
+import org.cat.editor.ui.preview.PreviewScreen
+import org.cat.editor.ui.preview.isImageFile
 import org.cat.editor.utility.ComposeNode
 import java.io.File
 

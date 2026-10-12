@@ -44,7 +44,7 @@ public abstract class ComposeNode {
     }
 }
 
-class IdComposeParser {
+public class IdComposeParser {
     public static ComposeNode.Layout parse(String rawCode) {
         String code = rawCode
             .replaceAll("/\\*([\\s\\S]*?)\\*/", "")

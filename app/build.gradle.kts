@@ -99,4 +99,5 @@ dependencies {
 
     implementation("androidx.core:core-ktx:1.12.0")
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.7.0")
+    implementation("com.github.Netsnake-TN:ExpressivepullToRefresh:v1.0.5")
 }

@@ -49,6 +49,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.Icon
@@ -79,6 +80,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
+import androidx.core.view.WindowCompat
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
@@ -98,6 +100,8 @@ class ProjectMenuActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+        WindowCompat.setDecorFitsSystemWindows(window, false)[span_1](start_span)[span_1](end_span)
+        window.navigationBarColor = android.graphics.Color.TRANSPARENT[span_2](start_span)[span_2](end_span)
 
         setContent {
             AppTheme {
@@ -125,6 +129,7 @@ fun ProjectMenuScreen(
     var hasPermission by remember { mutableStateOf(checkStoragePermission(context)) }
     var showPermissionDialog by remember { mutableStateOf(!hasPermission) }
     var projects by remember { mutableStateOf<List<ProjectItem>>(emptyList()) }
+    var isLoading by remember { mutableStateOf(false) }[span_3](start_span)[span_3](end_span)
     var isFabExpanded by remember { mutableStateOf(false) }
 
     val legacyPermissionLauncher = rememberLauncherForActivityResult(
@@ -167,9 +172,11 @@ fun ProjectMenuScreen(
 
     LaunchedEffect(hasPermission) {
         if (hasPermission) {
-            projects = scanProjects(ConfigPath.VAR_PROJECTS_PATH)
+            isLoading = true[span_4](start_span)[span_4](end_span)
+            projects = scanProjects(ConfigPath.VAR_PROJECTS_PATH)[span_5](start_span)[span_5](end_span)
+            isLoading = false[span_6](start_span)[span_6](end_span)
         }
-    }
+    }[span_7](start_span)[span_7](end_span)
 
     Scaffold(
         topBar = {
@@ -294,17 +301,27 @@ fun ProjectMenuScreen(
                 .fillMaxSize()
                 .padding(innerPadding)
         ) {
-            if (projects.isEmpty()) {
+            if (isLoading) {[span_8](start_span)[span_8](end_span)
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    CircularProgressIndicator(
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                }[span_9](start_span)[span_9](end_span)
+            } else if (projects.isEmpty()) {[span_10](start_span)[span_10](end_span)
                 Box(
                     modifier = Modifier.fillMaxSize(),
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
-                        text = if (!hasPermission) "Menunggu izin penyimpanan..." else "Tidak ada proyek ditemukan",
+                        text = if (!hasPermission) "Menunggu izin penyimpanan..."
+                        else "Tidak ada proyek ditemukan",
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         style = MaterialTheme.typography.bodyLarge
                     )
-                }
+                }[span_11](start_span)[span_11](end_span)
             } else {
                 LazyColumn(
                     modifier = Modifier
@@ -318,14 +335,14 @@ fun ProjectMenuScreen(
                             onClick = { onProjectSelected(item) }
                         )
                     }
-                }
+                }[span_12](start_span)[span_12](end_span)
             }
         }
     }
 
     if (showPermissionDialog) {
         BottomSheetDialog(
-            onDismissRequest = { }
+            onDismissRequest = { showPermissionDialog = false }[span_13](start_span)[span_13](end_span)
         ) {
             Text(
                 text = "Akses Penyimpanan Diperlukan",
@@ -450,8 +467,14 @@ fun checkStoragePermission(context: Context): Boolean {
     return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
         Environment.isExternalStorageManager()
     } else {
-        val readGranted = ContextCompat.checkSelfPermission(context, Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED
-        val writeGranted = ContextCompat.checkSelfPermission(context, Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED
+        val readGranted = ContextCompat.checkSelfPermission(
+            context,
+            Manifest.permission.READ_EXTERNAL_STORAGE
+        ) == PackageManager.PERMISSION_GRANTED
+        val writeGranted = ContextCompat.checkSelfPermission(
+            context,
+            Manifest.permission.WRITE_EXTERNAL_STORAGE
+        ) == PackageManager.PERMISSION_GRANTED
         readGranted && writeGranted
     }
 }

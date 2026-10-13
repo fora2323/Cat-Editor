@@ -132,7 +132,7 @@ class ProjectMenuActivity : ComponentActivity() {
             AppTheme {
                 ProjectMenuScreen(
                     onProjectSelected = { project ->
-                        val intent = Intent(this, MainActivity::class.java).apply {
+                        val intent = Intent(this@ProjectMenuActivity, MainActivity::class.java).apply {
                             putExtra("project_path", project.path)
                         }
                         startActivity(intent)

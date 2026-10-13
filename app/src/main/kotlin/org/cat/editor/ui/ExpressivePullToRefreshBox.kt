@@ -21,7 +21,7 @@ fun ExpressivePullToRefreshBox(
     modifier: Modifier = Modifier,
     indicatorStyle: Int = ExpressivePullToRefresh.STYLE_CONTAINED,
     indicatorColor: Color = MaterialTheme.colorScheme.primary,
-    containerColor: Color = MaterialTheme.colorScheme.surfaceContainerHigh,
+    containerColor: Color = MaterialTheme.colorScheme.primaryContainer,
     content: @Composable () -> Unit
 ) {
     val currentContent by rememberUpdatedState(content)

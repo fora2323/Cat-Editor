@@ -141,18 +141,16 @@ object SettingsManager {
         var commit = getCachedCommit(context)
         var success = false
 
-        // 1. Fetch repo details for stars
         try {
+            // 1. Fetch repo details for stars
             val repoUrl = URL("https://api.github.com/repos/fora2323/Cat-Editor")
             val repoConn = repoUrl.openConnection() as HttpURLConnection
-            repoConn.connectTimeout = 10000
-            repoConn.readTimeout = 10000
+            repoConn.connectTimeout = 6000
+            repoConn.readTimeout = 6000
             repoConn.setRequestProperty("User-Agent", "Cat-Editor-App")
             repoConn.setRequestProperty("Accept", "application/vnd.github.v3+json")
 
-            val code = repoConn.responseCode
-            android.util.Log.d("SettingsManager", "GitHub repo status: $code")
-            if (code == HttpURLConnection.HTTP_OK) {
+            if (repoConn.responseCode == HttpURLConnection.HTTP_OK) {
                 val reader = BufferedReader(InputStreamReader(repoConn.inputStream))
                 val response = reader.readText()
                 reader.close()
@@ -163,26 +161,18 @@ object SettingsManager {
                     setCachedStars(context, stars)
                     success = true
                 }
-            } else {
-                android.util.Log.w("SettingsManager", "GitHub repo failed with HTTP $code: ${repoConn.responseMessage}")
             }
             repoConn.disconnect()
-        } catch (e: Exception) {
-            android.util.Log.e("SettingsManager", "Failed to fetch repo stars: ${e.message}", e)
-        }
 
-        // 2. Fetch latest commit SHA
-        try {
+            // 2. Fetch latest commit SHA
             val commitUrl = URL("https://api.github.com/repos/fora2323/Cat-Editor/commits/main")
             val commitConn = commitUrl.openConnection() as HttpURLConnection
-            commitConn.connectTimeout = 10000
-            commitConn.readTimeout = 10000
+            commitConn.connectTimeout = 6000
+            commitConn.readTimeout = 6000
             commitConn.setRequestProperty("User-Agent", "Cat-Editor-App")
             commitConn.setRequestProperty("Accept", "application/vnd.github.v3+json")
 
-            val code = commitConn.responseCode
-            android.util.Log.d("SettingsManager", "GitHub commit status: $code")
-            if (code == HttpURLConnection.HTTP_OK) {
+            if (commitConn.responseCode == HttpURLConnection.HTTP_OK) {
                 val reader = BufferedReader(InputStreamReader(commitConn.inputStream))
                 val response = reader.readText()
                 reader.close()
@@ -193,12 +183,10 @@ object SettingsManager {
                     setCachedCommit(context, commit)
                     success = true
                 }
-            } else {
-                android.util.Log.w("SettingsManager", "GitHub commit failed with HTTP $code: ${commitConn.responseMessage}")
             }
             commitConn.disconnect()
         } catch (e: Exception) {
-            android.util.Log.e("SettingsManager", "Failed to fetch latest commit: ${e.message}", e)
+            e.printStackTrace()
         }
 
         Triple(stars, commit, success)

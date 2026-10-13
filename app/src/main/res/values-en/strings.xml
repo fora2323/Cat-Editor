@@ -17,6 +17,10 @@
     <string name="copy">Copy</string>
     <string name="restart">Restart</string>
     <string name="more_options">More Options</string>
+    <string name="create_file">Create File</string>
+    <string name="create_folder">Create Folder</string>
+    <string name="create_java_class">Create Java</string>
+    <string name="create_kotlin_class">Create Kotlin</string>
 
     <!-- Settings & Language -->
     <string name="language">Language</string>

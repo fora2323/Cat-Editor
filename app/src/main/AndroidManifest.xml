@@ -20,7 +20,7 @@
 
 		<activity
 			android:name=".ProjectMenuActivity"
-			android:configChanges="orientation|screenSize|keyboardHidden|smallestScreenSize|screenLayout|locale|layoutDirection"
+			android:configChanges="orientation|screenSize"
 			android:screenOrientation="portrait"
 			android:exported="true">
 			<intent-filter>
@@ -31,13 +31,13 @@
 
 		<activity
 			android:name=".MainActivity"
-			android:configChanges="orientation|screenSize|keyboardHidden|smallestScreenSize|screenLayout|locale|layoutDirection"
+			android:configChanges="orientation|screenSize"
 			android:screenOrientation="portrait"
 			android:exported="false" />
             
         <activity
 			android:name=".GitCloneActivity"
-			android:configChanges="orientation|screenSize|keyboardHidden|smallestScreenSize|screenLayout|locale|layoutDirection"
+			android:configChanges="orientation|screenSize"
 			android:screenOrientation="portrait"
 			android:exported="false" />    
 

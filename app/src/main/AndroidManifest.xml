@@ -35,7 +35,6 @@
 
 		<activity
 			android:name=".SettingsActivity"
-			android:configChanges="orientation|screenSize|keyboardHidden|smallestScreenSize|screenLayout|locale|layoutDirection"
 			android:screenOrientation="portrait"
 			android:exported="false" />
             

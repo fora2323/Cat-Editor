@@ -230,6 +230,9 @@ fun GitCloneScreen(onNavigateBack: () -> Unit) {
                                         override fun update(completed: Int) {}
                                         override fun endTask() {}
                                         override fun isCancelled(): Boolean = !isCloning
+                                        
+                                        // Fix tambahan: Override showDuration wajib pada JGit versi 6.8.0
+                                        override fun showDuration(enabled: Boolean) {}
                                     }
 
                                     val cloneCommand = Git.cloneRepository()

@@ -328,7 +328,6 @@ fun ProjectMenuScreen(
                             SmallFloatingActionButton(
                                 onClick = {
                                     isFabExpanded = false
-                                    // Panggil GitCloneActivity menggunakan Intent
                                     val intent = Intent(context, GitCloneActivity::class.java)
                                     context.startActivity(intent)
                                 },

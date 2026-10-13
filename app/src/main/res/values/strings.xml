@@ -15,6 +15,10 @@
     <string name="refresh">Refresh</string>
     <string name="clear">Clear</string>
     <string name="more_options">More Options</string>
+    <string name="cancel_clone_title">Cancel Clone</string>
+    <string name="cancel_clone_msg">Are you sure you want to cancel the clone process?</string>
+    <string name="yes">Yes</string>
+    <string name="no">No</string>
 
     <!-- Settings & Language -->
     <string name="language">Language</string>

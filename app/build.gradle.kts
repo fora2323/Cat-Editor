@@ -95,8 +95,8 @@ dependencies {
     
     implementation("io.github.Rosemoe.sora-editor:editor:0.23.4")
     implementation("io.github.Rosemoe.sora-editor:language-textmate:0.23.4")
-    implementation("com.github.Netsnake-TN:ExpressivepullToRefresh:v1.0.5")
     
+    implementation("com.github.Netsnake-TN:ExpressivepullToRefresh:v1.0.5")
     implementation("com.google.android.material:material:1.14.0")
     
     implementation("androidx.compose.material:material-icons-extended:1.5.0")
@@ -107,6 +107,8 @@ dependencies {
     implementation("androidx.activity:activity-compose:1.8.2")
     implementation("androidx.lifecycle:lifecycle-runtime-compose:2.7.0")
     
+    implementation("org.eclipse.jgit:org.eclipse.jgit:6.8.0.202311291450-r")
+    
     implementation("io.coil-kt.coil3:coil-compose:3.1.0")
     implementation("io.coil-kt.coil3:coil-network-okhttp:3.1.0")
     implementation("io.coil-kt.coil3:coil-svg:3.1.0")
@@ -116,5 +118,4 @@ dependencies {
 
     implementation("androidx.core:core-ktx:1.12.0")
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.7.0")
-    implementation("com.github.Netsnake-TN:ExpressivepullToRefresh:v1.0.5")
 }

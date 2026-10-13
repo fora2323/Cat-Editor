@@ -41,7 +41,6 @@
             
         <activity
 			android:name=".DebugActivity"
-			android:configChanges="orientation|screenSize|keyboardHidden|smallestScreenSize|screenLayout"
 			android:screenOrientation="portrait"
 			android:exported="false" />    
 

@@ -34,6 +34,12 @@
 			android:configChanges="orientation|screenSize|keyboardHidden|smallestScreenSize|screenLayout|locale|layoutDirection"
 			android:screenOrientation="portrait"
 			android:exported="false" />
+            
+        <activity
+			android:name=".GitCloneActivity"
+			android:configChanges="orientation|screenSize|keyboardHidden|smallestScreenSize|screenLayout|locale|layoutDirection"
+			android:screenOrientation="portrait"
+			android:exported="false" />    
 
 		<activity
 			android:name=".SettingsActivity"

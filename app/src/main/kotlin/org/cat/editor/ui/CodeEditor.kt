@@ -76,6 +76,7 @@ fun KotlinCodeEditor(
                     val scope = getScopeForFile(filePath)
                     setEditorLanguage(TextMateLanguage.create(scope, true))
                     colorScheme = KotlinDarkColorScheme()
+                    typefaceText = org.cat.editor.utils.SettingsManager.getEditorTypeface(ctx)
                     setText(codeContent)
                     isWordwrap = true
 
@@ -87,6 +88,7 @@ fun KotlinCodeEditor(
             update = { editor ->
                 val scope = getScopeForFile(filePath)
                 editor.setEditorLanguage(TextMateLanguage.create(scope, true))
+                editor.typefaceText = org.cat.editor.utils.SettingsManager.getEditorTypeface(editor.context)
                 editor.setText(codeContent)
             },
             modifier = Modifier.fillMaxSize()

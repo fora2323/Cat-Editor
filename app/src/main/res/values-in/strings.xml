@@ -49,6 +49,14 @@
     <string name="file_preview_deleted">File Preview Terhapus</string>
     <string name="file_saved">File Disimpan</string>
     <string name="failed_to_save">Gagal menyimpan: %1$s</string>
+    <string name="copy">Salin</string>
+    <string name="restart">Mulai Ulang</string>
+    <string name="create_file">Buat File</string>
+    <string name="create_folder">Buat Folder</string>
+    <string name="create_java_class">Buat Java</string>
+    <string name="create_kotlin_class">Buat Kotlin</string>
+    <string name="toolbar_name">Aww Terjadi Crash!!</string>
+    <string name="copy_log">Salin Log</string>
 
     <!-- Welcome Screen -->
     <string name="welcome">Selamat Datang</string>
@@ -78,4 +86,97 @@
     <string name="file_git">Git</string>
     <string name="file_proguard">Proguard</string>
     <string name="file_generic">File</string>
+
+    <!-- Settings Redesign -->
+    <string name="settings_app_title">Aplikasi</string>
+    <string name="settings_app_desc">Pengaturan aplikasi umum</string>
+    <string name="settings_editor_title">Editor</string>
+    <string name="settings_editor_desc">Pengaturan editor umum</string>
+    <string name="settings_git_title">Git</string>
+    <string name="settings_git_desc">Konfigurasi sistem kontrol versi</string>
+    <string name="settings_about_desc">Tentang %1$s</string>
+
+    <!-- App Settings Screen -->
+    <string name="setting_check_updates_title">Periksa pembaruan</string>
+    <string name="setting_check_updates_desc">Periksa pembaruan secara berkala</string>
+    <string name="setting_fullscreen_title">Layar penuh</string>
+    <string name="setting_fullscreen_desc">Mulai aplikasi dalam mode layar penuh</string>
+    <string name="setting_smart_toolbar_title">Bilah alat cerdas</string>
+    <string name="setting_smart_toolbar_desc">Sembunyikan bilah alat saat mengedit untuk membebaskan ruang layar</string>
+    <string name="setting_exit_dialog_title">Dialog konfirmasi keluar</string>
+    <string name="setting_exit_dialog_desc">Tampilkan dialog konfirmasi sebelum menutup aplikasi</string>
+    <string name="setting_manage_storage_title">Kelola penyimpanan</string>
+    <string name="setting_manage_storage_desc">Kelola izin penyimpanan</string>
+    <string name="setting_manage_fonts_title">Kelola font aplikasi</string>
+    <string name="setting_manage_fonts_desc">Kelola font aplikasi</string>
+    <string name="section_feature_toggles">Pengalih fitur</string>
+    <string name="setting_debug_options_title">Opsi debug</string>
+
+    <!-- Language Screen -->
+    <string name="language_warning_notice">Mengubah bahasa akan memulai ulang layar ini untuk menerapkan bahasa baru dengan segera. Ini mungkin menampilkan layar kosong secara singkat, yang berpotensi memicu ketidaknyamanan pada penderita epilepsi fotosensitif.</string>
+    <string name="btn_translate">Terjemahkan</string>
+
+    <!-- About Screen -->
+    <string name="section_build_info">Info build</string>
+    <string name="build_version">Versi</string>
+    <string name="build_version_code">Kode versi</string>
+    <string name="build_git_hash">Hash commit Git</string>
+    <string name="section_community">Komunitas</string>
+    <string name="community_github_stars">Bintang GitHub</string>
+    <string name="community_github">GitHub</string>
+    <string name="community_github_sub">Beri bintang di GitHub 😍</string>
+    <string name="community_telegram">Grup Telegram</string>
+    <string name="community_telegram_sub">Laporkan masalah, permintaan fitur, dll.</string>
+
+    <!-- Support Screen -->
+    <string name="support">Dukungan</string>
+    <string name="support_github_sponsors">GitHub Sponsors</string>
+    <string name="support_buy_me_coffee">Buy Me a Coffee</string>
+    <string name="support_saweria">Saweria</string>
+    <string name="support_saweria_desc">Dukungan via Saweria, untuk pengguna Indonesia, Thailand, dan Malaysia</string>
+
+    <!-- Placeholder -->
+    <string name="coming_soon">Segera hadir</string>
+    <string name="feature_under_development">Layar pengaturan ini akan segera tersedia.</string>
+
+    <!-- Git Settings Screen -->
+    <string name="git_section_general">Umum</string>
+    <string name="git_color_filenames_title">Warnai nama file</string>
+    <string name="git_color_filenames_desc">Warnai nama file berdasarkan pada status Git</string>
+    <string name="git_gutter_indicators_title">Indikasi gutter</string>
+    <string name="git_gutter_indicators_desc">Tampilkan indikator perubahan baris untuk baris yang ditambahkan, dimodifikasi, dan dihapus</string>
+    <string name="git_conflict_detection_title">Deteksi konflik</string>
+    <string name="git_conflict_detection_desc">Tampilkan penanda konflik dan opsi penyelesaian di editor</string>
+    <string name="git_section_account">Akun</string>
+    <string name="git_credentials_title">Kredensial</string>
+    <string name="git_credentials_desc">Kredensial untuk mengakses repositori jarak jauh</string>
+    <string name="git_user_data_title">Data pengguna</string>
+    <string name="git_user_data_desc">Data pengguna yang akan muncul di commit Git Anda</string>
+    <string name="git_section_repositories">Repositori</string>
+    <string name="git_submodules_title">Submodul</string>
+    <string name="git_submodules_desc">Sertakan submodul saat cloning repositori</string>
+    <string name="git_recursive_submodules_title">Submodul rekursif</string>
+    <string name="git_recursive_submodules_desc">Ambil submodul dan dependensinya secara rekursif</string>
+    <string name="git_pat_warning_desc">Untuk terhubung ke GitHub, Anda harus memasukkan token PAT, bukan kata sandi akun GitHub Anda.</string>
+    <string name="git_username_label">Nama pengguna</string>
+    <string name="git_password_label">Kata sandi</string>
+    <string name="git_author_name_label">Nama</string>
+    <string name="git_author_email_label">Email</string>
+
+    <!-- Settings functionality and GitHub sync -->
+    <string name="exit_dialog_title">Keluar dari Cat Editor</string>
+    <string name="exit_dialog_msg">Apakah Anda yakin ingin keluar dari aplikasi?</string>
+    <string name="exit_dialog_confirm">Keluar</string>
+    <string name="select_font_title">Pilih Font Editor</string>
+    <string name="font_monospace">Monospace (Default)</string>
+    <string name="font_sans">Sans-Serif</string>
+    <string name="font_serif">Serif</string>
+    <string name="checking_updates">Memeriksa pembaruan…</string>
+    <string name="up_to_date">Anda menggunakan versi terbaru (%1$s)</string>
+    <string name="update_available">Pembaruan baru tersedia di GitHub (%1$s)</string>
+    <string name="sync_github">Sinkronkan Info GitHub</string>
+    <string name="syncing_github">Menyinkronkan dengan GitHub…</string>
+    <string name="synced_github_success">Berhasil disinkronkan dengan GitHub</string>
+    <string name="sync_failed">Gagal menyinkronkan dengan GitHub</string>
+    <string name="build_latest_remote_commit">Commit GitHub terbaru</string>
 </resources>

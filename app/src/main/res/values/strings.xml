@@ -33,6 +33,8 @@
     <string name="feature_git_clone">Git Clone feature</string>
     <string name="open_folder_saf">Open Folder (SAF)</string>
     <string name="select_folder">Select Folder</string>
+    <string name="new_empty_project">Create Project</string>
+    <string name="feature_new_empty_project">New project features are not yet available</string>
     <string name="folder_selected">Folder selected: %1$s</string>
     <string name="storage_permission_denied">Storage permission denied</string>
     <string name="new_project">New Project</string>

@@ -49,6 +49,7 @@ import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.CloudDownload
 import androidx.compose.material.icons.filled.FolderOpen
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.Create
 import androidx.compose.material.ripple.rememberRipple
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -323,6 +324,37 @@ fun ProjectMenuScreen(
                                 Icon(
                                     imageVector = Icons.Default.FolderOpen,
                                     contentDescription = stringResource(id = R.string.select_folder)
+                                )
+                            }
+                        }
+                        
+                        Row(
+                           verticalAlignment = Alignment.CenterVertically,
+                           horizontalArrangement = Arrangement.End
+                        ) {
+                            Text(
+                                text = stringResource(id = R.string.new_empty_project),
+                                style = MaterialTheme.typography.labelLarge,
+                                color = MaterialTheme.colorScheme.onSurface,
+                                modifier = Modifier
+                                    .background(
+                                        color = MaterialTheme.colorScheme.surfaceContainerHigh,
+                                        shape = RoundedCornerShape(6.dp)
+                                    )
+                                    .padding(horizontal = 8.dp, vertical = 4.dp)
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            SmallFloatingActionButton(
+                                onClick = {
+                                    isFabExpanded = false
+                                    Toast.makeText(context, context.getString(R.string.feature_new_empty_project), Toast.LENGTH_SHORT).show()
+                                },
+                               containerColor = MaterialTheme.colorScheme.secondaryContainer,
+                               contentColor = MaterialTheme.colorScheme.onSecondaryContainer
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Create,
+                                    contentDescription = stringResource(id = R.string.new_empty_project)
                                 )
                             }
                         }

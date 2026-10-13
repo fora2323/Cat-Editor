@@ -328,7 +328,9 @@ fun ProjectMenuScreen(
                             SmallFloatingActionButton(
                                 onClick = {
                                     isFabExpanded = false
-                                    Toast.makeText(context, context.getString(R.string.feature_git_clone), Toast.LENGTH_SHORT).show()
+                                    // Panggil GitCloneActivity menggunakan Intent
+                                    val intent = Intent(context, GitCloneActivity::class.java)
+                                    context.startActivity(intent)
                                 },
                                 containerColor = MaterialTheme.colorScheme.secondaryContainer,
                                 contentColor = MaterialTheme.colorScheme.onSecondaryContainer

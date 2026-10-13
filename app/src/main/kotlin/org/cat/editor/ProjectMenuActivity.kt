@@ -49,9 +49,14 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.CloudDownload
-import androidx.compose.material.icons.filled.FolderOpen
-import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material.icons.filled.Create
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.FolderOpen
+import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material.icons.filled.PushPin
+import androidx.compose.material.icons.filled.SdStorage
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.ripple.rememberRipple
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
@@ -59,7 +64,6 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.TextButton
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.Icon
@@ -68,11 +72,11 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SmallFloatingActionButton
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.material3.ripple
-import org.cat.editor.ui.ExpressivePullToRefreshBox
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -85,6 +89,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -92,7 +97,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
 import androidx.core.view.WindowCompat
 import androidx.lifecycle.Lifecycle
@@ -103,6 +107,8 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.cat.editor.ui.BottomSheetDialog
+import org.cat.editor.ui.DialogLoading
+import org.cat.editor.ui.ExpressivePullToRefreshBox
 import org.cat.editor.ui.theme.AppTheme
 import org.cat.editor.utils.ConfigPath
 import org.cat.editor.utils.LocaleHelper
@@ -196,6 +202,11 @@ fun ProjectMenuScreen(
     var isLoading by remember { mutableStateOf(hasPermission) }
     var isRefreshing by remember { mutableStateOf(false) }
     var isFabExpanded by remember { mutableStateOf(false) }
+    
+    // State Menu Option
+    var selectedProjectForMenu by remember { mutableStateOf<ProjectItem?>(null) }
+    var showProjectMenu by remember { mutableStateOf(false) }
+    var isDeleting by remember { mutableStateOf(false) }
 
     suspend fun refresh() {
         isRefreshing = true
@@ -466,12 +477,87 @@ fun ProjectMenuScreen(
                         items(projects, key = { it.path }) { item ->
                             ProjectItemRow(
                                 project = item,
-                                onClick = { onProjectSelected(item) }
+                                onClick = { onProjectSelected(item) },
+                                onMoreClick = { 
+                                    selectedProjectForMenu = item
+                                    showProjectMenu = true
+                                }
                             )
                         }
                     }
                 }
             }
+        }
+    }
+    
+    // Tampilkan indikator saat direktori dihapus
+    if (isDeleting) {
+        DialogLoading()
+    }
+
+    // Tampilkan Menu Project saat di-klik
+    if (showProjectMenu && selectedProjectForMenu != null) {
+        val project = selectedProjectForMenu!!
+        val menuSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+        
+        BottomSheetDialog(
+            onDismissRequest = { showProjectMenu = false },
+            sheetState = menuSheetState
+        ) {
+            Text(
+                text = project.name,
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onSurface,
+                modifier = Modifier.padding(bottom = 8.dp, top = 8.dp, start = 8.dp)
+            )
+
+            ProjectMenuItem(
+                icon = Icons.Default.PushPin,
+                title = "Pin",
+                description = "Sematkan proyek ini di atas",
+                onClick = { showProjectMenu = false } // Fitur Diskip
+            )
+            ProjectMenuItem(
+                icon = Icons.Default.ContentCopy,
+                title = "Clone",
+                description = "Buat salinan proyek ini",
+                onClick = { showProjectMenu = false } // Fitur Diskip
+            )
+            ProjectMenuItem(
+                icon = Icons.Default.SdStorage,
+                title = "Backup",
+                description = "Cadangkan ke penyimpanan lain",
+                onClick = { showProjectMenu = false } // Fitur Diskip
+            )
+            ProjectMenuItem(
+                icon = Icons.Default.Delete,
+                title = "Remove",
+                description = "Hapus direktori proyek",
+                isDestructive = true,
+                onClick = {
+                    showProjectMenu = false
+                    isDeleting = true
+                    
+                    // Eksekusi fungsi hapus di Background Thread (IO)
+                    scope.launch(Dispatchers.IO) {
+                        try {
+                            File(project.path).deleteRecursively()
+                        } catch (e: Exception) {
+                            e.printStackTrace()
+                        }
+                        
+                        // Setelah selesai, muat ulang list proyek dan tutup loading dialog
+                        val updatedProjects = scanProjects(ConfigPath.VAR_PROJECTS_PATH)
+                        withContext(Dispatchers.Main) {
+                            projects = updatedProjects
+                            isDeleting = false
+                        }
+                    }
+                }
+            )
+            
+            Spacer(modifier = Modifier.height(32.dp))
         }
     }
 
@@ -537,10 +623,49 @@ fun ProjectMenuScreen(
     }
 }
 
+// Composable baru untuk item menu di dalam BottomSheet
+@Composable
+fun ProjectMenuItem(
+    icon: ImageVector,
+    title: String,
+    description: String,
+    isDestructive: Boolean = false,
+    onClick: () -> Unit
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { onClick() }
+            .padding(vertical = 12.dp, horizontal = 8.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Icon(
+            imageVector = icon,
+            contentDescription = title,
+            tint = if (isDestructive) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.size(24.dp)
+        )
+        Spacer(modifier = Modifier.width(16.dp))
+        Column {
+            Text(
+                text = title,
+                style = MaterialTheme.typography.bodyLarge,
+                color = if (isDestructive) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurface
+            )
+            Text(
+                text = description,
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
+    }
+}
+
 @Composable
 fun ProjectItemRow(
     project: ProjectItem,
-    onClick: () -> Unit
+    onClick: () -> Unit,
+    onMoreClick: () -> Unit
 ) {
     Card(
         modifier = Modifier.fillMaxWidth(),
@@ -600,6 +725,15 @@ fun ProjectItemRow(
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
+                )
+            }
+            
+            // Icon Titik Tiga (More Options)
+            IconButton(onClick = onMoreClick) {
+                Icon(
+                    imageVector = Icons.Default.MoreVert,
+                    contentDescription = "Opsi",
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
         }

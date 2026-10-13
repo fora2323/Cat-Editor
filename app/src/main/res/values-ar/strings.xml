@@ -49,6 +49,14 @@
     <string name="file_preview_deleted">تم حذف ملف المعاينة</string>
     <string name="file_saved">تم حفظ الملف</string>
     <string name="failed_to_save">فشل الحفظ: %1$s</string>
+    <string name="copy">نسخ</string>
+    <string name="restart">إعادة التشغيل</string>
+    <string name="create_file">إنشاء ملف</string>
+    <string name="create_folder">إنشاء مجلد</string>
+    <string name="create_java_class">إنشاء فئة جافا</string>
+    <string name="create_kotlin_class">إنشاء فئة كوتلن</string>
+    <string name="toolbar_name">عفوًا حدث انهيار!!</string>
+    <string name="copy_log">نسخ السجلات</string>
 
     <!-- Welcome Screen -->
     <string name="welcome">مرحبًا</string>
@@ -78,4 +86,96 @@
     <string name="file_git">جت</string>
     <string name="file_proguard">برو جارد</string>
     <string name="file_generic">ملف</string>
+
+    <!-- Settings Redesign -->
+    <string name="settings_app_title">التطبيق</string>
+    <string name="settings_app_desc">إعدادات التطبيق العامة</string>
+    <string name="settings_editor_title">المحرر</string>
+    <string name="settings_editor_desc">إعدادات المحرر العامة</string>
+    <string name="settings_git_title">Git</string>
+    <string name="settings_git_desc">تكوين نظام التحكم في الإصدارات</string>
+    <string name="settings_about_desc">حول %1$s</string>
+
+    <!-- App Settings Screen -->
+    <string name="setting_check_updates_title">التحقق من التحديثات</string>
+    <string name="setting_check_updates_desc">التحقق من وجود تحديثات بانتظام</string>
+    <string name="setting_fullscreen_title">ملء الشاشة</string>
+    <string name="setting_fullscreen_desc">بدء التطبيق في وضع ملء الشاشة</string>
+    <string name="setting_smart_toolbar_title">شريط الأدوات الذكي</string>
+    <string name="setting_smart_toolbar_desc">إخفاء شريط الأدوات أثناء التحرير لتوفير مساحة على الشاشة</string>
+    <string name="setting_exit_dialog_title">حوار تأكيد الخروج</string>
+    <string name="setting_exit_dialog_desc">عرض مربع حوار التأكيد قبل إغلاق التطبيق</string>
+    <string name="setting_manage_storage_title">إدارة التخزين</string>
+    <string name="setting_manage_storage_desc">إدارة أذونات التخزين</string>
+    <string name="setting_manage_fonts_title">إدارة خطوط التطبيق</string>
+    <string name="setting_manage_fonts_desc">إدارة وتغيير خطوط التطبيق</string>
+    <string name="section_feature_toggles">مفاتيح الميزات</string>
+    <string name="setting_debug_options_title">خيارات التصحيح</string>
+
+    <!-- Language Screen -->
+    <string name="language_warning_notice">سيؤدي تغيير اللغة إلى إعادة تشغيل هذه الشاشة لتطبيق اللغة الجديدة فورًا. قد يعرض هذا شاشة فارغة لفترة وجيزة، مما قد يسبب عدم الراحة لمن يعانون من صرع حساسية الضوء.</string>
+    <string name="btn_translate">ترجمة</string>
+
+    <!-- About Screen -->
+    <string name="section_build_info">معلومات البناء</string>
+    <string name="build_version">الإصدار</string>
+    <string name="build_version_code">رمز الإصدار</string>
+    <string name="build_git_hash">معرف تجزئة Git</string>
+    <string name="section_community">المجتمع</string>
+    <string name="community_github_stars">نجوم GitHub</string>
+    <string name="community_github">GitHub</string>
+    <string name="community_github_sub">أضف نجمة على GitHub 😍</string>
+    <string name="community_telegram">مجموعة تليجرام</string>
+    <string name="community_telegram_sub">الإبلاغ عن المشكلات وطلبات الميزات والمزيد</string>
+
+    <!-- Support Screen -->
+    <string name="support">الدعم والمساندة</string>
+    <string name="support_github_sponsors">رعاة GitHub</string>
+    <string name="support_buy_me_coffee">اشترِ لي قهوة</string>
+    <string name="support_saweria">Saweria</string>
+    <string name="support_saweria_desc">الدعم عبر Saweria، لمستخدمي إندونيسيا وتايلاند وماليزيا</string>
+
+    <!-- Placeholder -->
+    <string name="coming_soon">قريبًا</string>
+    <string name="feature_under_development">شاشة الإعدادات هذه ستكون متاحة قريبًا.</string>
+    <!-- Git Settings Screen -->
+    <string name="git_section_general">عام</string>
+    <string name="git_color_filenames_title">تلوين أسماء الملفات</string>
+    <string name="git_color_filenames_desc">تلوين أسماء الملفات بناءً على حالة Git</string>
+    <string name="git_gutter_indicators_title">مؤشرات الهامش</string>
+    <string name="git_gutter_indicators_desc">إظهار مؤشرات تغيير الأسطر للأسطر المضافة والمعدلة والمحذوفة</string>
+    <string name="git_conflict_detection_title">اكتشاف التعارضات</string>
+    <string name="git_conflict_detection_desc">إظهار علامات التعارض وخيارات الحل في المحرر</string>
+    <string name="git_section_account">الحساب</string>
+    <string name="git_credentials_title">بيانات الاعتماد</string>
+    <string name="git_credentials_desc">بيانات الاعتماد للوصول إلى المستودعات البعيدة</string>
+    <string name="git_user_data_title">بيانات المستخدم</string>
+    <string name="git_user_data_desc">بيانات المستخدم التي ستظهر في إيداعات Git الخاصة بك</string>
+    <string name="git_section_repositories">المستودعات</string>
+    <string name="git_submodules_title">الوحدات الفرعية</string>
+    <string name="git_submodules_desc">تضمين الوحدات الفرعية عند استنساخ المستودع</string>
+    <string name="git_recursive_submodules_title">الوحدات الفرعية المتكررة</string>
+    <string name="git_recursive_submodules_desc">جلب الوحدات الفرعية وتبعياتها بشكل متكرر</string>
+    <string name="git_pat_warning_desc">للاتصال بـ GitHub، يجب عليك إدخال رمز PAT، وليس كلمة مرور حسابك على GitHub.</string>
+    <string name="git_username_label">اسم المستخدم</string>
+    <string name="git_password_label">كلمة المرور</string>
+    <string name="git_author_name_label">الاسم</string>
+    <string name="git_author_email_label">البريد الإلكتروني</string>
+
+    <!-- Settings functionality and GitHub sync -->
+    <string name="exit_dialog_title">الخروج من Cat Editor</string>
+    <string name="exit_dialog_msg">هل أنت متأكد أنك تريد الخروج من التطبيق؟</string>
+    <string name="exit_dialog_confirm">خروج</string>
+    <string name="select_font_title">تحديد خط المحرر</string>
+    <string name="font_monospace">أحادي المسافة (افتراضي)</string>
+    <string name="font_sans">بلا تذييل (Sans-Serif)</string>
+    <string name="font_serif">مذيل (Serif)</string>
+    <string name="checking_updates">جارٍ التحقق من التحديثات…</string>
+    <string name="up_to_date">أنت تستخدم أحدث إصدار (%1$s)</string>
+    <string name="update_available">يتوفر تحديث جديد على GitHub (%1$s)</string>
+    <string name="sync_github">مزامنة معلومات GitHub</string>
+    <string name="syncing_github">جارٍ المزامنة مع GitHub…</string>
+    <string name="synced_github_success">تمت المزامنة مع GitHub بنجاح</string>
+    <string name="sync_failed">فشلت المزامنة مع GitHub</string>
+    <string name="build_latest_remote_commit">أحدث إيداع على GitHub</string>
 </resources>

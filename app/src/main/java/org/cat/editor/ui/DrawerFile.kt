@@ -38,6 +38,12 @@ import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Shield
 import androidx.compose.material.icons.filled.Source
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.filled.Fullscreen
+import androidx.compose.material.icons.filled.FullscreenExit
+import androidx.compose.material3.SmallFloatingActionButton
+import androidx.compose.material3.Surface
 import androidx.compose.material3.DismissibleDrawerSheet
 import androidx.compose.material3.DismissibleNavigationDrawer
 import androidx.compose.material3.DrawerValue
@@ -105,6 +111,8 @@ fun IdeMainScreen(
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val scope = rememberCoroutineScope()
     val context = LocalContext.current
+    val isSmartToolbar = remember { org.cat.editor.utils.SettingsManager.isSmartToolbarEnabled(context) }
+    var isToolbarVisible by remember { mutableStateOf(true) }
     var currentCode by remember { mutableStateOf("") }
     var showMoreMenu by remember { mutableStateOf(false) }
 
@@ -149,22 +157,45 @@ fun IdeMainScreen(
         Scaffold(
             topBar = {
                 Column {
-                    TopAppBar(
-                        title = { },
-                        navigationIcon = {
-                            IconButton(onClick = { 
-                                scope.launch { 
-                                    if (drawerState.isClosed) drawerState.open() else drawerState.close() 
-                                } 
-                            }) {
-                                Icon(Icons.Default.Menu, contentDescription = stringResource(id = R.string.menu))
-                            }
-                        },
-                        actions = {
-                            IconButton(onClick = {
-                                Toast.makeText(context, context.getString(R.string.undo), Toast.LENGTH_SHORT).show()
-                            }) {
-                                Icon(Icons.AutoMirrored.Filled.Undo, contentDescription = stringResource(id = R.string.undo))
+                    AnimatedVisibility(visible = isToolbarVisible) {
+                        TopAppBar(
+                            title = { },
+                            navigationIcon = {
+                                IconButton(onClick = { 
+                                    scope.launch { 
+                                        if (drawerState.isClosed) drawerState.open() else drawerState.close() 
+                                    } 
+                                }) {
+                                    Icon(Icons.Default.Menu, contentDescription = stringResource(id = R.string.menu))
+                                }
+                            },
+                            actions = {
+                                if (org.cat.editor.utils.SettingsManager.isDebugOptionsEnabled(context)) {
+                                    Surface(
+                                        color = MaterialTheme.colorScheme.tertiaryContainer,
+                                        shape = RoundedCornerShape(6.dp),
+                                        modifier = Modifier.padding(end = 4.dp)
+                                    ) {
+                                        Text(
+                                            text = "DEBUG",
+                                            style = MaterialTheme.typography.labelSmall,
+                                            fontWeight = FontWeight.Bold,
+                                            color = MaterialTheme.colorScheme.onTertiaryContainer,
+                                            modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+                                        )
+                                    }
+                                }
+
+                                if (isSmartToolbar) {
+                                    IconButton(onClick = { isToolbarVisible = false }) {
+                                        Icon(Icons.Default.Fullscreen, contentDescription = "Hide Toolbar")
+                                    }
+                                }
+
+                                IconButton(onClick = {
+                                    Toast.makeText(context, context.getString(R.string.undo), Toast.LENGTH_SHORT).show()
+                                }) {
+                                    Icon(Icons.AutoMirrored.Filled.Undo, contentDescription = stringResource(id = R.string.undo))
                             }
 
                             IconButton(onClick = {
@@ -221,6 +252,7 @@ fun IdeMainScreen(
                             containerColor = MaterialTheme.colorScheme.surfaceVariant
                         )
                     )
+                }
 
                     if (openedFiles.isNotEmpty()) {
                         val activeIndex = openedFiles.indexOf(activeFilePath).coerceAtLeast(0)
@@ -264,6 +296,17 @@ fun IdeMainScreen(
                                 )
                             }
                         }
+                    }
+                }
+            },
+            floatingActionButton = {
+                if (isSmartToolbar && !isToolbarVisible) {
+                    SmallFloatingActionButton(
+                        onClick = { isToolbarVisible = true },
+                        containerColor = MaterialTheme.colorScheme.primaryContainer,
+                        contentColor = MaterialTheme.colorScheme.onPrimaryContainer
+                    ) {
+                        Icon(Icons.Default.FullscreenExit, contentDescription = "Show Toolbar")
                     }
                 }
             }

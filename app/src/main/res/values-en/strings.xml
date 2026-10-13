@@ -88,4 +88,96 @@
     <string name="file_git">Git</string>
     <string name="file_proguard">Proguard</string>
     <string name="file_generic">File</string>
+
+    <!-- Settings Redesign -->
+    <string name="settings_app_title">Application</string>
+    <string name="settings_app_desc">General application settings</string>
+    <string name="settings_editor_title">Editor</string>
+    <string name="settings_editor_desc">General editor settings</string>
+    <string name="settings_git_title">Git</string>
+    <string name="settings_git_desc">Version control system configuration</string>
+    <string name="settings_about_desc">About %1$s</string>
+
+    <!-- App Settings Screen -->
+    <string name="setting_check_updates_title">Check for updates</string>
+    <string name="setting_check_updates_desc">Check for updates periodically</string>
+    <string name="setting_fullscreen_title">Fullscreen</string>
+    <string name="setting_fullscreen_desc">Start app in fullscreen mode</string>
+    <string name="setting_smart_toolbar_title">Smart toolbar</string>
+    <string name="setting_smart_toolbar_desc">Hide toolbar while editing to free screen space</string>
+    <string name="setting_exit_dialog_title">Exit confirmation dialog</string>
+    <string name="setting_exit_dialog_desc">Show confirmation dialog before closing app</string>
+    <string name="setting_manage_storage_title">Manage storage</string>
+    <string name="setting_manage_storage_desc">Manage storage permissions</string>
+    <string name="setting_manage_fonts_title">Manage app fonts</string>
+    <string name="setting_manage_fonts_desc">Manage application fonts</string>
+    <string name="section_feature_toggles">Feature toggles</string>
+    <string name="setting_debug_options_title">Debug options</string>
+
+    <!-- Language Screen -->
+    <string name="language_warning_notice">Changing language will restart this screen to apply the new language immediately. This may briefly display a blank screen, potentially causing discomfort for people with photosensitive epilepsy.</string>
+    <string name="btn_translate">Translate</string>
+
+    <!-- About Screen -->
+    <string name="section_build_info">Build info</string>
+    <string name="build_version">Version</string>
+    <string name="build_version_code">Version code</string>
+    <string name="build_git_hash">Git commit hash</string>
+    <string name="section_community">Community</string>
+    <string name="community_github_stars">GitHub Stars</string>
+    <string name="community_github">GitHub</string>
+    <string name="community_github_sub">Star on GitHub 😍</string>
+    <string name="community_telegram">Telegram Group</string>
+    <string name="community_telegram_sub">Report issues, feature requests, etc.</string>
+
+    <!-- Support Screen -->
+    <string name="support">Support</string>
+    <string name="support_github_sponsors">GitHub Sponsors</string>
+    <string name="support_buy_me_coffee">Buy Me a Coffee</string>
+    <string name="support_saweria">Saweria</string>
+    <string name="support_saweria_desc">Support via saweria, for Indonesian, Thai and Malaysian users</string>
+
+    <!-- Placeholder -->
+    <string name="coming_soon">Coming soon</string>
+    <string name="feature_under_development">This setting screen will be available soon.</string>
+    <!-- Git Settings Screen -->
+    <string name="git_section_general">General</string>
+    <string name="git_color_filenames_title">Color file names</string>
+    <string name="git_color_filenames_desc">Color file names based on Git status</string>
+    <string name="git_gutter_indicators_title">Gutter indicators</string>
+    <string name="git_gutter_indicators_desc">Show line change indicators for added, modified, and deleted lines</string>
+    <string name="git_conflict_detection_title">Conflict detection</string>
+    <string name="git_conflict_detection_desc">Show conflict markers and resolution options in editor</string>
+    <string name="git_section_account">Account</string>
+    <string name="git_credentials_title">Credentials</string>
+    <string name="git_credentials_desc">Credentials to access remote repositories</string>
+    <string name="git_user_data_title">User data</string>
+    <string name="git_user_data_desc">User data that will appear in your Git commits</string>
+    <string name="git_section_repositories">Repositories</string>
+    <string name="git_submodules_title">Submodules</string>
+    <string name="git_submodules_desc">Include submodules when cloning repositories</string>
+    <string name="git_recursive_submodules_title">Recursive submodules</string>
+    <string name="git_recursive_submodules_desc">Fetch submodules and their dependencies recursively</string>
+    <string name="git_pat_warning_desc">To connect to GitHub, you must enter a PAT token, not your GitHub account password.</string>
+    <string name="git_username_label">Username</string>
+    <string name="git_password_label">Password</string>
+    <string name="git_author_name_label">Name</string>
+    <string name="git_author_email_label">Email</string>
+
+    <!-- Settings functionality and GitHub sync -->
+    <string name="exit_dialog_title">Exit Cat Editor</string>
+    <string name="exit_dialog_msg">Are you sure you want to exit the application?</string>
+    <string name="exit_dialog_confirm">Exit</string>
+    <string name="select_font_title">Select Editor Font</string>
+    <string name="font_monospace">Monospace (Default)</string>
+    <string name="font_sans">Sans-Serif</string>
+    <string name="font_serif">Serif</string>
+    <string name="checking_updates">Checking for updates…</string>
+    <string name="up_to_date">You are on the latest version (%1$s)</string>
+    <string name="update_available">New update available on GitHub (%1$s)</string>
+    <string name="sync_github">Sync GitHub Info</string>
+    <string name="syncing_github">Syncing with GitHub…</string>
+    <string name="synced_github_success">Synced with GitHub</string>
+    <string name="sync_failed">Failed to sync with GitHub</string>
+    <string name="build_latest_remote_commit">Latest GitHub commit</string>
 </resources>

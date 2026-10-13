@@ -49,6 +49,14 @@
     <string name="file_preview_deleted">Файл предпросмотра удален</string>
     <string name="file_saved">Файл сохранен</string>
     <string name="failed_to_save">Не удалось сохранить: %1$s</string>
+    <string name="copy">Копировать</string>
+    <string name="restart">Перезапустить</string>
+    <string name="create_file">Создать файл</string>
+    <string name="create_folder">Создать папку</string>
+    <string name="create_java_class">Создать Java-класс</string>
+    <string name="create_kotlin_class">Создать Kotlin-класс</string>
+    <string name="toolbar_name">Ой сбой!!</string>
+    <string name="copy_log">Копировать логи</string>
 
     <!-- Welcome Screen -->
     <string name="welcome">Добро пожаловать</string>
@@ -78,4 +86,96 @@
     <string name="file_git">Git</string>
     <string name="file_proguard">Proguard</string>
     <string name="file_generic">Файл</string>
+
+    <!-- Settings Redesign -->
+    <string name="settings_app_title">Приложение</string>
+    <string name="settings_app_desc">Общие настройки приложения</string>
+    <string name="settings_editor_title">Редактор</string>
+    <string name="settings_editor_desc">Общие настройки редактора</string>
+    <string name="settings_git_title">Git</string>
+    <string name="settings_git_desc">Настройка системы контроля версий</string>
+    <string name="settings_about_desc">О приложении %1$s</string>
+
+    <!-- App Settings Screen -->
+    <string name="setting_check_updates_title">Проверка обновлений</string>
+    <string name="setting_check_updates_desc">Периодически проверять обновления</string>
+    <string name="setting_fullscreen_title">Полноэкранный режим</string>
+    <string name="setting_fullscreen_desc">Запускать приложение во весь экран</string>
+    <string name="setting_smart_toolbar_title">Умная панель инструментов</string>
+    <string name="setting_smart_toolbar_desc">Скрывать панель при редактировании для экономии места</string>
+    <string name="setting_exit_dialog_title">Диалог подтверждения выхода</string>
+    <string name="setting_exit_dialog_desc">Показывать диалог перед закрытием приложения</string>
+    <string name="setting_manage_storage_title">Управление хранилищем</string>
+    <string name="setting_manage_storage_desc">Управление разрешениями на доступ к памяти</string>
+    <string name="setting_manage_fonts_title">Управление шрифтами</string>
+    <string name="setting_manage_fonts_desc">Управление шрифтами приложения</string>
+    <string name="section_feature_toggles">Переключатели функций</string>
+    <string name="setting_debug_options_title">Параметры отладки</string>
+
+    <!-- Language Screen -->
+    <string name="language_warning_notice">Изменение языка перезапустит этот экран для немедленного применения. Это может кратковременно вызвать пустой экран, что потенциально небезопасно для людей со светочувствительной эпилепсией.</string>
+    <string name="btn_translate">Перевести</string>
+
+    <!-- About Screen -->
+    <string name="section_build_info">Информация о сборке</string>
+    <string name="build_version">Версия</string>
+    <string name="build_version_code">Код версии</string>
+    <string name="build_git_hash">Хэш коммита Git</string>
+    <string name="section_community">Сообщество</string>
+    <string name="community_github_stars">Звёзды GitHub</string>
+    <string name="community_github">GitHub</string>
+    <string name="community_github_sub">Поставить звезду на GitHub 😍</string>
+    <string name="community_telegram">Группа Telegram</string>
+    <string name="community_telegram_sub">Отчёты об ошибках, предложения функций и т. д.</string>
+
+    <!-- Support Screen -->
+    <string name="support">Поддержка</string>
+    <string name="support_github_sponsors">GitHub Sponsors</string>
+    <string name="support_buy_me_coffee">Buy Me a Coffee</string>
+    <string name="support_saweria">Saweria</string>
+    <string name="support_saweria_desc">Поддержка через Saweria для пользователей из Индонезии, Таиланда и Малайзии</string>
+
+    <!-- Placeholder -->
+    <string name="coming_soon">Скоро появится</string>
+    <string name="feature_under_development">Этот экран настроек скоро будет доступен.</string>
+    <!-- Git Settings Screen -->
+    <string name="git_section_general">Общие</string>
+    <string name="git_color_filenames_title">Цветные имена файлов</string>
+    <string name="git_color_filenames_desc">Выделять имена файлов цветом по статусу Git</string>
+    <string name="git_gutter_indicators_title">Индикаторы на полях</string>
+    <string name="git_gutter_indicators_desc">Показывать индикаторы изменений для добавленных, измененных и удаленных строк</string>
+    <string name="git_conflict_detection_title">Обнаружение конфликтов</string>
+    <string name="git_conflict_detection_desc">Показывать маркеры конфликтов и варианты разрешения в редакторе</string>
+    <string name="git_section_account">Аккаунт</string>
+    <string name="git_credentials_title">Учетные данные</string>
+    <string name="git_credentials_desc">Учетные данные для доступа к удаленным репозиториям</string>
+    <string name="git_user_data_title">Данные пользователя</string>
+    <string name="git_user_data_desc">Данные пользователя, которые будут отображаться в ваших коммитах Git</string>
+    <string name="git_section_repositories">Репозитории</string>
+    <string name="git_submodules_title">Подмодули</string>
+    <string name="git_submodules_desc">Включать подмодули при клонировании репозиториев</string>
+    <string name="git_recursive_submodules_title">Рекурсивные подмодули</string>
+    <string name="git_recursive_submodules_desc">Получать подмодули и их зависимости рекурсивно</string>
+    <string name="git_pat_warning_desc">Для подключения к GitHub необходимо ввести токен PAT, а не пароль от учетной записи GitHub.</string>
+    <string name="git_username_label">Имя пользователя</string>
+    <string name="git_password_label">Пароль</string>
+    <string name="git_author_name_label">Имя</string>
+    <string name="git_author_email_label">Эл. почта</string>
+
+    <!-- Settings functionality and GitHub sync -->
+    <string name="exit_dialog_title">Выйти из Cat Editor</string>
+    <string name="exit_dialog_msg">Вы действительно хотите выйти из приложения?</string>
+    <string name="exit_dialog_confirm">Выйти</string>
+    <string name="select_font_title">Выбор шрифта редактора</string>
+    <string name="font_monospace">Моноширинный (по умолчанию)</string>
+    <string name="font_sans">Без засечек (Sans-Serif)</string>
+    <string name="font_serif">С засечками (Serif)</string>
+    <string name="checking_updates">Проверка обновлений…</string>
+    <string name="up_to_date">У вас установлена последняя версия (%1$s)</string>
+    <string name="update_available">Доступно новое обновление на GitHub (%1$s)</string>
+    <string name="sync_github">Синхронизировать с GitHub</string>
+    <string name="syncing_github">Синхронизация с GitHub…</string>
+    <string name="synced_github_success">Успешно синхронизировано с GitHub</string>
+    <string name="sync_failed">Не удалось синхронизировать с GitHub</string>
+    <string name="build_latest_remote_commit">Последний коммит на GitHub</string>
 </resources>

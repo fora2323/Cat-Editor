@@ -9,18 +9,25 @@ android {
     compileSdk = 37
 
     signingConfigs {
-        getByName("debug") {
-            storeFile = file("../test-compose.jks")
-            storePassword = "testcompose"
-            keyAlias = "TestCompose"
-            keyPassword = "testcompose"
-        }
-        
-        create("release") {
-            storeFile = file("../test-compose.jks")
-            storePassword = "testcompose"
-            keyAlias = "TestCompose"
-            keyPassword = "testcompose"
+        val keystoreFile = rootProject.file("test-compose.jks")
+        if (keystoreFile.exists()) {
+            getByName("debug") {
+                storeFile = keystoreFile
+                storePassword = "testcompose"
+                keyAlias = "TestCompose"
+                keyPassword = "testcompose"
+            }
+            
+            create("release") {
+                storeFile = keystoreFile
+                storePassword = "testcompose"
+                keyAlias = "TestCompose"
+                keyPassword = "testcompose"
+            }
+        } else {
+            create("release") {
+                // Fallback or leave unconfigured if keystore not found
+            }
         }
     }
 
@@ -30,6 +37,15 @@ android {
         targetSdk = 36
         versionCode = 1
         versionName = "1.0.0-alpha"
+
+        val gitHash = try {
+            val process = ProcessBuilder("git", "rev-parse", "--short", "HEAD").start()
+            val hash = process.inputStream.bufferedReader().readText().trim()
+            if (hash.isNotEmpty()) hash else "3ebb02f"
+        } catch (_: Exception) {
+            "3ebb02f"
+        }
+        buildConfigField("String", "GIT_HASH", "\"$gitHash\"")
     }
 
     buildTypes {
@@ -57,6 +73,7 @@ android {
 
     buildFeatures {
         compose = true
+        buildConfig = true
     }
 
     composeOptions {

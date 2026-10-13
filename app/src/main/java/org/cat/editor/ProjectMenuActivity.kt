@@ -1,6 +1,7 @@
 package org.cat.editor
 
 import android.Manifest
+import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
@@ -13,6 +14,7 @@ import android.os.Environment
 import android.provider.Settings
 import android.widget.Toast
 import androidx.activity.ComponentActivity
+import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -51,11 +53,13 @@ import androidx.compose.material.icons.filled.FolderOpen
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Create
 import androidx.compose.material.ripple.rememberRipple
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.Icon
@@ -122,6 +126,7 @@ class ProjectMenuActivity : ComponentActivity() {
         enableEdgeToEdge()
         WindowCompat.setDecorFitsSystemWindows(window, false)
         window.navigationBarColor = android.graphics.Color.TRANSPARENT
+        org.cat.editor.utils.SettingsManager.applyFullscreen(this)
 
         setContent {
             AppTheme {
@@ -136,6 +141,11 @@ class ProjectMenuActivity : ComponentActivity() {
             }
         }
     }
+
+    override fun onResume() {
+        super.onResume()
+        org.cat.editor.utils.SettingsManager.applyFullscreen(this)
+    }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -146,6 +156,39 @@ fun ProjectMenuScreen(
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
     val scope = rememberCoroutineScope()
+    val activity = context as? Activity
+    var showExitDialog by remember { mutableStateOf(false) }
+
+    BackHandler(enabled = true) {
+        if (org.cat.editor.utils.SettingsManager.isExitDialogEnabled(context)) {
+            showExitDialog = true
+        } else {
+            activity?.finish()
+        }
+    }
+
+    if (showExitDialog) {
+        AlertDialog(
+            onDismissRequest = { showExitDialog = false },
+            title = { Text(stringResource(id = R.string.exit_dialog_title)) },
+            text = { Text(stringResource(id = R.string.exit_dialog_msg)) },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        showExitDialog = false
+                        activity?.finish()
+                    }
+                ) {
+                    Text(stringResource(id = R.string.exit_dialog_confirm))
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showExitDialog = false }) {
+                    Text(stringResource(id = R.string.cancel))
+                }
+            }
+        )
+    }
 
     var hasPermission by remember { mutableStateOf(checkStoragePermission(context)) }
     var showPermissionDialog by remember { mutableStateOf(!hasPermission) }

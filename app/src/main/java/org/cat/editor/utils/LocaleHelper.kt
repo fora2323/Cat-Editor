@@ -27,10 +27,18 @@ object LocaleHelper {
 
     val supportedLanguages = listOf(
         LanguageOption(LANG_SYSTEM, "Default Sistem", "System Default", "🌐"),
-        LanguageOption(LANG_EN, "English", "English", "🇺🇸"),
-        LanguageOption(LANG_ID, "Bahasa Indonesia", "Indonesian", "🇮🇩"),
-        LanguageOption(LANG_AR, "العربية", "Arabic", "🇸🇦"),
-        LanguageOption(LANG_RU, "Русский", "Russian", "🇷🇺")
+        LanguageOption(LANG_AR, "العربية (ar)", "Arabic", "🇸🇦"),
+        LanguageOption("arq", "Arab Aljazair (arq)", "Algerian Arabic", "🇩🇿"),
+        LanguageOption("az", "azərbaycan (az)", "Azerbaijani", "🇦🇿"),
+        LanguageOption("bg", "български (bg)", "Bulgarian", "🇧🇬"),
+        LanguageOption("bn", "বাংলা (bn)", "Bengali", "🇧🇩"),
+        LanguageOption("bn-IN", "বাংলা (bn-IN)", "Bengali (India)", "🇮🇳"),
+        LanguageOption("cs", "čeština (cs)", "Czech", "🇨🇿"),
+        LanguageOption("de", "Deutsch (de)", "German", "🇩🇪"),
+        LanguageOption("el", "Ελληνικά (el)", "Greek", "🇬🇷"),
+        LanguageOption(LANG_EN, "English (en)", "English", "🇺🇸"),
+        LanguageOption(LANG_ID, "Bahasa Indonesia (id)", "Indonesian", "🇮🇩"),
+        LanguageOption(LANG_RU, "Русский (ru)", "Russian", "🇷🇺")
     )
 
     fun getPersistedLanguage(context: Context): String {

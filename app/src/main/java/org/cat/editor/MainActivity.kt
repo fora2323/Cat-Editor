@@ -76,6 +76,7 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+        org.cat.editor.utils.SettingsManager.applyFullscreen(this)
 
         val prefs = getSharedPreferences("app_data", Context.MODE_PRIVATE)
         projectPath = prefs.getString("last_project", "") ?: ""
@@ -239,6 +240,11 @@ class MainActivity : ComponentActivity() {
         } else if (activeFilePath.isNotEmpty() && File(activeFilePath).exists()) {
             setupPreview(activeFilePath)
         }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        org.cat.editor.utils.SettingsManager.applyFullscreen(this)
     }
 
     override fun onDestroy() {

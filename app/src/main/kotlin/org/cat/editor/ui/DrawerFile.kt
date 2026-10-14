@@ -2,47 +2,50 @@ package org.cat.editor.ui
 
 import android.content.Intent
 import android.widget.Toast
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
-import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.gestures.awaitEachGesture
+import androidx.compose.foundation.gestures.awaitFirstDown
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.wrapContentWidth
-import androidx.compose.foundation.layout.ExperimentalLayoutApi
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.ime
 import androidx.compose.foundation.layout.isImeVisible
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.systemBars
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.InsertDriveFile
-import androidx.compose.runtime.produceState
-import androidx.compose.ui.platform.LocalDensity
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 import androidx.compose.material.icons.automirrored.filled.Redo
 import androidx.compose.material.icons.automirrored.filled.Undo
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Code
+import androidx.compose.material.icons.filled.ContentCopy
+import androidx.compose.material.icons.filled.CreateNewFolder
 import androidx.compose.material.icons.filled.DataObject
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Description
-import androidx.compose.material.icons.filled.Key
+import androidx.compose.material.icons.filled.DriveFileRenameOutline
+import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.Folder
+import androidx.compose.material.icons.filled.Fullscreen
+import androidx.compose.material.icons.filled.FullscreenExit
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.Menu
@@ -51,87 +54,76 @@ import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Save
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material.icons.filled.Shield
 import androidx.compose.material.icons.filled.Source
-import androidx.compose.material.icons.filled.ContentCopy
-import androidx.compose.material.icons.filled.CreateNewFolder
-import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.DriveFileRenameOutline
-import androidx.compose.material.icons.filled.Folder
+import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.FilterChip
-import androidx.compose.material3.TextButton
-import androidx.compose.runtime.mutableStateMapOf
-import androidx.compose.runtime.snapshots.SnapshotStateMap
-import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.platform.LocalClipboardManager
-import androidx.compose.ui.text.AnnotatedString
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.filled.Fullscreen
-import androidx.compose.material.icons.filled.FullscreenExit
-import androidx.compose.material3.SmallFloatingActionButton
-import androidx.compose.material3.Surface
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DismissibleDrawerSheet
 import androidx.compose.material3.DismissibleNavigationDrawer
 import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExtendedFloatingActionButton
+import androidx.compose.material3.FilterChip
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.ScrollableTabRow
+import androidx.compose.material3.SmallFloatingActionButton
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Tab
 import androidx.compose.material3.TabRowDefaults
 import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.material3.VerticalDivider
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshots.SnapshotStateMap
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import androidx.compose.foundation.gestures.awaitEachGesture
-import androidx.compose.foundation.gestures.awaitFirstDown
-import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.material.icons.filled.Visibility
-import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material3.ExtendedFloatingActionButton
-import androidx.compose.material3.LocalContentColor
+import kotlinx.coroutines.withContext
 import org.cat.editor.R
 import org.cat.editor.SettingsActivity
-import org.cat.editor.ui.KotlinCodeEditor
-import org.cat.editor.ui.preview.ImagePreviewIcon
-import org.cat.editor.ui.preview.ImageDetailViewer
 import org.cat.editor.ui.preview.BinaryFilePlaceholder
-import org.cat.editor.ui.preview.PreviewScreen
-import org.cat.editor.ui.preview.isImageFile
-import org.cat.editor.ui.preview.isBinaryFile
 import org.cat.editor.ui.preview.ComposeNode
+import org.cat.editor.ui.preview.ImageDetailViewer
+import org.cat.editor.ui.preview.ImagePreviewIcon
+import org.cat.editor.ui.preview.PreviewScreen
+import org.cat.editor.ui.preview.isBinaryFile
+import org.cat.editor.ui.preview.isImageFile
 import java.io.File
 
 enum class EditorViewMode { EDIT, PREVIEW }
@@ -294,95 +286,95 @@ fun IdeMainScreen(
                                     Toast.makeText(context, context.getString(R.string.undo), Toast.LENGTH_SHORT).show()
                                 }) {
                                     Icon(Icons.AutoMirrored.Filled.Undo, contentDescription = stringResource(id = R.string.undo))
-                            }
+                                }
 
-                            IconButton(onClick = {
-                                Toast.makeText(context, context.getString(R.string.redo), Toast.LENGTH_SHORT).show()
-                            }) {
-                                Icon(Icons.AutoMirrored.Filled.Redo, contentDescription = stringResource(id = R.string.redo))
-                            }
+                                IconButton(onClick = {
+                                    Toast.makeText(context, context.getString(R.string.redo), Toast.LENGTH_SHORT).show()
+                                }) {
+                                    Icon(Icons.AutoMirrored.Filled.Redo, contentDescription = stringResource(id = R.string.redo))
+                                }
 
-                            IconButton(onClick = {
+                                IconButton(onClick = {
+                                    if (activeFilePath.isNotEmpty()) {
+                                        try {
+                                            File(activeFilePath).writeText(currentCode)
+                                            Toast.makeText(context, context.getString(R.string.file_saved), Toast.LENGTH_SHORT).show()
+                                            onSaveFile?.invoke()
+                                        } catch (e: Exception) {
+                                            Toast.makeText(context, context.getString(R.string.failed_to_save, e.message ?: ""), Toast.LENGTH_SHORT).show()
+                                        }
+                                    }
+                                }) {
+                                    Icon(Icons.Default.Save, contentDescription = stringResource(id = R.string.save))
+                                }
+
+                                IconButton(onClick = {
+                                    targetCreateFolder = if (activeFilePath.isNotEmpty()) {
+                                        val active = File(activeFilePath)
+                                        if (active.isDirectory) active else active.parentFile ?: File(projectPath)
+                                    } else {
+                                        File(projectPath)
+                                    }
+                                    showCreateDialog = true
+                                    onAddFile?.invoke()
+                                }) {
+                                    Icon(Icons.Default.Add, contentDescription = stringResource(id = R.string.add))
+                                }
+
                                 if (activeFilePath.isNotEmpty()) {
-                                    try {
-                                        File(activeFilePath).writeText(currentCode)
-                                        Toast.makeText(context, context.getString(R.string.file_saved), Toast.LENGTH_SHORT).show()
-                                        onSaveFile?.invoke()
-                                    } catch (e: Exception) {
-                                        Toast.makeText(context, context.getString(R.string.failed_to_save, e.message ?: ""), Toast.LENGTH_SHORT).show()
+                                    IconButton(onClick = {
+                                        viewMode = if (viewMode == EditorViewMode.EDIT) EditorViewMode.PREVIEW else EditorViewMode.EDIT
+                                        if (drawerState.isOpen) {
+                                            scope.launch { drawerState.close() }
+                                        }
+                                    }) {
+                                        Icon(
+                                            if (viewMode == EditorViewMode.EDIT) Icons.Default.Visibility else Icons.Default.Edit,
+                                            contentDescription = if (viewMode == EditorViewMode.EDIT) "Preview" else "Edit",
+                                            tint = if (viewMode == EditorViewMode.PREVIEW) MaterialTheme.colorScheme.primary else LocalContentColor.current
+                                        )
                                     }
                                 }
-                            }) {
-                                Icon(Icons.Default.Save, contentDescription = stringResource(id = R.string.save))
-                            }
 
-                            IconButton(onClick = {
-                                targetCreateFolder = if (activeFilePath.isNotEmpty()) {
-                                    val active = File(activeFilePath)
-                                    if (active.isDirectory) active else active.parentFile ?: File(projectPath)
-                                } else {
-                                    File(projectPath)
-                                }
-                                showCreateDialog = true
-                                onAddFile?.invoke()
-                            }) {
-                                Icon(Icons.Default.Add, contentDescription = stringResource(id = R.string.add))
-                            }
-
-                            if (activeFilePath.isNotEmpty()) {
-                                IconButton(onClick = {
-                                    viewMode = if (viewMode == EditorViewMode.EDIT) EditorViewMode.PREVIEW else EditorViewMode.EDIT
-                                    if (drawerState.isOpen) {
-                                        scope.launch { drawerState.close() }
+                                Box {
+                                    IconButton(onClick = {
+                                        showMoreMenu = true
+                                    }) {
+                                        Icon(Icons.Default.MoreVert, contentDescription = stringResource(id = R.string.more_options))
                                     }
-                                }) {
-                                    Icon(
-                                        if (viewMode == EditorViewMode.EDIT) Icons.Default.Visibility else Icons.Default.Edit,
-                                        contentDescription = if (viewMode == EditorViewMode.EDIT) "Preview" else "Edit",
-                                        tint = if (viewMode == EditorViewMode.PREVIEW) MaterialTheme.colorScheme.primary else LocalContentColor.current
-                                    )
-                                }
-                            }
 
-                            Box {
-                                IconButton(onClick = {
-                                    showMoreMenu = true
-                                }) {
-                                    Icon(Icons.Default.MoreVert, contentDescription = stringResource(id = R.string.more_options))
+                                    DropdownMenu(
+                                        expanded = showMoreMenu,
+                                        onDismissRequest = { showMoreMenu = false }
+                                    ) {
+                                        DropdownMenuItem(
+                                            text = { Text("Open Project") },
+                                            leadingIcon = {
+                                                Icon(Icons.Default.Add, contentDescription = null)
+                                            },
+                                            onClick = {
+                                                showMoreMenu = false
+                                                onTogglePicker(true)
+                                            }
+                                        )
+                                        DropdownMenuItem(
+                                            text = { Text(stringResource(id = R.string.settings)) },
+                                            leadingIcon = {
+                                                Icon(Icons.Default.Settings, contentDescription = null)
+                                            },
+                                            onClick = {
+                                                showMoreMenu = false
+                                                context.startActivity(Intent(context, SettingsActivity::class.java))
+                                            }
+                                        )
+                                    }
                                 }
-
-                                DropdownMenu(
-                                    expanded = showMoreMenu,
-                                    onDismissRequest = { showMoreMenu = false }
-                                ) {
-                                    DropdownMenuItem(
-                                        text = { Text("Open Project") },
-                                        leadingIcon = {
-                                            Icon(Icons.Default.Add, contentDescription = null)
-                                        },
-                                        onClick = {
-                                            showMoreMenu = false
-                                            onTogglePicker(true)
-                                        }
-                                    )
-                                    DropdownMenuItem(
-                                        text = { Text(stringResource(id = R.string.settings)) },
-                                        leadingIcon = {
-                                            Icon(Icons.Default.Settings, contentDescription = null)
-                                        },
-                                        onClick = {
-                                            showMoreMenu = false
-                                            context.startActivity(Intent(context, SettingsActivity::class.java))
-                                        }
-                                    )
-                                }
-                            }
-                        },
-                        colors = TopAppBarDefaults.topAppBarColors(
-                            containerColor = MaterialTheme.colorScheme.surfaceVariant
+                            },
+                            colors = TopAppBarDefaults.topAppBarColors(
+                                containerColor = MaterialTheme.colorScheme.surfaceVariant
+                            )
                         )
-                    )
-                }
+                    }
 
                     val validOpenedFiles = remember(openedFiles, projectPath) {
                         if (projectPath.isBlank()) emptyList()
@@ -673,27 +665,25 @@ fun IdeMainScreen(
 @Composable
 fun FileIcon(file: File, modifier: Modifier = Modifier) {
     val fileName = file.name
+    // Ubah warna semua icon file menjadi onSurfaceVariant dan hapus handler .jks serta .pro
+    val iconTint = MaterialTheme.colorScheme.onSurfaceVariant
     when {
         isImageFile(fileName) -> ImagePreviewIcon(file = file, modifier = modifier)
-        fileName == "AndroidManifest.xml" -> Icon(painterResource(R.drawable.ic_android), stringResource(id = R.string.manifest), modifier = modifier, tint = Color.Unspecified)
-        fileName.endsWith(".kt") -> Icon(painterResource(R.drawable.ic_kotlin), stringResource(id = R.string.file_kotlin), modifier = modifier, tint = Color.Unspecified)
-        fileName.endsWith(".kts") || fileName == "gradlew" || fileName == "gradlew.bat" || fileName.endsWith(".gradle") || fileName == "gradle.properties" || fileName == "local.properties" -> Icon(painterResource(R.drawable.ic_gradle), stringResource(id = R.string.file_gradle), modifier = modifier, tint = Color.Unspecified)
-        fileName.endsWith(".java") -> Icon(painterResource(R.drawable.ic_java), stringResource(id = R.string.file_java), modifier = modifier, tint = Color.Unspecified)
-        fileName.endsWith(".xml") -> Icon(painterResource(R.drawable.ic_xml), stringResource(id = R.string.file_xml), modifier = modifier, tint = Color.Unspecified)
-        fileName.endsWith(".cpp") || fileName.endsWith(".cc") || fileName.endsWith(".cxx") || fileName.endsWith(".hpp") -> Icon(painterResource(R.drawable.ic_cpp), stringResource(id = R.string.file_cpp), modifier = modifier, tint = Color.Unspecified)
-        fileName.endsWith(".c") || fileName.endsWith(".h") -> Icon(painterResource(R.drawable.ic_c), stringResource(id = R.string.file_c), modifier = modifier, tint = Color.Unspecified)
-        fileName == "CMakeLists.txt" || fileName.endsWith(".cmake") -> Icon(painterResource(R.drawable.ic_cmake), stringResource(id = R.string.file_cmake), modifier = modifier, tint = Color.Unspecified)
-        fileName.endsWith(".py") -> Icon(Icons.Default.Code, stringResource(id = R.string.file_python), modifier = modifier, tint = Color(0xFF3776AB))
-        fileName.endsWith(".md") -> Icon(Icons.Default.Description, stringResource(id = R.string.file_markdown), modifier = modifier, tint = Color(0xFF42A5F5))
-        fileName.endsWith(".json") -> Icon(Icons.Default.DataObject, stringResource(id = R.string.file_json), modifier = modifier, tint = Color(0xFFFFCA28))
-        fileName.endsWith(".jks") || fileName.endsWith(".keystore") -> Icon(Icons.Default.Key, stringResource(id = R.string.file_keystore), modifier = modifier, tint = Color(0xFFFFCA28))
-        fileName.startsWith(".git") -> Icon(Icons.Default.Source, stringResource(id = R.string.file_git), modifier = modifier, tint = Color(0xFFF05032))
-        fileName.endsWith(".pro") -> Icon(Icons.Default.Shield, stringResource(id = R.string.file_proguard), modifier = borderModifier(false), tint = Color(0xFF7E57C2))
-        else -> Icon(Icons.Default.Description, stringResource(id = R.string.file_generic), modifier = modifier, tint = Color.Gray)
+        fileName == "AndroidManifest.xml" -> Icon(painterResource(R.drawable.ic_android), stringResource(id = R.string.manifest), modifier = modifier, tint = iconTint)
+        fileName.endsWith(".kt") -> Icon(painterResource(R.drawable.ic_kotlin), stringResource(id = R.string.file_kotlin), modifier = modifier, tint = iconTint)
+        fileName.endsWith(".kts") || fileName == "gradlew" || fileName == "gradlew.bat" || fileName.endsWith(".gradle") || fileName == "gradle.properties" || fileName == "local.properties" -> Icon(painterResource(R.drawable.ic_gradle), stringResource(id = R.string.file_gradle), modifier = modifier, tint = iconTint)
+        fileName.endsWith(".java") -> Icon(painterResource(R.drawable.ic_java), stringResource(id = R.string.file_java), modifier = modifier, tint = iconTint)
+        fileName.endsWith(".xml") -> Icon(painterResource(R.drawable.ic_xml), stringResource(id = R.string.file_xml), modifier = modifier, tint = iconTint)
+        fileName.endsWith(".cpp") || fileName.endsWith(".cc") || fileName.endsWith(".cxx") || fileName.endsWith(".hpp") -> Icon(painterResource(R.drawable.ic_cpp), stringResource(id = R.string.file_cpp), modifier = modifier, tint = iconTint)
+        fileName.endsWith(".c") || fileName.endsWith(".h") -> Icon(painterResource(R.drawable.ic_c), stringResource(id = R.string.file_c), modifier = modifier, tint = iconTint)
+        fileName == "CMakeLists.txt" || fileName.endsWith(".cmake") -> Icon(painterResource(R.drawable.ic_cmake), stringResource(id = R.string.file_cmake), modifier = modifier, tint = iconTint)
+        fileName.endsWith(".py") -> Icon(Icons.Default.Code, stringResource(id = R.string.file_python), modifier = modifier, tint = iconTint)
+        fileName.endsWith(".md") -> Icon(Icons.Default.Description, stringResource(id = R.string.file_markdown), modifier = modifier, tint = iconTint)
+        fileName.endsWith(".json") -> Icon(Icons.Default.DataObject, stringResource(id = R.string.file_json), modifier = modifier, tint = iconTint)
+        fileName.startsWith(".git") -> Icon(Icons.Default.Source, stringResource(id = R.string.file_git), modifier = modifier, tint = iconTint)
+        else -> Icon(Icons.Default.Description, stringResource(id = R.string.file_generic), modifier = modifier, tint = iconTint)
     }
 }
-
-private fun borderModifier(selected: Boolean): Modifier = Modifier
 
 data class FileTreeItem(
     val file: File,
@@ -701,6 +691,18 @@ data class FileTreeItem(
     val isDirectory: Boolean,
     val isExpanded: Boolean
 )
+
+// Fungsi pembaca isi direktori untuk dijalankan di background thread
+private fun loadDirectoryChildren(dir: File): List<File> {
+    return try {
+        dir.listFiles()
+            ?.filter { !it.name.startsWith(".") }
+            ?.sortedWith(compareBy({ !it.isDirectory }, { it.name.lowercase() }))
+            ?: emptyList()
+    } catch (_: Throwable) {
+        emptyList()
+    }
+}
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -711,32 +713,32 @@ fun FileTreeView(
     onFileClick: (File) -> Unit,
     onFileLongClick: (File) -> Unit
 ) {
+    val scope = rememberCoroutineScope()
     var searchQuery by remember { mutableStateOf("") }
     var localRefreshTrigger by remember { mutableIntStateOf(0) }
 
-    // In-memory directory listing cache to avoid blocking File.listFiles() during recomposition
-    val dirChildrenCache = remember(root, refreshKey, localRefreshTrigger) {
-        mutableMapOf<String, List<File>>()
-    }
+    // Cache isi folder & state loading per folder agar tidak membebani UI thread saat ekspansi
+    val dirChildrenCache = remember(root) { mutableStateMapOf<String, List<File>>() }
+    val loadingPaths = remember(root) { mutableStateMapOf<String, Boolean>() }
 
-    fun getChildren(dir: File): List<File> {
-        return dirChildrenCache.getOrPut(dir.absolutePath) {
-            try {
-                dir.listFiles()
-                    ?.filter { !it.name.startsWith(".") }
-                    ?.sortedWith(compareBy({ !it.isDirectory }, { it.name.lowercase() }))
-                    ?: emptyList()
-            } catch (_: Throwable) {
-                emptyList()
-            }
+    // Muat direktori root dan folder yang sedang terbuka secara asynchronous di IO thread
+    LaunchedEffect(root, refreshKey, localRefreshTrigger) {
+        val pathsToLoad = (listOf(root.absolutePath) + expandedPaths.filterValues { it }.keys).distinct()
+        pathsToLoad.forEach { path -> loadingPaths[path] = true }
+
+        val loadedMap = withContext(Dispatchers.IO) {
+            pathsToLoad.associateWith { path -> loadDirectoryChildren(File(path)) }
         }
+
+        dirChildrenCache.clear()
+        dirChildrenCache.putAll(loadedMap)
+        pathsToLoad.forEach { path -> loadingPaths.remove(path) }
     }
 
-    // Build flat list of visible items dynamically based on expanded state
-    val visibleItems = remember(root, expandedPaths.toMap(), refreshKey, localRefreshTrigger) {
+    val visibleItems = remember(root, expandedPaths.toMap(), dirChildrenCache.toMap()) {
         val items = mutableListOf<FileTreeItem>()
         fun traverse(dir: File, level: Int) {
-            val children = getChildren(dir)
+            val children = dirChildrenCache[dir.absolutePath] ?: emptyList()
             for (file in children) {
                 val isDir = file.isDirectory
                 val isExpanded = isDir && (expandedPaths[file.absolutePath] == true)
@@ -775,7 +777,6 @@ fun FileTreeView(
             )
             Spacer(Modifier.width(4.dp))
             IconButton(onClick = {
-                dirChildrenCache.clear()
                 localRefreshTrigger++
             }) {
                 Icon(Icons.Default.Refresh, stringResource(id = R.string.refresh), modifier = Modifier.size(20.dp))
@@ -797,11 +798,18 @@ fun FileTreeView(
                         .padding(16.dp),
                     contentAlignment = Alignment.Center
                 ) {
-                    Text(
-                        text = stringResource(id = R.string.not_found),
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        fontSize = 13.sp
-                    )
+                    if (loadingPaths[root.absolutePath] == true) {
+                        CircularProgressIndicator(
+                            modifier = Modifier.size(24.dp),
+                            strokeWidth = 2.dp
+                        )
+                    } else {
+                        Text(
+                            text = stringResource(id = R.string.not_found),
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            fontSize = 13.sp
+                        )
+                    }
                 }
             } else {
                 LazyColumn(
@@ -813,11 +821,35 @@ fun FileTreeView(
                         key = { index -> visibleItems[index].file.absolutePath }
                     ) { index ->
                         val item = visibleItems[index]
+                        val itemPath = item.file.absolutePath
+                        val isFolderLoading = loadingPaths[itemPath] == true
+
                         FileTreeItemRow(
                             item = item,
+                            isLoading = isFolderLoading,
                             onClick = {
                                 if (item.isDirectory) {
-                                    expandedPaths[item.file.absolutePath] = !item.isExpanded
+                                    // Jika sedang loading, abaikan klik berulang
+                                    if (isFolderLoading) return@FileTreeItemRow
+
+                                    if (item.isExpanded) {
+                                        expandedPaths[itemPath] = false
+                                    } else {
+                                        // Jika belum ada di cache, muat isinya di IO thread sambil tampilkan loading di sebelah folder
+                                        if (dirChildrenCache.containsKey(itemPath)) {
+                                            expandedPaths[itemPath] = true
+                                        } else {
+                                            loadingPaths[itemPath] = true
+                                            scope.launch(Dispatchers.IO) {
+                                                val children = loadDirectoryChildren(item.file)
+                                                withContext(Dispatchers.Main) {
+                                                    dirChildrenCache[itemPath] = children
+                                                    loadingPaths.remove(itemPath)
+                                                    expandedPaths[itemPath] = true
+                                                }
+                                            }
+                                        }
+                                    }
                                 } else {
                                     onFileClick(item.file)
                                 }
@@ -835,6 +867,7 @@ fun FileTreeView(
 @Composable
 private fun FileTreeItemRow(
     item: FileTreeItem,
+    isLoading: Boolean = false,
     onClick: () -> Unit,
     onLongClick: () -> Unit
 ) {
@@ -853,12 +886,21 @@ private fun FileTreeItemRow(
         verticalAlignment = Alignment.CenterVertically
     ) {
         if (item.isDirectory) {
-            Icon(
-                imageVector = if (isExpanded) Icons.Default.KeyboardArrowDown else Icons.Default.KeyboardArrowRight,
-                contentDescription = null,
-                modifier = Modifier.size(18.dp),
-                tint = MaterialTheme.colorScheme.onSurfaceVariant
-            )
+            // Tampilkan loading spinner di posisi tanda panah saat isi folder yang banyak/berat sedang dimuat
+            if (isLoading) {
+                CircularProgressIndicator(
+                    modifier = Modifier.size(18.dp),
+                    strokeWidth = 2.dp,
+                    color = MaterialTheme.colorScheme.primary
+                )
+            } else {
+                Icon(
+                    imageVector = if (isExpanded) Icons.Default.KeyboardArrowDown else Icons.Default.KeyboardArrowRight,
+                    contentDescription = null,
+                    modifier = Modifier.size(18.dp),
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
             Spacer(Modifier.width(4.dp))
             FolderIcon(folderName = file.name, isExpanded = isExpanded, modifier = Modifier.size(20.dp))
         } else {
@@ -939,6 +981,7 @@ fun FolderIcon(
     isExpanded: Boolean,
     modifier: Modifier = Modifier
 ) {
+    // Ubah warna icon folder menjadi primary
     Icon(
         painter = painterResource(
             if (isExpanded) R.drawable.ic_folder_open
@@ -946,7 +989,7 @@ fun FolderIcon(
         ),
         contentDescription = folderName,
         modifier = modifier,
-        tint = Color.Unspecified
+        tint = MaterialTheme.colorScheme.primary
     )
 }
 

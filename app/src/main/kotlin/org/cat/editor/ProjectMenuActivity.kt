@@ -7,6 +7,8 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.graphics.Canvas
+import android.graphics.Rect
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
@@ -771,22 +773,146 @@ fun scanProjects(basePath: String): List<ProjectItem> {
 }
 
 fun findProjectIcon(projectDir: File): Bitmap? {
+    val candidateManifests = listOf(
+        File(projectDir, "app/src/main/AndroidManifest.xml"),
+        File(projectDir, "src/main/AndroidManifest.xml"),
+        File(projectDir, "AndroidManifest.xml")
+    )
+    val manifestFile = candidateManifests.firstOrNull { it.exists() && it.isFile }
+
+    var iconNameFromManifest: String? = null
+    var roundIconNameFromManifest: String? = null
+
+    if (manifestFile != null) {
+        try {
+            val manifestText = manifestFile.readText()
+            val iconMatch = Regex("""android:icon\s*=\s*"@[^/]+/([a-zA-Z0-9_]+)"""").find(manifestText)
+            iconNameFromManifest = iconMatch?.groupValues?.get(1)
+
+            val roundIconMatch = Regex("""android:roundIcon\s*=\s*"@[^/]+/([a-zA-Z0-9_]+)"""").find(manifestText)
+            roundIconNameFromManifest = roundIconMatch?.groupValues?.get(1)
+        } catch (_: Exception) {}
+    }
+
+    val targetNames = listOfNotNull(
+        iconNameFromManifest,
+        roundIconNameFromManifest,
+        "ic_launcher",
+        "ic_launcher_round",
+        "ic_app",
+        "app_icon"
+    ).distinct()
+
     val candidateResDirs = listOf(
         File(projectDir, "app/src/main/res"),
         File(projectDir, "src/main/res"),
         File(projectDir, "res")
     )
     val resDir = candidateResDirs.firstOrNull { it.exists() && it.isDirectory } ?: return null
+
+    for (targetName in targetNames) {
+        val bitmap = loadIconBitmapForName(resDir, targetName)
+        if (bitmap != null) return bitmap
+    }
+
+    return null
+}
+
+private fun loadIconBitmapForName(resDir: File, targetName: String): Bitmap? {
+    val densityFolderOrder = listOf(
+        "mipmap-xxxhdpi", "mipmap-xxhdpi", "mipmap-xhdpi", "mipmap-hdpi", "mipmap-mdpi", "mipmap",
+        "drawable-xxxhdpi", "drawable-xxhdpi", "drawable-xhdpi", "drawable-hdpi", "drawable-mdpi", "drawable"
+    )
     val bitmapExtensions = listOf("png", "webp", "jpg", "jpeg")
+    val backgroundKeywords = listOf("back", "background", "adaptive_back", "adaptive_background")
 
-    val mipmapDirs = resDir.listFiles { file -> file.isDirectory && file.name.startsWith("mipmap") }
-    if (mipmapDirs != null) {
-        val sortedMipmaps = mipmapDirs.sortedByDescending { it.name }
-        for (dir in sortedMipmaps) {
-            val launcherFiles = dir.listFiles { file ->
-                file.isFile && file.name.contains("launcher", ignoreCase = true) && bitmapExtensions.contains(file.extension.lowercase())
+    fun findExactRasterImage(name: String): File? {
+        val allSubDirs = resDir.listFiles { f -> f.isDirectory } ?: return null
+        for (subDirName in densityFolderOrder) {
+            val dir = allSubDirs.firstOrNull { it.name.equals(subDirName, ignoreCase = true) } ?: continue
+            for (ext in bitmapExtensions) {
+                val candidate = File(dir, "$name.$ext")
+                if (candidate.exists() && candidate.isFile) {
+                    return candidate
+                }
             }
-            val bestFile = launcherFiles?.firstOrNull()
+        }
+        for (dir in allSubDirs) {
+            if (dir.name.contains("mipmap", ignoreCase = true) || dir.name.contains("drawable", ignoreCase = true)) {
+                for (ext in bitmapExtensions) {
+                    val candidate = File(dir, "$name.$ext")
+                    if (candidate.exists() && candidate.isFile) {
+                        return candidate
+                    }
+                }
+            }
+        }
+        return null
+    }
+
+    // Step A: Check for exact raster image match for targetName (e.g. ic_launcher.png)
+    val exactImageFile = findExactRasterImage(targetName)
+    if (exactImageFile != null && backgroundKeywords.none { exactImageFile.name.contains(it, ignoreCase = true) }) {
+        val bitmap = BitmapFactory.decodeFile(exactImageFile.absolutePath)
+        if (bitmap != null) return bitmap
+    }
+
+    // Step B: Check for XML adaptive icon (e.g. ic_launcher.xml)
+    val allSubDirs = resDir.listFiles { f -> f.isDirectory } ?: emptyArray()
+    var adaptiveXmlFile: File? = null
+    for (dir in allSubDirs) {
+        val xmlCandidate = File(dir, "$targetName.xml")
+        if (xmlCandidate.exists() && xmlCandidate.isFile) {
+            adaptiveXmlFile = xmlCandidate
+            break
+        }
+    }
+
+    if (adaptiveXmlFile != null) {
+        try {
+            val xmlText = adaptiveXmlFile.readText()
+            if (xmlText.contains("adaptive-icon")) {
+                val foreMatch = Regex("""<foreground[^>]+android:drawable\s*=\s*"@[^/]+/([a-zA-Z0-9_]+)"""").find(xmlText)
+                val backMatch = Regex("""<background[^>]+android:drawable\s*=\s*"@[^/]+/([a-zA-Z0-9_]+)"""").find(xmlText)
+
+                val foreName = foreMatch?.groupValues?.get(1)
+                val backName = backMatch?.groupValues?.get(1)
+
+                val foreFile = foreName?.let { findExactRasterImage(it) }
+                val backFile = backName?.let { findExactRasterImage(it) }
+
+                val foreBitmap = foreFile?.let { BitmapFactory.decodeFile(it.absolutePath) }
+                val backBitmap = backFile?.let { BitmapFactory.decodeFile(it.absolutePath) }
+
+                if (foreBitmap != null && backBitmap != null) {
+                    val width = backBitmap.width
+                    val height = backBitmap.height
+                    val result = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
+                    val canvas = Canvas(result)
+                    canvas.drawBitmap(backBitmap, 0f, 0f, null)
+                    val srcRect = Rect(0, 0, foreBitmap.width, foreBitmap.height)
+                    val dstRect = Rect(0, 0, width, height)
+                    canvas.drawBitmap(foreBitmap, srcRect, dstRect, null)
+                    return result
+                } else if (foreBitmap != null) {
+                    return foreBitmap
+                } else if (backBitmap != null) {
+                    return backBitmap
+                }
+            }
+        } catch (_: Exception) {}
+    }
+
+    // Step C: Fallback search for any image containing targetName excluding background-only files
+    for (dir in allSubDirs) {
+        if (dir.name.contains("mipmap", ignoreCase = true) || dir.name.contains("drawable", ignoreCase = true)) {
+            val files = dir.listFiles { f ->
+                f.isFile &&
+                f.name.contains(targetName, ignoreCase = true) &&
+                bitmapExtensions.contains(f.extension.lowercase()) &&
+                backgroundKeywords.none { f.name.contains(it, ignoreCase = true) }
+            }
+            val bestFile = files?.firstOrNull()
             if (bestFile != null) {
                 val bitmap = BitmapFactory.decodeFile(bestFile.absolutePath)
                 if (bitmap != null) return bitmap
@@ -794,19 +920,5 @@ fun findProjectIcon(projectDir: File): Bitmap? {
         }
     }
 
-    val drawableDirs = resDir.listFiles { file -> file.isDirectory && file.name.startsWith("drawable") }
-    if (drawableDirs != null) {
-        val sortedDrawables = drawableDirs.sortedByDescending { it.name }
-        for (dir in sortedDrawables) {
-            val launcherFiles = dir.listFiles { file ->
-                file.isFile && file.name.contains("launcher", ignoreCase = true) && bitmapExtensions.contains(file.extension.lowercase())
-            }
-            val bestFile = launcherFiles?.firstOrNull()
-            if (bestFile != null) {
-                val bitmap = BitmapFactory.decodeFile(bestFile.absolutePath)
-                if (bitmap != null) return bitmap
-            }
-        }
-    }
     return null
 }

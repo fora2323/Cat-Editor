@@ -88,6 +88,8 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.ScrollableTabRow
 import androidx.compose.material3.Tab
+import androidx.compose.material3.TabRowDefaults
+import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
@@ -398,13 +400,22 @@ fun IdeMainScreen(
                     }
 
                     if (validOpenedFiles.isNotEmpty()) {
-                        val activeIndex = validOpenedFiles.indexOf(activeFilePath).coerceAtLeast(0)
+                        val activeIndex = validOpenedFiles.indexOf(activeFilePath).let { idx ->
+                            if (idx in validOpenedFiles.indices) idx else 0
+                        }
 
                         ScrollableTabRow(
                             selectedTabIndex = activeIndex,
                             edgePadding = 0.dp,
                             containerColor = MaterialTheme.colorScheme.surfaceVariant,
-                            divider = { HorizontalDivider() }
+                            divider = { HorizontalDivider() },
+                            indicator = { tabPositions ->
+                                if (activeIndex in tabPositions.indices) {
+                                    TabRowDefaults.SecondaryIndicator(
+                                        modifier = Modifier.tabIndicatorOffset(tabPositions[activeIndex])
+                                    )
+                                }
+                            }
                         ) {
                             validOpenedFiles.forEachIndexed { index, path ->
                                 val file = File(path)

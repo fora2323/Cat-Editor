@@ -46,6 +46,7 @@ object ComposeRenderer {
 
     class RenderConfig {
         var isDarkMode: Boolean = false
+        var filePath: String = ""
         var fontScale: Float = 1.0f
         var isInteractive: Boolean = true
         var isInspectMode: Boolean = false
@@ -71,9 +72,10 @@ object ComposeRenderer {
         var outlineVariant: Int = 0
 
         companion object {
-            fun create(darkMode: Boolean, fontScale: Float = 1.0f): RenderConfig {
+            fun create(darkMode: Boolean, filePath: String = "", fontScale: Float = 1.0f): RenderConfig {
                 val c = RenderConfig()
                 c.isDarkMode = darkMode
+                c.filePath = filePath
                 c.fontScale = fontScale
 
                 if (darkMode) {
@@ -529,41 +531,48 @@ object ComposeRenderer {
         iv.layoutParams = ViewGroup.LayoutParams(s, s)
 
         val vector = node.getAttribute("imageVector", node.getAttribute("painter", node.getAttribute("arg_0", "")))
-        val iconRes = when {
-            vector.contains("Favorite") || vector.contains("Heart") -> android.R.drawable.star_on
-            vector.contains("Home") -> android.R.drawable.ic_menu_myplaces
-            vector.contains("Settings") -> android.R.drawable.ic_menu_preferences
-            vector.contains("Search") -> android.R.drawable.ic_menu_search
-            vector.contains("Person") || vector.contains("Account") || vector.contains("Profile") -> android.R.drawable.ic_menu_myplaces
-            vector.contains("Share") -> android.R.drawable.ic_menu_share
-            vector.contains("Delete") -> android.R.drawable.ic_menu_delete
-            vector.contains("Add") -> android.R.drawable.ic_input_add
-            vector.contains("Edit") -> android.R.drawable.ic_menu_edit
-            vector.contains("DarkMode") || vector.contains("Dark") -> android.R.drawable.ic_menu_agenda
-            vector.contains("Notifications") -> android.R.drawable.ic_popup_reminder
-            vector.contains("Check") -> android.R.drawable.checkbox_on_background
-            vector.contains("Close") -> android.R.drawable.ic_menu_close_clear_cancel
-            vector.contains("Palette") -> android.R.drawable.ic_menu_gallery
-            vector.contains("Info") -> android.R.drawable.ic_dialog_info
-            vector.contains("Vibration") || vector.contains("Analytics") -> android.R.drawable.ic_menu_view
-            else -> android.R.drawable.star_on
-        }
-        iv.setImageResource(iconRes)
-
         val tintAttr = node.getAttribute("tint", "")
-        if (tintAttr.isNotEmpty()) {
-            iv.setColorFilter(parseColorExpression(tintAttr, config.primary))
+        val tintColor = if (tintAttr.isNotEmpty()) {
+            parseColorExpression(tintAttr, config.primary)
         } else {
-            iv.setColorFilter(config.primary)
+            config.primary
         }
+
+        val resolvedDrawable = ProjectResourceResolver.resolveDrawable(
+            context = context,
+            filePath = config.filePath,
+            drawableRef = vector,
+            isDark = config.isDarkMode,
+            tintColor = tintColor
+        )
+
+        if (resolvedDrawable != null) {
+            iv.setImageDrawable(resolvedDrawable)
+        } else {
+            iv.setImageDrawable(ProjectResourceResolver.getFallbackAndroidIcon(context, vector, tintColor))
+        }
+
         return iv
     }
 
     private fun renderImage(context: Context, node: ComposeNode, config: RenderConfig): ImageView {
         val iv = ImageView(context)
         iv.scaleType = ImageView.ScaleType.CENTER_CROP
-        iv.setImageResource(android.R.drawable.ic_menu_gallery)
-        iv.setColorFilter(config.outline)
+
+        val src = node.getAttribute("painter", node.getAttribute("src", node.getAttribute("imageVector", node.getAttribute("arg_0", ""))))
+        val resolvedDrawable = ProjectResourceResolver.resolveDrawable(
+            context = context,
+            filePath = config.filePath,
+            drawableRef = src,
+            isDark = config.isDarkMode
+        )
+
+        if (resolvedDrawable != null) {
+            iv.setImageDrawable(resolvedDrawable)
+        } else {
+            iv.setImageDrawable(ProjectResourceResolver.getFallbackAndroidIcon(context, src))
+        }
+
         val s = dpToPx(context, 120)
         iv.layoutParams = ViewGroup.LayoutParams(s, s)
         return iv
@@ -951,7 +960,40 @@ object ComposeRenderer {
 
     fun parseBackgroundDrawable(context: Context, bgExpr: String?, cornerRadius: Int, config: RenderConfig): Drawable? {
         if (bgExpr.isNullOrBlank()) return null
+        val trimmed = bgExpr.trim()
 
+        // 1. Check for Compose gradient expressions: Brush.linearGradient, Brush.verticalGradient, Brush.horizontalGradient
+        if (trimmed.contains("linearGradient", ignoreCase = true) ||
+            trimmed.contains("verticalGradient", ignoreCase = true) ||
+            trimmed.contains("horizontalGradient", ignoreCase = true)
+        ) {
+            val colorsList = mutableListOf<Int>()
+            val m = Pattern.compile("(?:0[xX][0-9a-fA-F]{6,8}|Color\\s*\\.\\s*[A-Za-z]+|Color\\s*\\(\\s*0[xX][0-9a-fA-F]+\\s*\\)|#[0-9a-fA-F]{6,8})").matcher(trimmed)
+            while (m.find()) {
+                colorsList.add(parseColorExpression(m.group(), config.primary))
+            }
+
+            if (colorsList.size >= 2) {
+                val orientation = when {
+                    trimmed.contains("verticalGradient", ignoreCase = true) -> GradientDrawable.Orientation.TOP_BOTTOM
+                    trimmed.contains("horizontalGradient", ignoreCase = true) -> GradientDrawable.Orientation.LEFT_RIGHT
+                    else -> GradientDrawable.Orientation.TL_BR
+                }
+                return GradientDrawable(orientation, colorsList.toIntArray()).apply {
+                    if (cornerRadius > 0) {
+                        this.cornerRadius = cornerRadius.toFloat()
+                    }
+                }
+            }
+        }
+
+        // 2. Check for drawable resource reference: @drawable/... or R.drawable.
+        if (trimmed.startsWith("@drawable/") || trimmed.contains("R.drawable.")) {
+            val d = ProjectResourceResolver.resolveDrawable(context, config.filePath, trimmed, config.isDarkMode)
+            if (d != null) return d
+        }
+
+        // 3. Fallback to solid color
         val color = parseColorExpression(bgExpr, config.surfaceContainer)
         val gd = GradientDrawable().apply {
             setColor(color)

@@ -7,12 +7,21 @@ import androidx.compose.foundation.gestures.awaitEachGesture
 import androidx.compose.foundation.gestures.awaitFirstDown
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.viewinterop.AndroidView
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import io.github.rosemoe.sora.event.ClickEvent
 import io.github.rosemoe.sora.event.ContentChangeEvent
 import io.github.rosemoe.sora.event.SelectionChangeEvent
@@ -27,6 +36,7 @@ import io.github.rosemoe.sora.langs.textmate.registry.provider.AssetsFileResolve
 import io.github.rosemoe.sora.widget.CodeEditor
 import io.github.rosemoe.sora.widget.schemes.EditorColorScheme
 import org.cat.editor.ui.preview.isBinaryFile
+import org.cat.editor.utils.SettingsManager
 import org.eclipse.tm4e.core.registry.IThemeSource
 import java.io.File
 
@@ -66,10 +76,10 @@ fun ensureTextMateInitialized(context: Context) {
     }
 }
 
-private fun createEditorLanguage(filePath: String): Language {
+private fun createEditorLanguage(filePath: String, autoComplete: Boolean = true): Language {
     val scope = getScopeForFile(filePath) ?: return EmptyLanguage()
     return try {
-        TextMateLanguage.create(scope, true)
+        TextMateLanguage.create(scope, autoComplete)
     } catch (e: Throwable) {
         Log.w(TAG, "Failed to create TextMateLanguage for $scope, falling back to basic/empty", e)
         try {
@@ -89,6 +99,26 @@ private fun createEditorColorScheme(): EditorColorScheme {
     }
 }
 
+private fun applyEditorSettings(editor: CodeEditor, filePath: String) {
+    val context = editor.context
+    val prefs = SettingsManager.getPrefs(context)
+    val isTxtFile = filePath.lowercase().endsWith(".txt")
+
+    val wordWrap = prefs.getBoolean("editor_word_wrap", false)
+    val wrapTxt = prefs.getBoolean("editor_wrap_txt", true)
+    val showLineNumbers = prefs.getBoolean("editor_line_numbers", true)
+    val readOnly = prefs.getBoolean("editor_read_only", false)
+    val disableVirtualKbd = prefs.getBoolean("editor_disable_virtual_kbd", false)
+    val cursorAnimation = prefs.getBoolean("editor_cursor_animation", true)
+
+    editor.typefaceText = SettingsManager.getEditorTypeface(context)
+    editor.isWordwrap = wordWrap || (isTxtFile && wrapTxt)
+    editor.isLineNumberEnabled = showLineNumbers
+    editor.isEditable = !readOnly
+    editor.showSoftInputOnFocus = !disableVirtualKbd
+    editor.isCursorAnimationEnabled = cursorAnimation
+}
+
 @Composable
 fun KotlinCodeEditor(
     filePath: String,
@@ -96,6 +126,8 @@ fun KotlinCodeEditor(
     onEditorInteraction: (() -> Unit)? = null
 ) {
     val context = LocalContext.current
+    val lifecycleOwner = LocalLifecycleOwner.current
+
     LaunchedEffect(Unit) {
         ensureTextMateInitialized(context)
     }
@@ -116,6 +148,21 @@ fun KotlinCodeEditor(
     var currentLoadedPath by remember { mutableStateOf(filePath) }
     var editorInstance by remember { mutableStateOf<CodeEditor?>(null) }
 
+    // Perbarui pengaturan editor secara otomatis saat kembali dari halaman Settings
+    DisposableEffect(lifecycleOwner, filePath) {
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_RESUME) {
+                editorInstance?.let { editor ->
+                    applyEditorSettings(editor, filePath)
+                }
+            }
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose {
+            lifecycleOwner.lifecycle.removeObserver(observer)
+        }
+    }
+
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -130,18 +177,17 @@ fun KotlinCodeEditor(
         AndroidView(
             factory = { ctx ->
                 ensureTextMateInitialized(ctx)
+                val autoCloseTag = SettingsManager.getPrefs(ctx).getBoolean("editor_auto_close_tag", true)
 
                 CodeEditor(ctx).apply {
                     editorInstance = this
                     currentLoadedPath = filePath
 
                     colorScheme = createEditorColorScheme()
-                    setEditorLanguage(createEditorLanguage(filePath))
-                    typefaceText = org.cat.editor.utils.SettingsManager.getEditorTypeface(ctx)
+                    setEditorLanguage(createEditorLanguage(filePath, autoCloseTag))
                     setText(initialContent)
-                    isWordwrap = true
-                    isLineNumberEnabled = true
                     setTextSize(14f)
+                    applyEditorSettings(this, filePath)
 
                     subscribeAlways(ContentChangeEvent::class.java) { _ ->
                         onCodeChange(text.toString())
@@ -165,13 +211,14 @@ fun KotlinCodeEditor(
             },
             update = { editor ->
                 editorInstance = editor
-                editor.typefaceText = org.cat.editor.utils.SettingsManager.getEditorTypeface(editor.context)
+                applyEditorSettings(editor, filePath)
 
                 // Only reload text when switching files, preserving cursor & active edits
                 if (currentLoadedPath != filePath) {
                     currentLoadedPath = filePath
+                    val autoCloseTag = SettingsManager.getPrefs(editor.context).getBoolean("editor_auto_close_tag", true)
                     editor.colorScheme = createEditorColorScheme()
-                    editor.setEditorLanguage(createEditorLanguage(filePath))
+                    editor.setEditorLanguage(createEditorLanguage(filePath, autoCloseTag))
                     val file = File(filePath)
                     val textToSet = if (file.exists() && !isBinaryFile(filePath)) {
                         try { file.readText() } catch (_: Throwable) { "" }

@@ -45,6 +45,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -115,13 +116,21 @@ import org.cat.editor.ui.theme.AppTheme
 import org.cat.editor.utils.ConfigPath
 import org.cat.editor.utils.LocaleHelper
 import org.cat.editor.utils.StorageUtils
+import java.io.BufferedOutputStream
 import java.io.File
+import java.io.FileOutputStream
+import java.util.zip.ZipEntry
+import java.util.zip.ZipOutputStream
 
 data class ProjectItem(
     val name: String,
     val path: String,
-    val iconBitmap: Bitmap?
+    val iconBitmap: Bitmap?,
+    val isPinned: Boolean = false
 )
+
+private const val PIN_PREFS_NAME = "project_pin_prefs"
+private const val KEY_PINNED_PATHS = "pinned_paths_ordered"
 
 class ProjectMenuActivity : ComponentActivity() {
 
@@ -209,13 +218,14 @@ fun ProjectMenuScreen(
     var selectedProjectForMenu by remember { mutableStateOf<ProjectItem?>(null) }
     var showProjectMenu by remember { mutableStateOf(false) }
     var isDeleting by remember { mutableStateOf(false) }
+    var pendingBackupZipFile by remember { mutableStateOf<File?>(null) }
 
     suspend fun refresh() {
         isRefreshing = true
         try {
             delay(600)
             projects = withContext(Dispatchers.IO) {
-                scanProjects(ConfigPath.VAR_PROJECTS_PATH)
+                scanProjects(ConfigPath.VAR_PROJECTS_PATH, getPinnedPaths(context))
             }
         } finally {
             isRefreshing = false
@@ -231,7 +241,7 @@ fun ProjectMenuScreen(
             showPermissionDialog = false
             scope.launch {
                 projects = withContext(Dispatchers.IO) {
-                    scanProjects(ConfigPath.VAR_PROJECTS_PATH)
+                    scanProjects(ConfigPath.VAR_PROJECTS_PATH, getPinnedPaths(context))
                 }
             }
         } else {
@@ -255,6 +265,44 @@ fun ProjectMenuScreen(
         }
     }
 
+    // Launcher SAF untuk menyimpan file hasil Backup (.zip)
+    val saveBackupZipLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.CreateDocument("application/zip")
+    ) { uri: Uri? ->
+        val tempZip = pendingBackupZipFile
+        if (uri != null && tempZip != null && tempZip.exists()) {
+            isDeleting = true
+            scope.launch(Dispatchers.IO) {
+                try {
+                    context.contentResolver.openOutputStream(uri)?.use { outputStream ->
+                        tempZip.inputStream().use { inputStream ->
+                            inputStream.copyTo(outputStream)
+                        }
+                    }
+                    tempZip.delete()
+                    withContext(Dispatchers.Main) {
+                        isDeleting = false
+                        pendingBackupZipFile = null
+                        Toast.makeText(context, "Backup berhasil disimpan", Toast.LENGTH_SHORT).show()
+                    }
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                    tempZip.delete()
+                    withContext(Dispatchers.Main) {
+                        isDeleting = false
+                        pendingBackupZipFile = null
+                        Toast.makeText(context, "Gagal menyimpan backup: ${e.message}", Toast.LENGTH_SHORT).show()
+                    }
+                }
+            }
+        } else {
+            scope.launch(Dispatchers.IO) {
+                tempZip?.delete()
+                pendingBackupZipFile = null
+            }
+        }
+    }
+
     DisposableEffect(lifecycleOwner) {
         val observer = LifecycleEventObserver { _, event ->
             if (event == Lifecycle.Event.ON_RESUME) {
@@ -262,7 +310,7 @@ fun ProjectMenuScreen(
                 hasPermission = currentPermission
                 if (currentPermission) {
                     showPermissionDialog = false
-                    projects = scanProjects(ConfigPath.VAR_PROJECTS_PATH)
+                    projects = scanProjects(ConfigPath.VAR_PROJECTS_PATH, getPinnedPaths(context))
                 }
             }
         }
@@ -276,7 +324,7 @@ fun ProjectMenuScreen(
         if (hasPermission) {
             isLoading = true
             projects = withContext(Dispatchers.IO) {
-                scanProjects(ConfigPath.VAR_PROJECTS_PATH)
+                scanProjects(ConfigPath.VAR_PROJECTS_PATH, getPinnedPaths(context))
             }
             isLoading = false
         }
@@ -492,7 +540,7 @@ fun ProjectMenuScreen(
         }
     }
     
-    // Tampilkan indikator saat direktori dihapus
+    // Tampilkan indikator saat proses Clone, Backup, atau Remove berlangsung
     if (isDeleting) {
         DialogLoading()
     }
@@ -516,21 +564,84 @@ fun ProjectMenuScreen(
 
             ProjectMenuItem(
                 icon = Icons.Default.PushPin,
-                title = "Pin",
-                description = "Sematkan proyek ini di atas",
-                onClick = { showProjectMenu = false } // Fitur Diskip
+                title = if (project.isPinned) "Unpin" else "Pin",
+                description = if (project.isPinned) "Lepas sematan proyek ini" else "Sematkan proyek ini di atas",
+                onClick = {
+                    showProjectMenu = false
+                    togglePinProject(context, project.path)
+                    scope.launch(Dispatchers.IO) {
+                        val updatedProjects = scanProjects(ConfigPath.VAR_PROJECTS_PATH, getPinnedPaths(context))
+                        withContext(Dispatchers.Main) {
+                            projects = updatedProjects
+                        }
+                    }
+                }
             )
             ProjectMenuItem(
                 icon = Icons.Default.ContentCopy,
                 title = "Clone",
                 description = "Buat salinan proyek ini",
-                onClick = { showProjectMenu = false } // Fitur Diskip
+                onClick = {
+                    showProjectMenu = false
+                    isDeleting = true
+                    scope.launch(Dispatchers.IO) {
+                        try {
+                            val sourceDir = File(project.path)
+                            val parentDir = sourceDir.parentFile ?: File(ConfigPath.VAR_PROJECTS_PATH)
+
+                            var cloneFolderName = "${project.name}-Clone"
+                            var targetDir = File(parentDir, cloneFolderName)
+                            var counter = 2
+                            while (targetDir.exists()) {
+                                cloneFolderName = "${project.name}-Clone-$counter"
+                                targetDir = File(parentDir, cloneFolderName)
+                                counter++
+                            }
+
+                            sourceDir.copyRecursively(targetDir, overwrite = true)
+                        } catch (e: Exception) {
+                            e.printStackTrace()
+                        }
+
+                        val updatedProjects = scanProjects(ConfigPath.VAR_PROJECTS_PATH, getPinnedPaths(context))
+                        withContext(Dispatchers.Main) {
+                            projects = updatedProjects
+                            isDeleting = false
+                        }
+                    }
+                }
             )
             ProjectMenuItem(
                 icon = Icons.Default.SdStorage,
                 title = "Backup",
                 description = "Cadangkan ke penyimpanan lain",
-                onClick = { showProjectMenu = false } // Fitur Diskip
+                onClick = {
+                    showProjectMenu = false
+                    isDeleting = true
+                    scope.launch(Dispatchers.IO) {
+                        try {
+                            val sourceDir = File(project.path)
+                            val tempZipFile = File(context.cacheDir, "${project.name}.zip")
+                            if (tempZipFile.exists()) {
+                                tempZipFile.delete()
+                            }
+
+                            zipDirectory(sourceDir, tempZipFile)
+
+                            withContext(Dispatchers.Main) {
+                                pendingBackupZipFile = tempZipFile
+                                isDeleting = false
+                                saveBackupZipLauncher.launch("${project.name}.zip")
+                            }
+                        } catch (e: Exception) {
+                            e.printStackTrace()
+                            withContext(Dispatchers.Main) {
+                                isDeleting = false
+                                Toast.makeText(context, "Gagal membuat zip: ${e.message}", Toast.LENGTH_SHORT).show()
+                            }
+                        }
+                    }
+                }
             )
             ProjectMenuItem(
                 icon = Icons.Default.Delete,
@@ -545,12 +656,13 @@ fun ProjectMenuScreen(
                     scope.launch(Dispatchers.IO) {
                         try {
                             File(project.path).deleteRecursively()
+                            removePinnedPath(context, project.path)
                         } catch (e: Exception) {
                             e.printStackTrace()
                         }
                         
                         // Setelah selesai, muat ulang list proyek dan tutup loading dialog
-                        val updatedProjects = scanProjects(ConfigPath.VAR_PROJECTS_PATH)
+                        val updatedProjects = scanProjects(ConfigPath.VAR_PROJECTS_PATH, getPinnedPaths(context))
                         withContext(Dispatchers.Main) {
                             projects = updatedProjects
                             isDeleting = false
@@ -687,24 +799,49 @@ fun ProjectItemRow(
                 .padding(14.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            if (project.iconBitmap != null) {
-                Image(
-                    bitmap = project.iconBitmap.asImageBitmap(),
-                    contentDescription = project.name,
-                    modifier = Modifier
-                        .size(46.dp)
-                        .clip(RoundedCornerShape(8.dp)),
-                    contentScale = ContentScale.Crop
-                )
-            } else {
-                Image(
-                    painter = painterResource(id = R.drawable.ic_android),
-                    contentDescription = project.name,
-                    modifier = Modifier
-                        .size(46.dp)
-                        .clip(RoundedCornerShape(8.dp)),
-                    contentScale = ContentScale.Crop
-                )
+            Box(
+                modifier = Modifier.size(48.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                if (project.iconBitmap != null) {
+                    Image(
+                        bitmap = project.iconBitmap.asImageBitmap(),
+                        contentDescription = project.name,
+                        modifier = Modifier
+                            .size(46.dp)
+                            .clip(RoundedCornerShape(8.dp)),
+                        contentScale = ContentScale.Crop
+                    )
+                } else {
+                    Image(
+                        painter = painterResource(id = R.drawable.ic_android),
+                        contentDescription = project.name,
+                        modifier = Modifier
+                            .size(46.dp)
+                            .clip(RoundedCornerShape(8.dp)),
+                        contentScale = ContentScale.Crop
+                    )
+                }
+
+                if (project.isPinned) {
+                    Box(
+                        modifier = Modifier
+                            .align(Alignment.BottomEnd)
+                            .size(18.dp)
+                            .background(
+                                color = MaterialTheme.colorScheme.primary,
+                                shape = CircleShape
+                            ),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.PushPin,
+                            contentDescription = "Pinned",
+                            tint = MaterialTheme.colorScheme.onPrimary,
+                            modifier = Modifier.size(11.dp)
+                        )
+                    }
+                }
             }
 
             Spacer(modifier = Modifier.width(14.dp))
@@ -742,6 +879,55 @@ fun ProjectItemRow(
     }
 }
 
+fun getPinnedPaths(context: Context): List<String> {
+    val prefs = context.getSharedPreferences(PIN_PREFS_NAME, Context.MODE_PRIVATE)
+    val raw = prefs.getString(KEY_PINNED_PATHS, "") ?: ""
+    return raw.split("\n").filter { it.isNotBlank() }
+}
+
+fun togglePinProject(context: Context, projectPath: String) {
+    val currentList = getPinnedPaths(context).toMutableList()
+    if (currentList.contains(projectPath)) {
+        currentList.remove(projectPath)
+    } else {
+        currentList.add(0, projectPath)
+    }
+    context.getSharedPreferences(PIN_PREFS_NAME, Context.MODE_PRIVATE)
+        .edit()
+        .putString(KEY_PINNED_PATHS, currentList.joinToString("\n"))
+        .apply()
+}
+
+fun removePinnedPath(context: Context, projectPath: String) {
+    val currentList = getPinnedPaths(context).toMutableList()
+    if (currentList.remove(projectPath)) {
+        context.getSharedPreferences(PIN_PREFS_NAME, Context.MODE_PRIVATE)
+            .edit()
+            .putString(KEY_PINNED_PATHS, currentList.joinToString("\n"))
+            .apply()
+    }
+}
+
+fun zipDirectory(sourceDir: File, outputZipFile: File) {
+    ZipOutputStream(BufferedOutputStream(FileOutputStream(outputZipFile))).use { zos ->
+        val baseDir = sourceDir.parentFile ?: sourceDir
+        sourceDir.walkTopDown().forEach { file ->
+            val relativePath = file.relativeTo(baseDir).invariantSeparatorsPath
+            if (file.isDirectory) {
+                val entryName = if (relativePath.endsWith("/")) relativePath else "$relativePath/"
+                zos.putNextEntry(ZipEntry(entryName))
+                zos.closeEntry()
+            } else {
+                zos.putNextEntry(ZipEntry(relativePath))
+                file.inputStream().use { input ->
+                    input.copyTo(zos)
+                }
+                zos.closeEntry()
+            }
+        }
+    }
+}
+
 fun checkStoragePermission(context: Context): Boolean {
     return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
         Environment.isExternalStorageManager()
@@ -752,7 +938,7 @@ fun checkStoragePermission(context: Context): Boolean {
     }
 }
 
-fun scanProjects(basePath: String): List<ProjectItem> {
+fun scanProjects(basePath: String, pinnedPaths: List<String> = emptyList()): List<ProjectItem> {
     val directory = File(basePath)
     if (!directory.exists() || !directory.isDirectory) {
         return emptyList()
@@ -762,14 +948,23 @@ fun scanProjects(basePath: String): List<ProjectItem> {
         file.isDirectory && !file.name.startsWith(".")
     } ?: return emptyList()
 
-    return projectFolders.map { folder ->
+    val allItems = projectFolders.map { folder ->
         val iconBitmap = findProjectIcon(folder)
+        val path = folder.absolutePath
         ProjectItem(
             name = folder.name,
-            path = folder.absolutePath,
-            iconBitmap = iconBitmap
+            path = path,
+            iconBitmap = iconBitmap,
+            isPinned = pinnedPaths.contains(path)
         )
-    }.sortedBy { it.name.lowercase() }
+    }
+
+    return allItems.sortedWith(
+        compareBy<ProjectItem> { item ->
+            val pinIndex = pinnedPaths.indexOf(item.path)
+            if (pinIndex != -1) pinIndex else Int.MAX_VALUE
+        }.thenBy { it.name.lowercase() }
+    )
 }
 
 fun findProjectIcon(projectDir: File): Bitmap? {

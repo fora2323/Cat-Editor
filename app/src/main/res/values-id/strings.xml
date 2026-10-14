@@ -41,6 +41,10 @@
     <string name="storage_access_required">Akses Penyimpanan Diperlukan</string>
     <string name="storage_access_desc">Aplikasi membutuhkan izin membaca file eksternal untuk memindai proyek dan ikon launcher pada folder %1$s.</string>
     <string name="grant_permission">Berikan Izin</string>
+    <string name="git_clone_pat_label">Personal Access Token (PAT)</string>
+    <string name="git_clone_pat_hint">Diperlukan untuk repositori privat</string>
+    <string name="git_clone_fast_label">Klon Cepat (Kedalaman = 1)</string>
+    <string name="git_clone_fast_subtitle">Unduh komit terbaru saja agar lebih cepat</string>
 
     <!-- MainActivity & Editor -->
     <string name="cannot_access_folder">Tidak bisa akses folder</string>

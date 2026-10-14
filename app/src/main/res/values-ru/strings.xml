@@ -41,6 +41,10 @@
     <string name="storage_access_required">Требуется доступ к хранилищу</string>
     <string name="storage_access_desc">Приложению требуется разрешение на чтение внешних файлов для сканирования проектов и значков в папке %1$s.</string>
     <string name="grant_permission">Предоставить разрешение</string>
+    <string name="git_clone_pat_label">Личный токен доступа (PAT)</string>
+    <string name="git_clone_pat_hint">Требуется для приватных репозиториев</string>
+    <string name="git_clone_fast_label">Быстрое клонирование (глубина = 1)</string>
+    <string name="git_clone_fast_subtitle">Загружать только последний коммит для ускорения</string>
 
     <!-- MainActivity & Editor -->
     <string name="cannot_access_folder">Не удается получить доступ к папке</string>

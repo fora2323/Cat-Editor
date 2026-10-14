@@ -41,6 +41,10 @@
     <string name="storage_access_required">مطلوب إذن الوصول للتخزين</string>
     <string name="storage_access_desc">يتطلب التطبيق إذن قراءة الملفات الخارجية لفحص المشاريع وأيقونات التشغيل في المجلد %1$s.</string>
     <string name="grant_permission">منح الإذن</string>
+    <string name="git_clone_pat_label">رمز الوصول الشخصي (PAT)</string>
+    <string name="git_clone_pat_hint">مطلوب للمستودعات الخاصة</string>
+    <string name="git_clone_fast_label">استنساخ سريع (عمق = 1)</string>
+    <string name="git_clone_fast_subtitle">تنزيل أحدث التزامات فقط لسرعة أكبر</string>
 
     <!-- MainActivity & Editor -->
     <string name="cannot_access_folder">تعذر الوصول إلى المجلد</string>

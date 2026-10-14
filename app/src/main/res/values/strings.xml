@@ -52,6 +52,10 @@
     <string name="git_clone_subtitle">Clone project from github</string>
     <string name="git_clone_link_label">Link</string>
     <string name="git_clone_branch_label">Branches</string>
+    <string name="git_clone_pat_label">Personal Access Token (PAT)</string>
+    <string name="git_clone_pat_hint">Required for private repositories</string>
+    <string name="git_clone_fast_label">Fast Clone (Shallow depth = 1)</string>
+    <string name="git_clone_fast_subtitle">Downloads latest commit only for faster speed</string>
     <string name="git_clone_button">Clone</string>
 
     <!-- MainActivity & Editor -->

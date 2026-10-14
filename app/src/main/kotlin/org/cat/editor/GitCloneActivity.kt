@@ -8,16 +8,22 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Visibility
+import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -28,6 +34,7 @@ import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBarDefaults
@@ -37,10 +44,14 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -51,6 +62,7 @@ import org.cat.editor.utils.ConfigPath
 import org.cat.editor.utils.LocaleHelper
 import org.eclipse.jgit.api.Git
 import org.eclipse.jgit.lib.ProgressMonitor
+import org.eclipse.jgit.transport.UsernamePasswordCredentialsProvider
 import java.io.File
 import java.util.concurrent.CancellationException
 
@@ -84,13 +96,15 @@ fun GitCloneScreen(onNavigateBack: () -> Unit) {
 
     var linkText by remember { mutableStateOf("") }
     var branchText by remember { mutableStateOf("") }
+    var patText by remember { mutableStateOf("") }
+    var patVisible by remember { mutableStateOf(false) }
+    var isFastClone by remember { mutableStateOf(true) }
     
     var isCloning by remember { mutableStateOf(false) }
     var showCancelDialog by remember { mutableStateOf(false) }
     var cloneProgressText by remember { mutableStateOf("") }
     var cloneJob by remember { mutableStateOf<Job?>(null) }
 
-    // Dialog konfirmasi jika user klik back saat proses clone berjalan
     if (showCancelDialog) {
         AlertDialog(
             onDismissRequest = { showCancelDialog = false },
@@ -101,8 +115,8 @@ fun GitCloneScreen(onNavigateBack: () -> Unit) {
                     onClick = {
                         showCancelDialog = false
                         isCloning = false
-                        cloneJob?.cancel() // Batalkan coroutine
-                        onNavigateBack() // Tutup activity
+                        cloneJob?.cancel()
+                        onNavigateBack()
                     }
                 ) {
                     Text(stringResource(id = R.string.yes))
@@ -116,7 +130,6 @@ fun GitCloneScreen(onNavigateBack: () -> Unit) {
         )
     }
 
-    // Tangani aksi back dari sistem (Bottom Navigation Bar)
     BackHandler(enabled = true) {
         if (isCloning) {
             showCancelDialog = true
@@ -177,7 +190,6 @@ fun GitCloneScreen(onNavigateBack: () -> Unit) {
                 singleLine = true
             )
 
-            // Jarak input didekatkan
             Spacer(modifier = Modifier.height(8.dp))
 
             OutlinedTextField(
@@ -189,7 +201,58 @@ fun GitCloneScreen(onNavigateBack: () -> Unit) {
                 singleLine = true
             )
 
-            // Jarak button/progress bar didekatkan
+            Spacer(modifier = Modifier.height(8.dp))
+
+            OutlinedTextField(
+                value = patText,
+                onValueChange = { patText = it },
+                label = { Text(stringResource(id = R.string.git_clone_pat_label)) },
+                supportingText = { Text(stringResource(id = R.string.git_clone_pat_hint)) },
+                modifier = Modifier.fillMaxWidth(),
+                enabled = !isCloning,
+                singleLine = true,
+                visualTransformation = if (patVisible) VisualTransformation.None else PasswordVisualTransformation(),
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+                trailingIcon = {
+                    IconButton(onClick = { patVisible = !patVisible }) {
+                        Icon(
+                            imageVector = if (patVisible) Icons.Default.VisibilityOff else Icons.Default.Visibility,
+                            contentDescription = null
+                        )
+                    }
+                }
+            )
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable(enabled = !isCloning) { isFastClone = !isFastClone }
+                    .padding(vertical = 4.dp)
+            ) {
+                Column(
+                    modifier = Modifier.weight(1f)
+                ) {
+                    Text(
+                        text = stringResource(id = R.string.git_clone_fast_label),
+                        style = MaterialTheme.typography.bodyLarge
+                    )
+                    Text(
+                        text = stringResource(id = R.string.git_clone_fast_subtitle),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+                Spacer(modifier = Modifier.width(12.dp))
+                Switch(
+                    checked = isFastClone,
+                    onCheckedChange = { isFastClone = it },
+                    enabled = !isCloning
+                )
+            }
+
             Spacer(modifier = Modifier.height(16.dp))
 
             if (isCloning) {
@@ -207,13 +270,13 @@ fun GitCloneScreen(onNavigateBack: () -> Unit) {
             } else {
                 Button(
                     onClick = {
-                        if (linkText.isNotEmpty()) {
+                        if (linkText.isNotBlank()) {
                             isCloning = true
-                            cloneProgressText = linkText
+                            cloneProgressText = linkText.trim()
                             
                             cloneJob = scope.launch(Dispatchers.IO) {
-                                // Ekstrak nama repo dari link, contoh: "https://github.com/user/repo.git" -> "repo"
-                                val repoName = linkText.substringAfterLast("/").removeSuffix(".git")
+                                val cleanLink = linkText.trim()
+                                val repoName = cleanLink.substringAfterLast("/").removeSuffix(".git")
                                 val destFolder = File(ConfigPath.VAR_PROJECTS_PATH, repoName)
                                 
                                 try {
@@ -221,7 +284,6 @@ fun GitCloneScreen(onNavigateBack: () -> Unit) {
                                         destFolder.mkdirs()
                                     }
 
-                                    // Monitor progress download dari JGit
                                     val monitor = object : ProgressMonitor {
                                         override fun start(totalTasks: Int) {}
                                         override fun beginTask(title: String?, totalWork: Int) {
@@ -230,26 +292,38 @@ fun GitCloneScreen(onNavigateBack: () -> Unit) {
                                         override fun update(completed: Int) {}
                                         override fun endTask() {}
                                         override fun isCancelled(): Boolean = !isCloning
-                                        
-                                        // Fix tambahan: Override showDuration wajib pada JGit versi 6.8.0
                                         override fun showDuration(enabled: Boolean) {}
                                     }
 
                                     val cloneCommand = Git.cloneRepository()
-                                        .setURI(linkText)
+                                        .setURI(cleanLink)
                                         .setDirectory(destFolder)
                                         .setProgressMonitor(monitor)
                                     
-                                    if (branchText.isNotEmpty()) {
-                                        cloneCommand.setBranch(branchText)
+                                    if (branchText.isNotBlank()) {
+                                        cloneCommand.setBranch(branchText.trim())
                                     }
 
-                                    // Eksekusi clone
+                                    if (patText.isNotBlank()) {
+                                        val token = patText.trim()
+                                        val credentialsProvider = if (token.contains(":")) {
+                                            val parts = token.split(":", limit = 2)
+                                            UsernamePasswordCredentialsProvider(parts[0], parts[1])
+                                        } else {
+                                            UsernamePasswordCredentialsProvider(token, "")
+                                        }
+                                        cloneCommand.setCredentialsProvider(credentialsProvider)
+                                    }
+
+                                    if (isFastClone) {
+                                        cloneCommand.setDepth(1)
+                                        cloneCommand.setCloneAllBranches(false)
+                                    }
+
                                     cloneCommand.call().close()
 
-                                    // Berhasil, pindah ke MainActivity
                                     withContext(Dispatchers.Main) {
-                                        if (isCloning) { // Pastikan tidak dibatalkan
+                                        if (isCloning) {
                                             isCloning = false
                                             val intent = Intent(context, MainActivity::class.java).apply {
                                                 putExtra("project_path", destFolder.absolutePath)
@@ -260,7 +334,6 @@ fun GitCloneScreen(onNavigateBack: () -> Unit) {
                                     }
 
                                 } catch (e: Exception) {
-                                    // Bersihkan folder jika gagal atau batal
                                     destFolder.deleteRecursively()
                                     
                                     withContext(Dispatchers.Main) {

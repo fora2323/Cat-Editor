@@ -48,6 +48,17 @@
     <string name="storage_access_desc">The application requires external storage permission to scan projects and launcher icons in folder %1$s.</string>
     <string name="grant_permission">Grant Permission</string>
 
+    <!-- Git Clone Activity -->
+    <string name="git_clone_title">GitClone</string>
+    <string name="git_clone_subtitle">Clone project from github</string>
+    <string name="git_clone_link_label">Link</string>
+    <string name="git_clone_branch_label">Branches</string>
+    <string name="git_clone_pat_label">Personal Access Token (PAT)</string>
+    <string name="git_clone_pat_hint">Required for private repositories</string>
+    <string name="git_clone_fast_label">Fast Clone (Shallow depth = 1)</string>
+    <string name="git_clone_fast_subtitle">Downloads latest commit only for faster speed</string>
+    <string name="git_clone_button">Clone</string>
+
     <!-- MainActivity & Editor -->
     <string name="cannot_access_folder">Cannot access folder</string>
     <string name="add_file_coming_soon">Add file feature coming soon</string>

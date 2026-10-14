@@ -32,6 +32,17 @@ object SettingsManager {
     const val KEY_CACHED_STARS = "cached_github_stars"
     const val KEY_CACHED_COMMIT = "cached_github_commit"
 
+    // Key Pengaturan Editor
+    const val KEY_EDITOR_AUTO_COMPILE = "editor_auto_compile"
+    const val KEY_EDITOR_AUTO_CLOSE_TAG = "editor_auto_close_tag"
+    const val KEY_EDITOR_COLOR_PREVIEW = "editor_color_preview"
+    const val KEY_EDITOR_WORD_WRAP = "editor_word_wrap"
+    const val KEY_EDITOR_WRAP_TXT = "editor_wrap_txt"
+    const val KEY_EDITOR_READ_ONLY = "editor_read_only"
+    const val KEY_EDITOR_LINE_NUMBERS = "editor_line_numbers"
+    const val KEY_EDITOR_DISABLE_VIRTUAL_KBD = "editor_disable_virtual_kbd"
+    const val KEY_EDITOR_CURSOR_ANIMATION = "editor_cursor_animation"
+
     const val FONT_MONOSPACE = "Monospace"
     const val FONT_SANS = "Sans-Serif"
     const val FONT_SERIF = "Serif"
@@ -78,6 +89,62 @@ object SettingsManager {
 
     fun setEditorFont(context: Context, font: String) {
         getPrefs(context).edit().putString(KEY_EDITOR_FONT, font).apply()
+    }
+
+    // Getter & Setter Pengaturan Editor
+    fun isAutoCompileEnabled(context: Context): Boolean = getPrefs(context).getBoolean(KEY_EDITOR_AUTO_COMPILE, true)
+
+    fun setAutoCompileEnabled(context: Context, enabled: Boolean) {
+        getPrefs(context).edit().putBoolean(KEY_EDITOR_AUTO_COMPILE, enabled).apply()
+    }
+
+    fun isAutoCloseTagEnabled(context: Context): Boolean =
+        getPrefs(context).getBoolean(KEY_EDITOR_AUTO_CLOSE_TAG, true)
+
+    fun setAutoCloseTagEnabled(context: Context, enabled: Boolean) {
+        getPrefs(context).edit().putBoolean(KEY_EDITOR_AUTO_CLOSE_TAG, enabled).apply()
+    }
+
+    fun isColorPreviewEnabled(context: Context): Boolean = getPrefs(context).getBoolean(KEY_EDITOR_COLOR_PREVIEW, true)
+
+    fun setColorPreviewEnabled(context: Context, enabled: Boolean) {
+        getPrefs(context).edit().putBoolean(KEY_EDITOR_COLOR_PREVIEW, enabled).apply()
+    }
+
+    fun isWordWrapEnabled(context: Context): Boolean = getPrefs(context).getBoolean(KEY_EDITOR_WORD_WRAP, false)
+
+    fun setWordWrapEnabled(context: Context, enabled: Boolean) {
+        getPrefs(context).edit().putBoolean(KEY_EDITOR_WORD_WRAP, enabled).apply()
+    }
+
+    fun isWrapTxtEnabled(context: Context): Boolean = getPrefs(context).getBoolean(KEY_EDITOR_WRAP_TXT, true)
+
+    fun setWrapTxtEnabled(context: Context, enabled: Boolean) {
+        getPrefs(context).edit().putBoolean(KEY_EDITOR_WRAP_TXT, enabled).apply()
+    }
+
+    fun isReadOnlyEnabled(context: Context): Boolean = getPrefs(context).getBoolean(KEY_EDITOR_READ_ONLY, false)
+
+    fun setReadOnlyEnabled(context: Context, enabled: Boolean) {
+        getPrefs(context).edit().putBoolean(KEY_EDITOR_READ_ONLY, enabled).apply()
+    }
+
+    fun isLineNumbersEnabled(context: Context): Boolean = getPrefs(context).getBoolean(KEY_EDITOR_LINE_NUMBERS, true)
+
+    fun setLineNumbersEnabled(context: Context, enabled: Boolean) {
+        getPrefs(context).edit().putBoolean(KEY_EDITOR_LINE_NUMBERS, enabled).apply()
+    }
+
+    fun isDisableVirtualKbdEnabled(context: Context): Boolean = getPrefs(context).getBoolean(KEY_EDITOR_DISABLE_VIRTUAL_KBD, false)
+
+    fun setDisableVirtualKbdEnabled(context: Context, enabled: Boolean) {
+        getPrefs(context).edit().putBoolean(KEY_EDITOR_DISABLE_VIRTUAL_KBD, enabled).apply()
+    }
+
+    fun isCursorAnimationEnabled(context: Context): Boolean = getPrefs(context).getBoolean(KEY_EDITOR_CURSOR_ANIMATION, true)
+
+    fun setCursorAnimationEnabled(context: Context, enabled: Boolean) {
+        getPrefs(context).edit().putBoolean(KEY_EDITOR_CURSOR_ANIMATION, enabled).apply()
     }
 
     fun getCachedStars(context: Context): String =

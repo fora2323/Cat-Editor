@@ -320,28 +320,11 @@ class ComposePreviewView @JvmOverloads constructor(
     }
 
     private fun updateScrollDisabling() {
-        setScrollDisabledRecursive(viewportContent, isInspectMode)
+        // Natural touch scrolling is preserved during inspect mode so the user can fluidly explore layouts
     }
 
     private fun setScrollDisabledRecursive(view: View?, disabled: Boolean) {
-        if (view == null) return
-        if (view is InspectableScrollView) {
-            view.isScrollDisabled = disabled
-        } else if (view is ScrollView) {
-            if (disabled) {
-                view.setOnTouchListener { _, event ->
-                    // In inspect mode, consume scroll moves to disable scrolling
-                    event.action == MotionEvent.ACTION_MOVE
-                }
-            } else {
-                view.setOnTouchListener(null)
-            }
-        }
-        if (view is ViewGroup) {
-            for (i in 0 until view.childCount) {
-                setScrollDisabledRecursive(view.getChildAt(i), disabled)
-            }
-        }
+        // Preserved for backwards compatibility
     }
 
     fun applyThemeConfig(config: ComposeRenderer.RenderConfig) {
@@ -486,19 +469,45 @@ class ComposePreviewView @JvmOverloads constructor(
      * Automatically scrolls the viewport so the inspected element is brought into view.
      */
     fun scrollToTargetView(view: View) {
-        post {
-            val scroll = findParentScrollView(view) ?: findFirstScrollView(viewportContent)
-            if (scroll != null) {
+        val scroll = findParentScrollView(view) ?: findFirstScrollView(viewportContent)
+        val action = Runnable {
+            if (scroll != null && (view.isShown || view.visibility == View.VISIBLE)) {
                 val rect = Rect()
                 view.getDrawingRect(rect)
                 try {
                     scroll.offsetDescendantRectToMyCoords(view, rect)
-                    val targetY = maxOf(0, rect.top - (scroll.height / 3))
+                    val viewYInContent = rect.top + scroll.scrollY
+                    val targetY = maxOf(0, viewYInContent - ((scroll.height - view.height) / 2).coerceAtLeast(scroll.height / 4))
                     scroll.smoothScrollTo(0, targetY)
                 } catch (_: Exception) {
-                    view.requestRectangleOnScreen(rect, true)
+                    try {
+                        view.requestRectangleOnScreen(rect, true)
+                    } catch (_: Exception) {}
                 }
             }
+
+            val hScroll = findParentHorizontalScrollView(view)
+            if (hScroll != null && (view.isShown || view.visibility == View.VISIBLE)) {
+                val hRect = Rect()
+                view.getDrawingRect(hRect)
+                try {
+                    hScroll.offsetDescendantRectToMyCoords(view, hRect)
+                    val viewXInContent = hRect.left + hScroll.scrollX
+                    val targetX = maxOf(0, viewXInContent - ((hScroll.width - view.width) / 2).coerceAtLeast(0))
+                    hScroll.smoothScrollTo(targetX, 0)
+                } catch (_: Exception) {}
+            }
+        }
+
+        if (scroll != null && scroll.height > 0) {
+            scroll.post(action)
+        } else if (scroll != null) {
+            scroll.viewTreeObserver.addOnGlobalLayoutListener(object : android.view.ViewTreeObserver.OnGlobalLayoutListener {
+                override fun onGlobalLayout() {
+                    scroll.viewTreeObserver.removeOnGlobalLayoutListener(this)
+                    scroll.post(action)
+                }
+            })
         }
     }
 
@@ -506,6 +515,15 @@ class ComposePreviewView @JvmOverloads constructor(
         var p = view?.parent
         while (p != null) {
             if (p is ScrollView) return p
+            p = p.parent
+        }
+        return null
+    }
+
+    private fun findParentHorizontalScrollView(view: View?): android.widget.HorizontalScrollView? {
+        var p = view?.parent
+        while (p != null) {
+            if (p is android.widget.HorizontalScrollView) return p
             p = p.parent
         }
         return null

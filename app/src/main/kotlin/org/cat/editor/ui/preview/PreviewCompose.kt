@@ -157,30 +157,19 @@ fun PreviewScreen(
 
     val effectiveContent = if (sourceCode.isNotBlank()) sourceCode else fileContent
 
-    // Determine preview type
+    // Determine preview type: Strictly Kotlin Compose
     val isKotlin = fileName.endsWith(".kt") || fileName.endsWith(".kts")
-    val isXml = fileName.endsWith(".xml")
 
-    if (!isKotlin && !isXml) {
+    if (!isKotlin) {
         EmptyPreviewPlaceholder(
             title = "Preview Not Supported",
-            subtitle = "Preview is available for Kotlin Compose (.kt, .kts), XML Layouts (.xml), and image files."
+            subtitle = "Preview is available for Kotlin Compose (@Composable) files (.kt, .kts)."
         )
         return
     }
 
-    // If XML, check whether it is a layout XML or a resource XML (strings/colors/etc.)
-    if (isXml && !XmlLayoutParser.isLayoutXml(effectiveContent)) {
-        EmptyPreviewPlaceholder(
-            title = "XML Resource / Manifest File",
-            subtitle = "Layout preview is only applicable for Android UI layouts (e.g. LinearLayout, ConstraintLayout, etc.), not value resources."
-        )
-        return
-    }
-
-    // If Kotlin, check if it contains Compose code
     val isCompose = isKotlin && ComposePreviewParser.isComposeSource(effectiveContent)
-    if (isKotlin && !isCompose) {
+    if (!isCompose) {
         EmptyPreviewPlaceholder(
             title = "Kotlin File (No UI Detected)",
             subtitle = "No @Composable functions or Compose UI components were found in this file."
@@ -219,9 +208,7 @@ fun PreviewScreen(
     // Parse AST directly from live effective content
     val astRoot = remember(effectiveContent, activeFilePath, activePreviewIndex, refreshTrigger) {
         try {
-            if (isXml) {
-                XmlLayoutParser.parse(effectiveContent)
-            } else if (previews.isNotEmpty()) {
+            if (previews.isNotEmpty()) {
                 val model = previews.getOrElse(activePreviewIndex) { previews[0] }
                 ComposeAstParser.parse(model.functionBody, effectiveContent)
             } else {
@@ -394,7 +381,7 @@ fun PreviewScreen(
                                 selectAndInspectNode(node)
                             }
 
-                                    val config = ComposeRenderer.RenderConfig.create(isDarkMode).apply {
+                                    val config = ComposeRenderer.RenderConfig.create(isDarkMode, activeFilePath).apply {
                                         this.isInspectMode = isInspectMode
                                         this.inspectListener = ComposeRenderer.OnNodeSelectedListener { node, _ ->
                                             selectAndInspectNode(node)
@@ -409,7 +396,7 @@ fun PreviewScreen(
                                 previewViewRef = pv
                                 pv.setShowDeviceFrame(showDeviceFrame)
                                 pv.setInspectMode(isInspectMode)
-                                val config = ComposeRenderer.RenderConfig.create(isDarkMode).apply {
+                                val config = ComposeRenderer.RenderConfig.create(isDarkMode, activeFilePath).apply {
                                     this.isInspectMode = isInspectMode
                                     this.inspectListener = ComposeRenderer.OnNodeSelectedListener { node, _ ->
                                         selectAndInspectNode(node)
@@ -445,7 +432,7 @@ fun PreviewScreen(
                                 SmallFloatingActionButton(
                                     onClick = {
                                         isDarkMode = !isDarkMode
-                                        val config = ComposeRenderer.RenderConfig.create(isDarkMode).apply {
+                                        val config = ComposeRenderer.RenderConfig.create(isDarkMode, activeFilePath).apply {
                                             this.isInspectMode = isInspectMode
                                             this.inspectListener = ComposeRenderer.OnNodeSelectedListener { node, _ ->
                                                 selectAndInspectNode(node)

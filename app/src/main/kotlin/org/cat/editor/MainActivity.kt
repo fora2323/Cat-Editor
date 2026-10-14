@@ -326,11 +326,7 @@ class MainActivity : ComponentActivity() {
                 }
 
                 val parsed = if (isXml) {
-                    if (org.cat.editor.ui.preview.XmlLayoutParser.isLayoutXml(code)) {
-                        org.cat.editor.ui.preview.XmlLayoutParser.parse(code)
-                    } else {
-                        ComposeNode("XmlResource")
-                    }
+                    ComposeNode("XmlLayout")
                 } else {
                     if (org.cat.editor.ui.preview.ComposePreviewParser.isComposeSource(code)) {
                         org.cat.editor.ui.preview.ComposeAstParser.parse(code, code)

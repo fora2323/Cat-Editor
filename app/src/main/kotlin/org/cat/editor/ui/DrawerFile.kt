@@ -131,6 +131,7 @@ import org.cat.editor.ui.preview.BinaryFilePlaceholder
 import org.cat.editor.ui.preview.ComposeNode
 import org.cat.editor.ui.preview.ImageDetailViewer
 import org.cat.editor.ui.preview.ImagePreviewIcon
+import org.cat.editor.ui.preview.PreviewLayoutXml
 import org.cat.editor.ui.preview.PreviewScreen
 import org.cat.editor.ui.preview.isBinaryFile
 import org.cat.editor.ui.preview.isImageFile
@@ -632,28 +633,31 @@ fun IdeMainScreen(
                             lower.endsWith(".kt") || lower.endsWith(".kts") || lower.endsWith(".xml")
                         }
 
-                        if (activeFilePath.isNotEmpty() && !isImgOrBin && canPreview) {
+                        // Only show Scaffold FAB in EDIT mode ("Preview").
+                        // In PREVIEW mode, the preview screens display their own cleanly aligned "Edit" FAB,
+                        // avoiding duplicate FABs and overlap with the inspector bottom card.
+                        if (viewMode == EditorViewMode.EDIT && activeFilePath.isNotEmpty() && !isImgOrBin && canPreview) {
                             ExtendedFloatingActionButton(
                                 onClick = {
-                                    viewMode = if (viewMode == EditorViewMode.EDIT) EditorViewMode.PREVIEW else EditorViewMode.EDIT
+                                    viewMode = EditorViewMode.PREVIEW
                                     if (drawerState.isOpen) {
                                         scope.launch { drawerState.close() }
                                     }
                                 },
                                 icon = {
                                     Icon(
-                                        if (viewMode == EditorViewMode.EDIT) Icons.Default.Visibility else Icons.Default.Edit,
+                                        Icons.Default.Visibility,
                                         contentDescription = null
                                     )
                                 },
                                 text = {
                                     Text(
-                                        text = if (viewMode == EditorViewMode.EDIT) "Preview" else "Edit",
+                                        text = "Preview",
                                         fontWeight = FontWeight.SemiBold
                                     )
                                 },
-                                containerColor = if (viewMode == EditorViewMode.PREVIEW) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.secondaryContainer,
-                                contentColor = if (viewMode == EditorViewMode.PREVIEW) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSecondaryContainer
+                                containerColor = MaterialTheme.colorScheme.secondaryContainer,
+                                contentColor = MaterialTheme.colorScheme.onSecondaryContainer
                             )
                         }
                     }
@@ -709,17 +713,33 @@ fun IdeMainScreen(
                                 }
                             }
                             EditorViewMode.PREVIEW -> {
-                                PreviewScreen(
-                                    activeFilePath = activeFilePath,
-                                    currentRootNode = currentRootNode
-                                )
+                                val isXml = activeFilePath.lowercase().endsWith(".xml")
+                                if (isXml) {
+                                    PreviewLayoutXml(
+                                        activeFilePath = activeFilePath,
+                                        onBackClick = {
+                                            viewMode = EditorViewMode.EDIT
+                                        }
+                                    )
+                                } else {
+                                    PreviewScreen(
+                                        activeFilePath = activeFilePath,
+                                        currentRootNode = currentRootNode,
+                                        onBackClick = {
+                                            viewMode = EditorViewMode.EDIT
+                                        }
+                                    )
+                                }
                             }
                         }
                     }
                 } else {
                     PreviewScreen(
                         activeFilePath = "",
-                        currentRootNode = currentRootNode
+                        currentRootNode = currentRootNode,
+                        onBackClick = {
+                            viewMode = EditorViewMode.EDIT
+                        }
                     )
                 }
             }

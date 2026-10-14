@@ -8,7 +8,14 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.awaitEachGesture
 import androidx.compose.foundation.gestures.awaitFirstDown
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.ime
+import androidx.compose.foundation.layout.imePadding
+import androidx.compose.foundation.layout.isImeVisible
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -20,6 +27,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
@@ -45,7 +53,12 @@ import java.io.File
 private const val TAG = "CodeEditor"
 
 private fun getScopeForFile(filePath: String): String? {
-    return when (File(filePath).extension.lowercase()) {
+    if (filePath.isBlank()) return null
+    val file = File(filePath)
+    if (!file.exists() || file.isDirectory) return null
+    val name = file.name.lowercase()
+    if (name == "cmakelists.txt") return "source.cmake"
+    return when (file.extension.lowercase()) {
         "kt", "kts" -> "source.kotlin"
         "java" -> "source.java"
         "cpp", "cc", "cxx", "hpp", "c", "h" -> "source.cpp"
@@ -101,6 +114,31 @@ private fun createEditorColorScheme(): EditorColorScheme {
     }
 }
 
+private fun applyLanguageAndTheme(editor: CodeEditor, filePath: String, autoCloseTag: Boolean) {
+    val file = File(filePath)
+    if (!file.exists() || file.isDirectory) {
+        editor.colorScheme = KotlinDarkColorScheme()
+        try { editor.setEditorLanguage(EmptyLanguage()) } catch (_: Throwable) {}
+        return
+    }
+
+    val lang = createEditorLanguage(filePath, autoCloseTag)
+    if (lang is TextMateLanguage) {
+        try {
+            editor.colorScheme = createEditorColorScheme()
+        } catch (_: Throwable) {
+            editor.colorScheme = KotlinDarkColorScheme()
+        }
+    } else {
+        editor.colorScheme = KotlinDarkColorScheme()
+    }
+    try {
+        editor.setEditorLanguage(lang)
+    } catch (_: Throwable) {
+        try { editor.setEditorLanguage(EmptyLanguage()) } catch (_: Throwable) {}
+    }
+}
+
 private fun hideSoftKeyboardIfNeeded(editor: CodeEditor) {
     val context = editor.context
     val disableVirtualKbd = SettingsManager.getPrefs(context).getBoolean("editor_disable_virtual_kbd", false)
@@ -132,6 +170,7 @@ private fun applyEditorSettings(editor: CodeEditor, filePath: String) {
     hideSoftKeyboardIfNeeded(editor)
 }
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun KotlinCodeEditor(
     filePath: String,
@@ -150,7 +189,7 @@ fun KotlinCodeEditor(
         if (filePath.isNotEmpty() && !isBinaryFile(filePath)) {
             try {
                 val file = File(filePath)
-                if (file.exists()) file.readText() else ""
+                if (file.exists() && file.isFile) file.readText() else ""
             } catch (e: Throwable) {
                 Log.e(TAG, "Failed to read file $filePath", e)
                 ""
@@ -160,6 +199,7 @@ fun KotlinCodeEditor(
 
     var currentLoadedPath by remember { mutableStateOf(filePath) }
     var editorInstance by remember { mutableStateOf<CodeEditor?>(null) }
+    var isProgrammaticTextUpdate by remember { mutableStateOf(false) }
 
     // Perbarui pengaturan editor secara otomatis saat kembali dari halaman Settings
     DisposableEffect(lifecycleOwner, filePath) {
@@ -176,72 +216,127 @@ fun KotlinCodeEditor(
         }
     }
 
-    Box(
+    Column(
         modifier = Modifier
             .fillMaxSize()
             .background(Color(0xFF1E1E1E))
-            .pointerInput(Unit) {
-                awaitEachGesture {
-                    awaitFirstDown()
-                    onEditorInteraction?.invoke()
-                }
-            }
     ) {
-        AndroidView(
-            factory = { ctx ->
-                ensureTextMateInitialized(ctx)
-                val autoCloseTag = SettingsManager.getPrefs(ctx).getBoolean("editor_auto_close_tag", true)
-
-                CodeEditor(ctx).apply {
-                    editorInstance = this
-                    currentLoadedPath = filePath
-
-                    colorScheme = createEditorColorScheme()
-                    setEditorLanguage(createEditorLanguage(filePath, autoCloseTag))
-                    setText(initialContent)
-                    setTextSize(14f)
-                    applyEditorSettings(this, filePath)
-
-                    subscribeAlways(ContentChangeEvent::class.java) { _ ->
-                        onCodeChange(text.toString())
-                    }
-
-                    subscribeAlways(SelectionChangeEvent::class.java) { _ ->
+        Box(
+            modifier = Modifier
+                .weight(1f)
+                .fillMaxWidth()
+                .pointerInput(Unit) {
+                    awaitEachGesture {
+                        awaitFirstDown()
                         onEditorInteraction?.invoke()
                     }
+                }
+        ) {
+            AndroidView(
+                factory = { ctx ->
+                    ensureTextMateInitialized(ctx)
+                    val autoCloseTag = SettingsManager.getPrefs(ctx).getBoolean("editor_auto_close_tag", true)
 
-                    subscribeAlways(ClickEvent::class.java) { _ ->
-                        onEditorInteraction?.invoke()
-                        hideSoftKeyboardIfNeeded(this)
-                    }
+                    CodeEditor(ctx).apply {
+                        editorInstance = this
+                        currentLoadedPath = filePath
 
-                    setOnTouchListener { _, event ->
-                        if (event.action == android.view.MotionEvent.ACTION_DOWN) {
+                        applyLanguageAndTheme(this, filePath, autoCloseTag)
+                        isProgrammaticTextUpdate = true
+                        try {
+                            setText(initialContent)
+                        } catch (_: Throwable) {
+                        } finally {
+                            isProgrammaticTextUpdate = false
+                        }
+                        setTextSize(14f)
+                        applyEditorSettings(this, filePath)
+
+                        subscribeAlways(ContentChangeEvent::class.java) { _ ->
+                            if (!isProgrammaticTextUpdate) {
+                                onCodeChange(text.toString())
+                            }
+                        }
+
+                        subscribeAlways(SelectionChangeEvent::class.java) { _ ->
                             onEditorInteraction?.invoke()
                         }
-                        false
-                    }
-                }
-            },
-            update = { editor ->
-                editorInstance = editor
-                applyEditorSettings(editor, filePath)
 
-                // Only reload text when switching files, preserving cursor & active edits
-                if (currentLoadedPath != filePath) {
-                    currentLoadedPath = filePath
-                    val autoCloseTag = SettingsManager.getPrefs(editor.context).getBoolean("editor_auto_close_tag", true)
-                    editor.colorScheme = createEditorColorScheme()
-                    editor.setEditorLanguage(createEditorLanguage(filePath, autoCloseTag))
-                    val file = File(filePath)
-                    val textToSet = if (file.exists() && !isBinaryFile(filePath)) {
-                        try { file.readText() } catch (_: Throwable) { "" }
-                    } else ""
-                    editor.setText(textToSet)
-                }
-            },
-            modifier = Modifier.fillMaxSize()
-        )
+                        subscribeAlways(ClickEvent::class.java) { _ ->
+                            onEditorInteraction?.invoke()
+                            hideSoftKeyboardIfNeeded(this)
+                        }
+
+                        setOnTouchListener { _, event ->
+                            if (event.action == android.view.MotionEvent.ACTION_DOWN) {
+                                onEditorInteraction?.invoke()
+                            }
+                            false
+                        }
+                    }
+                },
+                update = { editor ->
+                    editorInstance = editor
+                    applyEditorSettings(editor, filePath)
+
+                    // Only reload text when switching files, preserving cursor & active edits
+                    if (currentLoadedPath != filePath) {
+                        currentLoadedPath = filePath
+                        val autoCloseTag = SettingsManager.getPrefs(editor.context).getBoolean("editor_auto_close_tag", true)
+
+                        val file = File(filePath)
+                        val textToSet = if (file.exists() && file.isFile && !isBinaryFile(filePath)) {
+                            try {
+                                file.readText()
+                            } catch (_: Throwable) {
+                                try {
+                                    file.readBytes().toString(Charsets.ISO_8859_1)
+                                } catch (_: Throwable) {
+                                    ""
+                                }
+                            }
+                        } else ""
+
+                        isProgrammaticTextUpdate = true
+                        try {
+                            editor.setText(textToSet)
+                        } catch (e: Throwable) {
+                            Log.e(TAG, "Error setting text in editor", e)
+                        } finally {
+                            isProgrammaticTextUpdate = false
+                        }
+
+                        applyLanguageAndTheme(editor, filePath, autoCloseTag)
+                    }
+                },
+                modifier = Modifier.fillMaxSize()
+            )
+        }
+
+        val density = LocalDensity.current
+        val isIme = WindowInsets.ime.getBottom(density) > 0 || WindowInsets.isImeVisible
+        if (isIme) {
+            QuickSymbolBar(
+                filePath = filePath,
+                onSymbolClick = { symbol ->
+                    editorInstance?.let { editor ->
+                        try {
+                            val cursor = editor.cursor
+                            val leftLine = cursor.leftLine
+                            val leftColumn = cursor.leftColumn
+                            editor.text.insert(leftLine, leftColumn, symbol.insertText)
+                            if (symbol.cursorOffset != symbol.insertText.length) {
+                                val newCol = leftColumn + symbol.cursorOffset
+                                editor.setSelection(leftLine, newCol)
+                            }
+                        } catch (e: Throwable) {
+                            Log.e(TAG, "Error inserting quick symbol", e)
+                        }
+                    }
+                },
+                modifier = Modifier.imePadding()
+            )
+        }
     }
 }
 

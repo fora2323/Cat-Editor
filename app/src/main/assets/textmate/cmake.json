@@ -1,30 +1,30 @@
 {
   "name": "CMake",
   "scopeName": "source.cmake",
-  "fileTypes": ["cmake", "CMakeLists.txt"],
+  "fileTypes": ["cmake", "txt"],
   "patterns": [
-    { "include": "#comments" },
-    { "include": "#strings" },
-    { "include": "#commands" },
-    { "include": "#variables" }
-  ],
-  "repository": {
-    "comments": {
+    {
       "name": "comment.line.number-sign.cmake",
       "match": "#.*$"
     },
-    "strings": {
+    {
       "name": "string.quoted.double.cmake",
       "begin": "\"",
-      "end": "\""
+      "end": "\"",
+      "patterns": [
+        {
+          "name": "constant.character.escape.cmake",
+          "match": "\\\\."
+        }
+      ]
     },
-    "commands": {
+    {
       "name": "keyword.control.cmake",
-      "match": "\\b(cmake_minimum_required|project|add_executable|add_library|target_link_libraries|set|include_directories|if|endif)\\b"
+      "match": "\\b(cmake_minimum_required|project|add_executable|add_library|target_link_libraries|set|include_directories|if|endif|else|elseif|find_package|target_include_directories)\\b"
     },
-    "variables": {
+    {
       "name": "variable.other.cmake",
       "match": "\\$\\{[^\\}]+\\}"
     }
-  }
+  ]
 }

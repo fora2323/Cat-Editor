@@ -3,37 +3,60 @@
   "scopeName": "source.java",
   "fileTypes": ["java"],
   "patterns": [
-    { "include": "#comments" },
-    { "include": "#strings" },
-    { "include": "#keywords" }
-  ],
-  "repository": {
-    "comments": {
-      "patterns": [
-        { "name": "comment.line.double-slash.java", "match": "//.*$" },
-        { "name": "comment.block.java", "begin": "/\\*", "end": "\\*/" }
-      ]
+    {
+      "name": "comment.line.double-slash.java",
+      "match": "//.*$"
     },
-    "strings": {
-      "patterns": [
-        { "name": "string.quoted.double.java", "begin": "\"", "end": "\"" }
-      ]
+    {
+      "name": "comment.block.java",
+      "begin": "/\\*",
+      "end": "\\*/"
     },
-    "keywords": {
+    {
+      "name": "string.quoted.double.java",
+      "begin": "\"",
+      "end": "\"",
       "patterns": [
         {
-          "name": "keyword.control.java",
-          "match": "\\b(if|else|for|while|do|return|break|continue|switch|case|default|try|catch|finally|throw|throws)\\b"
-        },
-        {
-          "name": "storage.type.java",
-          "match": "\\b(class|interface|enum|byte|short|int|long|float|double|boolean|char|void)\\b"
-        },
-        {
-          "name": "storage.modifier.java",
-          "match": "\\b(public|protected|private|static|final|abstract|synchronized|volatile|transient)\\b"
+          "name": "constant.character.escape.java",
+          "match": "\\\\."
         }
       ]
+    },
+    {
+      "name": "string.quoted.single.java",
+      "begin": "'",
+      "end": "'",
+      "patterns": [
+        {
+          "name": "constant.character.escape.java",
+          "match": "\\\\."
+        }
+      ]
+    },
+    {
+      "name": "keyword.control.java",
+      "match": "\\b(if|else|for|while|do|return|break|continue|switch|case|default|try|catch|finally|throw|throws)\\b"
+    },
+    {
+      "name": "storage.type.java",
+      "match": "\\b(class|interface|enum|record|byte|short|int|long|float|double|boolean|char|void|String|Object|List|Map|Set)\\b"
+    },
+    {
+      "name": "storage.modifier.java",
+      "match": "\\b(public|protected|private|static|final|abstract|synchronized|volatile|transient|native|strictfp)\\b"
+    },
+    {
+      "name": "constant.language.java",
+      "match": "\\b(true|false|null|this|super|new|instanceof|import|package)\\b"
+    },
+    {
+      "name": "constant.numeric.java",
+      "match": "\\b(\\d+|0x[0-9a-fA-F]+|\\d+\\.\\d+f?|\\d+[LldD]?)\\b"
+    },
+    {
+      "name": "entity.name.function.java",
+      "match": "\\b([a-zA-Z_][a-zA-Z0-9_]*)\\s*(?=\\()"
     }
-  }
+  ]
 }

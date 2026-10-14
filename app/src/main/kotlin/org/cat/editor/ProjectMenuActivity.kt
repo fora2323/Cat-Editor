@@ -73,6 +73,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SmallFloatingActionButton
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
@@ -111,16 +112,20 @@ import kotlinx.coroutines.withContext
 import org.cat.editor.ui.BottomSheetDialog
 import org.cat.editor.ui.DialogLoading
 import org.cat.editor.ui.ExpressivePullToRefreshBox
+import org.cat.editor.ui.M3ELoadingDialog
+import org.cat.editor.ui.M3ELoadingIndicator
 import org.cat.editor.ui.theme.AppTheme
 import org.cat.editor.utils.ConfigPath
 import org.cat.editor.utils.LocaleHelper
+import org.cat.editor.utils.SafProjectsManager
 import org.cat.editor.utils.StorageUtils
 import java.io.File
 
 data class ProjectItem(
     val name: String,
     val path: String,
-    val iconBitmap: Bitmap?
+    val iconBitmap: Bitmap?,
+    val isExternal: Boolean = false
 )
 
 class ProjectMenuActivity : ComponentActivity() {
@@ -205,17 +210,17 @@ fun ProjectMenuScreen(
     var isRefreshing by remember { mutableStateOf(false) }
     var isFabExpanded by remember { mutableStateOf(false) }
     
-    // State Menu Option
     var selectedProjectForMenu by remember { mutableStateOf<ProjectItem?>(null) }
     var showProjectMenu by remember { mutableStateOf(false) }
     var isDeleting by remember { mutableStateOf(false) }
+    var isOpeningProject by remember { mutableStateOf(false) }
 
     suspend fun refresh() {
         isRefreshing = true
         try {
             delay(600)
             projects = withContext(Dispatchers.IO) {
-                scanProjects(ConfigPath.VAR_PROJECTS_PATH)
+                loadAllProjects(context)
             }
         } finally {
             isRefreshing = false
@@ -231,7 +236,7 @@ fun ProjectMenuScreen(
             showPermissionDialog = false
             scope.launch {
                 projects = withContext(Dispatchers.IO) {
-                    scanProjects(ConfigPath.VAR_PROJECTS_PATH)
+                    loadAllProjects(context)
                 }
             }
         } else {
@@ -244,10 +249,17 @@ fun ProjectMenuScreen(
     ) { uri: Uri? ->
         uri?.let {
             val path = StorageUtils.getRealPathFromTreeUri(context, it)
-            if (path != null && File(path).exists()) {
+            if (path != null && File(path).exists() && File(path).isDirectory) {
+                SafProjectsManager.addProject(context, path, it.toString())
+                scope.launch {
+                    projects = withContext(Dispatchers.IO) {
+                        loadAllProjects(context)
+                    }
+                }
                 val intent = Intent(context, MainActivity::class.java).apply {
                     putExtra("project_path", path)
                 }
+                isOpeningProject = true
                 context.startActivity(intent)
             } else {
                 Toast.makeText(context, context.getString(R.string.cannot_access_folder), Toast.LENGTH_SHORT).show()
@@ -258,11 +270,16 @@ fun ProjectMenuScreen(
     DisposableEffect(lifecycleOwner) {
         val observer = LifecycleEventObserver { _, event ->
             if (event == Lifecycle.Event.ON_RESUME) {
+                isOpeningProject = false
                 val currentPermission = checkStoragePermission(context)
                 hasPermission = currentPermission
                 if (currentPermission) {
                     showPermissionDialog = false
-                    projects = scanProjects(ConfigPath.VAR_PROJECTS_PATH)
+                    scope.launch {
+                        projects = withContext(Dispatchers.IO) {
+                            loadAllProjects(context)
+                        }
+                    }
                 }
             }
         }
@@ -276,7 +293,7 @@ fun ProjectMenuScreen(
         if (hasPermission) {
             isLoading = true
             projects = withContext(Dispatchers.IO) {
-                scanProjects(ConfigPath.VAR_PROJECTS_PATH)
+                loadAllProjects(context)
             }
             isLoading = false
         }
@@ -451,9 +468,7 @@ fun ProjectMenuScreen(
                         modifier = Modifier.fillMaxSize(),
                         contentAlignment = Alignment.Center
                     ) {
-                        CircularProgressIndicator(
-                            color = MaterialTheme.colorScheme.primary
-                        )
+                        M3ELoadingIndicator()
                     }
                 } else if (projects.isEmpty()) {
                     Box(
@@ -479,7 +494,10 @@ fun ProjectMenuScreen(
                         items(projects, key = { it.path }) { item ->
                             ProjectItemRow(
                                 project = item,
-                                onClick = { onProjectSelected(item) },
+                                onClick = { 
+                                    isOpeningProject = true
+                                    onProjectSelected(item)
+                                },
                                 onMoreClick = { 
                                     selectedProjectForMenu = item
                                     showProjectMenu = true
@@ -492,9 +510,9 @@ fun ProjectMenuScreen(
         }
     }
     
-    // Tampilkan indikator saat direktori dihapus
-    if (isDeleting) {
-        DialogLoading()
+    // Tampilkan indikator saat direktori dihapus atau proyek dibuka
+    if (isDeleting || isOpeningProject) {
+        M3ELoadingDialog()
     }
 
     // Tampilkan Menu Project saat di-klik
@@ -548,9 +566,10 @@ fun ProjectMenuScreen(
                         } catch (e: Exception) {
                             e.printStackTrace()
                         }
-                        
+                        SafProjectsManager.removeProject(context, project.path)
+
                         // Setelah selesai, muat ulang list proyek dan tutup loading dialog
-                        val updatedProjects = scanProjects(ConfigPath.VAR_PROJECTS_PATH)
+                        val updatedProjects = loadAllProjects(context)
                         withContext(Dispatchers.Main) {
                             projects = updatedProjects
                             isDeleting = false
@@ -712,14 +731,34 @@ fun ProjectItemRow(
             Column(
                 modifier = Modifier.weight(1f)
             ) {
-                Text(
-                    text = project.name,
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.SemiBold,
-                    color = MaterialTheme.colorScheme.onSurface,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
-                )
+                Row(
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = project.name,
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.SemiBold,
+                        color = MaterialTheme.colorScheme.onSurface,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        modifier = Modifier.weight(1f, fill = false)
+                    )
+                    if (project.isExternal) {
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Surface(
+                            shape = RoundedCornerShape(4.dp),
+                            color = MaterialTheme.colorScheme.secondaryContainer
+                        ) {
+                            Text(
+                                text = "SAF",
+                                style = MaterialTheme.typography.labelSmall,
+                                fontWeight = FontWeight.Medium,
+                                color = MaterialTheme.colorScheme.onSecondaryContainer,
+                                modifier = Modifier.padding(horizontal = 5.dp, vertical = 2.dp)
+                            )
+                        }
+                    }
+                }
                 Spacer(modifier = Modifier.height(2.dp))
                 Text(
                     text = project.path,
@@ -750,6 +789,34 @@ fun checkStoragePermission(context: Context): Boolean {
         val writeGranted = ContextCompat.checkSelfPermission(context, Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED
         readGranted && writeGranted
     }
+}
+
+fun loadAllProjects(context: Context): List<ProjectItem> {
+    val localProjects = scanProjects(ConfigPath.VAR_PROJECTS_PATH)
+    val knownPaths = localProjects.map { 
+        try { File(it.path).canonicalPath } catch (_: Exception) { File(it.path).absolutePath } 
+    }.toMutableSet()
+
+    val safRecords = SafProjectsManager.getAllSafProjects(context)
+    val safProjects = mutableListOf<ProjectItem>()
+
+    for (record in safRecords) {
+        val folder = File(record.path)
+        val normalized = try { folder.canonicalPath } catch (_: Exception) { folder.absolutePath }
+        if (knownPaths.add(normalized) && folder.exists() && folder.isDirectory) {
+            val iconBitmap = findProjectIcon(folder)
+            safProjects.add(
+                ProjectItem(
+                    name = folder.name.ifBlank { record.name },
+                    path = folder.absolutePath,
+                    iconBitmap = iconBitmap,
+                    isExternal = true
+                )
+            )
+        }
+    }
+
+    return (localProjects + safProjects).sortedBy { it.name.lowercase() }
 }
 
 fun scanProjects(basePath: String): List<ProjectItem> {

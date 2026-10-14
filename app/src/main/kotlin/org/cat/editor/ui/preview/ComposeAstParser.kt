@@ -34,6 +34,12 @@ object ComposeAstParser {
         "rememberScrollState", "rememberLazyListState"
     )
 
+    data class DeclaredComposable(
+        val name: String,
+        val params: List<String>,
+        val body: String
+    )
+
     fun parse(bodyCode: String?, fullFileContent: String?): ComposeNode {
         if (bodyCode.isNullOrBlank()) {
             val empty = ComposeNode("Box")
@@ -49,14 +55,14 @@ object ComposeAstParser {
 
         val targetFunction = findDelegatedComposable(resolvedCode)
         if (targetFunction != null && declaredFunctions.containsKey(targetFunction)) {
-            val targetBody = declaredFunctions[targetFunction]
-            if (!targetBody.isNullOrBlank()) {
-                resolvedCode = targetBody
+            val target = declaredFunctions[targetFunction]
+            if (target != null && target.body.isNotBlank()) {
+                resolvedCode = target.body
             }
         }
 
         val variables = mutableMapOf<String, String>()
-        val parsedNodes = parseNodes(resolvedCode, declaredFunctions, variables)
+        val parsedNodes = parseNodes(resolvedCode, declaredFunctions, variables, emptySet())
 
         if (parsedNodes.isEmpty()) {
             val root = ComposeNode("Column").apply {
@@ -86,25 +92,35 @@ object ComposeAstParser {
         return root
     }
 
-    private fun extractAllDeclaredFunctions(code: String?): Map<String, String> {
-        val map = mutableMapOf<String, String>()
+    private fun extractAllDeclaredFunctions(code: String?): Map<String, DeclaredComposable> {
+        val map = mutableMapOf<String, DeclaredComposable>()
         if (code.isNullOrEmpty()) return map
 
-        val p = Pattern.compile("\\bfun\\s+([A-Za-z0-9_]+)\\b")
+        val p = Pattern.compile("\\bfun\\s+([A-Za-z0-9_]+)\\s*\\(")
         val m = p.matcher(code)
         while (m.find()) {
             val name = m.group(1) ?: continue
-            val start = m.end()
-            val openParen = code.indexOf('(', start)
-            if (openParen != -1 && openParen - start < 40) {
-                val closeParen = findMatchingClose(code, openParen, '(', ')')
-                if (closeParen != -1) {
-                    val braceStart = code.indexOf('{', closeParen)
-                    if (braceStart != -1 && braceStart - closeParen < 100) {
-                        val braceEnd = findMatchingClose(code, braceStart, '{', '}')
-                        if (braceEnd != -1) {
-                            map[name] = code.substring(braceStart + 1, braceEnd).trim()
-                        }
+            val openParen = m.end() - 1
+            val closeParen = findMatchingClose(code, openParen, '(', ')')
+            if (closeParen != -1) {
+                val paramsStr = code.substring(openParen + 1, closeParen).trim()
+                val paramsList = if (paramsStr.isNotEmpty()) {
+                    splitArgs(paramsStr).mapNotNull { paramDecl ->
+                        val paramName = paramDecl.trim().substringBefore(':').trim()
+                        if (paramName.isNotEmpty() && Character.isJavaIdentifierStart(paramName[0])) {
+                            paramName
+                        } else null
+                    }
+                } else {
+                    emptyList()
+                }
+
+                val braceStart = code.indexOf('{', closeParen)
+                if (braceStart != -1 && braceStart - closeParen < 150) {
+                    val braceEnd = findMatchingClose(code, braceStart, '{', '}')
+                    if (braceEnd != -1) {
+                        val body = code.substring(braceStart + 1, braceEnd).trim()
+                        map[name] = DeclaredComposable(name, paramsList, body)
                     }
                 }
             }
@@ -126,8 +142,9 @@ object ComposeAstParser {
 
     private fun parseNodes(
         code: String?,
-        declaredFunctions: Map<String, String>,
-        variables: MutableMap<String, String>
+        declaredFunctions: Map<String, DeclaredComposable>,
+        variables: MutableMap<String, String>,
+        expandingFunctions: Set<String>
     ): List<ComposeNode> {
         val nodes = mutableListOf<ComposeNode>()
         if (code == null) return nodes
@@ -246,18 +263,29 @@ object ComposeAstParser {
                     val bodyEnd = findMatchingClose(code, i, '{', '}')
                     if (bodyEnd != -1) {
                         val lambdaBody = code.substring(i + 1, bodyEnd).trim()
-                        val childNodes = parseNodes(lambdaBody, declaredFunctions, variables)
+                        val childNodes = parseNodes(lambdaBody, declaredFunctions, variables, expandingFunctions)
                         for (child in childNodes) {
                             node.addChild(child)
                         }
                         i = bodyEnd + 1
                     }
-                } else if (!hasArgs && !hasLambda && declaredFunctions.containsKey(identifier)) {
-                    val subBody = declaredFunctions[identifier]
-                    if (!subBody.isNullOrBlank()) {
-                        val subNodes = parseNodes(subBody, declaredFunctions, variables)
-                        for (sn in subNodes) {
-                            node.addChild(sn)
+                } else if (declaredFunctions.containsKey(identifier) && node.children.isEmpty() && !expandingFunctions.contains(identifier)) {
+                    val funcDef = declaredFunctions[identifier]
+                    if (funcDef != null && funcDef.body.isNotBlank()) {
+                        val innerVariables = variables.toMutableMap()
+                        for ((k, v) in node.attributes) {
+                            if (k.startsWith("arg_")) {
+                                val idx = k.removePrefix("arg_").toIntOrNull()
+                                if (idx != null && idx < funcDef.params.size) {
+                                    innerVariables[funcDef.params[idx]] = v
+                                }
+                            } else {
+                                innerVariables[k] = v
+                            }
+                        }
+                        val childNodes = parseNodes(funcDef.body, declaredFunctions, innerVariables, expandingFunctions + identifier)
+                        for (child in childNodes) {
+                            node.addChild(child)
                         }
                     }
                 }

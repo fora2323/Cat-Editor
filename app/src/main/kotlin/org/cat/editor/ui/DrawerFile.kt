@@ -19,10 +19,22 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentWidth
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.ime
+import androidx.compose.foundation.layout.isImeVisible
+import androidx.compose.foundation.layout.systemBars
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.InsertDriveFile
+import androidx.compose.runtime.produceState
+import androidx.compose.ui.platform.LocalDensity
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import androidx.compose.material.icons.automirrored.filled.Redo
 import androidx.compose.material.icons.automirrored.filled.Undo
 import androidx.compose.material.icons.filled.Add
@@ -122,7 +134,7 @@ import java.io.File
 
 enum class EditorViewMode { EDIT, PREVIEW }
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
 fun IdeMainScreen(
     projectPath: String,
@@ -167,10 +179,25 @@ fun IdeMainScreen(
         }
     }
 
+    LaunchedEffect(activeFilePath) {
+        if (activeFilePath.isNotEmpty()) {
+            val lower = activeFilePath.lowercase()
+            val isPreviewable = lower.endsWith(".kt") || lower.endsWith(".kts") || lower.endsWith(".xml")
+            if (!isPreviewable) {
+                viewMode = EditorViewMode.EDIT
+            }
+        }
+    }
+
     DismissibleNavigationDrawer(
         drawerState = drawerState,
         drawerContent = {
-            DismissibleDrawerSheet(modifier = Modifier.width(300.dp)) {
+            DismissibleDrawerSheet(
+                modifier = Modifier
+                    .width(300.dp)
+                    .fillMaxHeight(),
+                windowInsets = WindowInsets.systemBars
+            ) {
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -202,6 +229,12 @@ fun IdeMainScreen(
                             refreshKey = treeRefreshTrigger,
                             expandedPaths = expandedPaths,
                             onFileClick = { file ->
+                                if (!file.exists() || file.isDirectory) return@FileTreeView
+                                val lower = file.name.lowercase()
+                                val isPreviewable = lower.endsWith(".kt") || lower.endsWith(".kts") || lower.endsWith(".xml")
+                                if (!isPreviewable) {
+                                    viewMode = EditorViewMode.EDIT
+                                }
                                 onFileSelected(file)
                                 scope.launch {
                                     drawerState.close()
@@ -217,6 +250,7 @@ fun IdeMainScreen(
         }
     ) {
         Scaffold(
+            contentWindowInsets = WindowInsets.systemBars,
             topBar = {
                 Column {
                     AnimatedVisibility(visible = isToolbarVisible) {
@@ -355,7 +389,7 @@ fun IdeMainScreen(
                                 val projectDir = File(projectPath).canonicalFile
                                 openedFiles.filter { path ->
                                     val f = File(path)
-                                    f.exists() && f.canonicalFile.startsWith(projectDir)
+                                    f.exists() && f.isFile && f.canonicalFile.startsWith(projectDir)
                                 }
                             } catch (_: Throwable) {
                                 emptyList()
@@ -376,7 +410,16 @@ fun IdeMainScreen(
                                 val file = File(path)
                                 Tab(
                                     selected = activeFilePath == path,
-                                    onClick = { onTabSelected(path) },
+                                    onClick = {
+                                        val f = File(path)
+                                        if (!f.exists() || !f.isFile) return@Tab
+                                        val lower = path.lowercase()
+                                        val isPreviewable = lower.endsWith(".kt") || lower.endsWith(".kts") || lower.endsWith(".xml")
+                                        if (!isPreviewable) {
+                                            viewMode = EditorViewMode.EDIT
+                                        }
+                                        onTabSelected(path)
+                                    },
                                     text = {
                                         Row(
                                             verticalAlignment = Alignment.CenterVertically,
@@ -409,47 +452,55 @@ fun IdeMainScreen(
                 }
             },
             floatingActionButton = {
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    if (isSmartToolbar && !isToolbarVisible) {
-                        SmallFloatingActionButton(
-                            onClick = { isToolbarVisible = true },
-                            containerColor = MaterialTheme.colorScheme.primaryContainer,
-                            contentColor = MaterialTheme.colorScheme.onPrimaryContainer
-                        ) {
-                            Icon(Icons.Default.FullscreenExit, contentDescription = "Show Toolbar")
+                val density = LocalDensity.current
+                val isImeVisible = WindowInsets.ime.getBottom(density) > 0 || WindowInsets.isImeVisible
+                if (!isImeVisible) {
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        if (isSmartToolbar && !isToolbarVisible) {
+                            SmallFloatingActionButton(
+                                onClick = { isToolbarVisible = true },
+                                containerColor = MaterialTheme.colorScheme.primaryContainer,
+                                contentColor = MaterialTheme.colorScheme.onPrimaryContainer
+                            ) {
+                                Icon(Icons.Default.FullscreenExit, contentDescription = "Show Toolbar")
+                            }
                         }
-                    }
 
-                    val isImgOrBin = remember(activeFilePath) {
-                        isImageFile(activeFilePath) || isBinaryFile(activeFilePath)
-                    }
+                        val isImgOrBin = remember(activeFilePath) {
+                            isImageFile(activeFilePath) || isBinaryFile(activeFilePath)
+                        }
+                        val canPreview = remember(activeFilePath) {
+                            val lower = activeFilePath.lowercase()
+                            lower.endsWith(".kt") || lower.endsWith(".kts") || lower.endsWith(".xml")
+                        }
 
-                    if (activeFilePath.isNotEmpty() && !isImgOrBin) {
-                        ExtendedFloatingActionButton(
-                            onClick = {
-                                viewMode = if (viewMode == EditorViewMode.EDIT) EditorViewMode.PREVIEW else EditorViewMode.EDIT
-                                if (drawerState.isOpen) {
-                                    scope.launch { drawerState.close() }
-                                }
-                            },
-                            icon = {
-                                Icon(
-                                    if (viewMode == EditorViewMode.EDIT) Icons.Default.Visibility else Icons.Default.Edit,
-                                    contentDescription = null
-                                )
-                            },
-                            text = {
-                                Text(
-                                    text = if (viewMode == EditorViewMode.EDIT) "Preview" else "Edit",
-                                    fontWeight = FontWeight.SemiBold
-                                )
-                            },
-                            containerColor = if (viewMode == EditorViewMode.PREVIEW) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.secondaryContainer,
-                            contentColor = if (viewMode == EditorViewMode.PREVIEW) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSecondaryContainer
-                        )
+                        if (activeFilePath.isNotEmpty() && !isImgOrBin && canPreview) {
+                            ExtendedFloatingActionButton(
+                                onClick = {
+                                    viewMode = if (viewMode == EditorViewMode.EDIT) EditorViewMode.PREVIEW else EditorViewMode.EDIT
+                                    if (drawerState.isOpen) {
+                                        scope.launch { drawerState.close() }
+                                    }
+                                },
+                                icon = {
+                                    Icon(
+                                        if (viewMode == EditorViewMode.EDIT) Icons.Default.Visibility else Icons.Default.Edit,
+                                        contentDescription = null
+                                    )
+                                },
+                                text = {
+                                    Text(
+                                        text = if (viewMode == EditorViewMode.EDIT) "Preview" else "Edit",
+                                        fontWeight = FontWeight.SemiBold
+                                    )
+                                },
+                                containerColor = if (viewMode == EditorViewMode.PREVIEW) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.secondaryContainer,
+                                contentColor = if (viewMode == EditorViewMode.PREVIEW) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSecondaryContainer
+                            )
+                        }
                     }
                 }
             }
@@ -460,7 +511,17 @@ fun IdeMainScreen(
                     val isImg = remember(activeFilePath) { isImageFile(activeFilePath) }
                     val isBin = remember(activeFilePath) { isBinaryFile(activeFilePath) }
 
-                    if (isImg) {
+                    if (!activeFile.exists() || activeFile.isDirectory) {
+                        Box(
+                            modifier = Modifier.fillMaxSize(),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = stringResource(id = R.string.not_found),
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                    } else if (isImg) {
                         ImageDetailViewer(file = activeFile)
                     } else if (isBin) {
                         BinaryFilePlaceholder(file = activeFile)
@@ -501,7 +562,10 @@ fun IdeMainScreen(
                         }
                     }
                 } else {
-                    PreviewScreen("", currentRootNode)
+                    PreviewScreen(
+                        activeFilePath = "",
+                        currentRootNode = currentRootNode
+                    )
                 }
             }
         }
@@ -620,6 +684,14 @@ fun FileIcon(file: File, modifier: Modifier = Modifier) {
 
 private fun borderModifier(selected: Boolean): Modifier = Modifier
 
+data class FileTreeItem(
+    val file: File,
+    val level: Int,
+    val isDirectory: Boolean,
+    val isExpanded: Boolean
+)
+
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun FileTreeView(
     root: File,
@@ -630,6 +702,42 @@ fun FileTreeView(
 ) {
     var searchQuery by remember { mutableStateOf("") }
     var localRefreshTrigger by remember { mutableIntStateOf(0) }
+
+    // In-memory directory listing cache to avoid blocking File.listFiles() during recomposition
+    val dirChildrenCache = remember(root, refreshKey, localRefreshTrigger) {
+        mutableMapOf<String, List<File>>()
+    }
+
+    fun getChildren(dir: File): List<File> {
+        return dirChildrenCache.getOrPut(dir.absolutePath) {
+            try {
+                dir.listFiles()
+                    ?.filter { !it.name.startsWith(".") }
+                    ?.sortedWith(compareBy({ !it.isDirectory }, { it.name.lowercase() }))
+                    ?: emptyList()
+            } catch (_: Throwable) {
+                emptyList()
+            }
+        }
+    }
+
+    // Build flat list of visible items dynamically based on expanded state
+    val visibleItems = remember(root, expandedPaths.toMap(), refreshKey, localRefreshTrigger) {
+        val items = mutableListOf<FileTreeItem>()
+        fun traverse(dir: File, level: Int) {
+            val children = getChildren(dir)
+            for (file in children) {
+                val isDir = file.isDirectory
+                val isExpanded = isDir && (expandedPaths[file.absolutePath] == true)
+                items.add(FileTreeItem(file, level, isDir, isExpanded))
+                if (isExpanded) {
+                    traverse(file, level + 1)
+                }
+            }
+        }
+        traverse(root, 0)
+        items
+    }
 
     Column(modifier = Modifier.fillMaxSize()) {
         Row(
@@ -655,40 +763,106 @@ fun FileTreeView(
                 textStyle = TextStyle(fontSize = 12.sp)
             )
             Spacer(Modifier.width(4.dp))
-            IconButton(onClick = { localRefreshTrigger++ }) {
+            IconButton(onClick = {
+                dirChildrenCache.clear()
+                localRefreshTrigger++
+            }) {
                 Icon(Icons.Default.Refresh, stringResource(id = R.string.refresh), modifier = Modifier.size(20.dp))
             }
         }
 
-        key(refreshKey, localRefreshTrigger) {
-            val scrollStateH = rememberScrollState()
-            val scrollStateV = rememberScrollState()
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .horizontalScroll(scrollStateH)
-                    .verticalScroll(scrollStateV)
-            ) {
-                Column {
-                    if (searchQuery.isEmpty()) {
-                        FileTreeNode(
-                            root = root,
-                            level = 0,
-                            expandedPaths = expandedPaths,
-                            onFileClick = onFileClick,
-                            onFileLongClick = onFileLongClick
-                        )
-                    } else {
-                        SearchResults(
-                            root = root,
-                            query = searchQuery,
-                            onFileClick = onFileClick,
-                            onFileLongClick = onFileLongClick
+        if (searchQuery.isNotEmpty()) {
+            SearchResults(
+                root = root,
+                query = searchQuery,
+                onFileClick = onFileClick,
+                onFileLongClick = onFileLongClick
+            )
+        } else {
+            if (visibleItems.isEmpty()) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(16.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = stringResource(id = R.string.not_found),
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        fontSize = 13.sp
+                    )
+                }
+            } else {
+                LazyColumn(
+                    modifier = Modifier.fillMaxSize(),
+                    contentPadding = PaddingValues(bottom = 80.dp)
+                ) {
+                    items(
+                        count = visibleItems.size,
+                        key = { index -> visibleItems[index].file.absolutePath }
+                    ) { index ->
+                        val item = visibleItems[index]
+                        FileTreeItemRow(
+                            item = item,
+                            onClick = {
+                                if (item.isDirectory) {
+                                    expandedPaths[item.file.absolutePath] = !item.isExpanded
+                                } else {
+                                    onFileClick(item.file)
+                                }
+                            },
+                            onLongClick = { onFileLongClick(item.file) }
                         )
                     }
                 }
             }
         }
+    }
+}
+
+@OptIn(ExperimentalFoundationApi::class)
+@Composable
+private fun FileTreeItemRow(
+    item: FileTreeItem,
+    onClick: () -> Unit,
+    onLongClick: () -> Unit
+) {
+    val file = item.file
+    val isExpanded = item.isExpanded
+    val level = item.level
+
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .combinedClickable(
+                onClick = onClick,
+                onLongClick = onLongClick
+            )
+            .padding(start = (level * 16 + 8).dp, top = 8.dp, bottom = 8.dp, end = 16.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        if (item.isDirectory) {
+            Icon(
+                imageVector = if (isExpanded) Icons.Default.KeyboardArrowDown else Icons.Default.KeyboardArrowRight,
+                contentDescription = null,
+                modifier = Modifier.size(18.dp),
+                tint = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+            Spacer(Modifier.width(4.dp))
+            FolderIcon(folderName = file.name, isExpanded = isExpanded, modifier = Modifier.size(20.dp))
+        } else {
+            Spacer(Modifier.width(22.dp))
+            FileIcon(file = file, modifier = Modifier.size(20.dp))
+        }
+
+        Spacer(Modifier.width(8.dp))
+        Text(
+            text = file.name,
+            fontSize = 14.sp,
+            color = MaterialTheme.colorScheme.onSurface,
+            maxLines = 1,
+            softWrap = false
+        )
     }
 }
 
@@ -700,113 +874,50 @@ fun SearchResults(
     onFileClick: (File) -> Unit,
     onFileLongClick: (File) -> Unit
 ) {
-    val results = remember(query) {
-        root.walkTopDown()
-            .filter { it.isFile && it.name.contains(query, ignoreCase = true) }
-            .toList()
+    val searchResults by produceState<List<File>>(initialValue = emptyList(), query) {
+        withContext(Dispatchers.IO) {
+            val q = query.trim()
+            val list = mutableListOf<File>()
+            try {
+                root.walkTopDown()
+                    .filter { !it.name.startsWith(".") && it.isFile && it.name.contains(q, ignoreCase = true) }
+                    .take(100)
+                    .forEach { list.add(it) }
+            } catch (_: Throwable) {}
+            value = list
+        }
     }
-    if (results.isEmpty()) {
+
+    if (searchResults.isEmpty()) {
         Text(stringResource(id = R.string.not_found), modifier = Modifier.padding(16.dp), color = Color.Gray, fontSize = 12.sp)
     } else {
-        results.forEach { file ->
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .combinedClickable(
-                        onClick = { onFileClick(file) },
-                        onLongClick = { onFileLongClick(file) }
-                    )
-                    .padding(horizontal = 8.dp, vertical = 6.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                FileIcon(file = file, modifier = Modifier.size(20.dp))
-                Spacer(Modifier.width(8.dp))
-                Column {
-                    Text(file.name, fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurface)
-                    Text(file.parent ?: "", fontSize = 10.sp, color = Color.Gray)
+        LazyColumn(
+            modifier = Modifier.fillMaxSize(),
+            contentPadding = PaddingValues(bottom = 80.dp)
+        ) {
+            items(
+                count = searchResults.size,
+                key = { index -> searchResults[index].absolutePath }
+            ) { index ->
+                val file = searchResults[index]
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .combinedClickable(
+                            onClick = { onFileClick(file) },
+                            onLongClick = { onFileLongClick(file) }
+                        )
+                        .padding(horizontal = 8.dp, vertical = 6.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    FileIcon(file = file, modifier = Modifier.size(20.dp))
+                    Spacer(Modifier.width(8.dp))
+                    Column {
+                        Text(file.name, fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurface)
+                        Text(file.parent ?: "", fontSize = 10.sp, color = Color.Gray)
+                    }
                 }
             }
-        }
-    }
-}
-
-@OptIn(ExperimentalFoundationApi::class)
-@Composable
-fun FileTreeNode(
-    root: File,
-    level: Int = 0,
-    expandedPaths: SnapshotStateMap<String, Boolean>,
-    onFileClick: (File) -> Unit,
-    onFileLongClick: (File) -> Unit
-) {
-    val files = root.listFiles()
-        ?.filter { !it.name.startsWith(".") }
-        ?.sortedWith(compareBy({ !it.isDirectory }, { it.name.lowercase() }))
-        ?: emptyList()
-
-    if (files.isEmpty() && level == 0) {
-        Text(
-            text = stringResource(id = R.string.not_found),
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            fontSize = 13.sp,
-            modifier = Modifier.padding(16.dp)
-        )
-        return
-    }
-
-    files.forEach { file ->
-        val isExpanded = expandedPaths[file.absolutePath] == true
-
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .combinedClickable(
-                    onClick = {
-                        if (file.isDirectory) {
-                            expandedPaths[file.absolutePath] = !isExpanded
-                        } else {
-                            onFileClick(file)
-                        }
-                    },
-                    onLongClick = {
-                        onFileLongClick(file)
-                    }
-                )
-                .padding(start = (level * 16 + 8).dp, top = 8.dp, bottom = 8.dp, end = 16.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            if (file.isDirectory) {
-                Icon(
-                    imageVector = if (isExpanded) Icons.Default.KeyboardArrowDown else Icons.Default.KeyboardArrowRight,
-                    contentDescription = null,
-                    modifier = Modifier.size(18.dp),
-                    tint = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-                Spacer(Modifier.width(4.dp))
-                FolderIcon(folderName = file.name, isExpanded = isExpanded, modifier = Modifier.size(20.dp))
-            } else {
-                Spacer(Modifier.width(22.dp))
-                FileIcon(file = file, modifier = Modifier.size(20.dp))
-            }
-
-            Spacer(Modifier.width(8.dp))
-            Text(
-                text = file.name,
-                fontSize = 14.sp,
-                color = MaterialTheme.colorScheme.onSurface,
-                maxLines = 1,
-                softWrap = false
-            )
-        }
-
-        if (file.isDirectory && isExpanded) {
-            FileTreeNode(
-                root = file,
-                level = level + 1,
-                expandedPaths = expandedPaths,
-                onFileClick = onFileClick,
-                onFileLongClick = onFileLongClick
-            )
         }
     }
 }
@@ -1163,9 +1274,17 @@ fun DeleteFileDialog(
     onDeleted: () -> Unit
 ) {
     val context = LocalContext.current
+    var isDeleting by remember { mutableStateOf(false) }
+    val scope = rememberCoroutineScope()
+
+    if (isDeleting) {
+        M3ELoadingDialog()
+    }
 
     AlertDialog(
-        onDismissRequest = onDismiss,
+        onDismissRequest = {
+            if (!isDeleting) onDismiss()
+        },
         title = {
             Text(
                 text = stringResource(id = R.string.delete_confirm_title, file.name),
@@ -1191,13 +1310,19 @@ fun DeleteFileDialog(
                     contentColor = MaterialTheme.colorScheme.onError
                 ),
                 onClick = {
-                    val success = if (file.isDirectory) file.deleteRecursively() else file.delete()
-                    if (success) {
-                        Toast.makeText(context, context.getString(R.string.file_deleted), Toast.LENGTH_SHORT).show()
-                        onDeleted()
-                        onDismiss()
-                    } else {
-                        Toast.makeText(context, context.getString(R.string.file_delete_failed), Toast.LENGTH_SHORT).show()
+                    isDeleting = true
+                    scope.launch(Dispatchers.IO) {
+                        val success = if (file.isDirectory) file.deleteRecursively() else file.delete()
+                        withContext(Dispatchers.Main) {
+                            isDeleting = false
+                            if (success) {
+                                Toast.makeText(context, context.getString(R.string.file_deleted), Toast.LENGTH_SHORT).show()
+                                onDeleted()
+                                onDismiss()
+                            } else {
+                                Toast.makeText(context, context.getString(R.string.file_delete_failed), Toast.LENGTH_SHORT).show()
+                            }
+                        }
                     }
                 }
             ) {
@@ -1205,7 +1330,10 @@ fun DeleteFileDialog(
             }
         },
         dismissButton = {
-            TextButton(onClick = onDismiss) {
+            TextButton(
+                onClick = onDismiss,
+                enabled = !isDeleting
+            ) {
                 Text(stringResource(id = R.string.action_cancel))
             }
         }

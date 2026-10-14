@@ -438,7 +438,7 @@ object ComposeRenderer {
                 setPadding(p, p / 2, p, p / 2)
             }
             val title = TextView(context).apply {
-                text = "Screen Preview"
+                text = "Compose App"
                 setTextSize(TypedValue.COMPLEX_UNIT_SP, 18 * config.fontScale)
                 typeface = Typeface.DEFAULT_BOLD
                 setTextColor(config.onSurface)
@@ -527,8 +527,35 @@ object ComposeRenderer {
         val iv = ImageView(context)
         val s = dpToPx(context, 24)
         iv.layoutParams = ViewGroup.LayoutParams(s, s)
-        iv.setImageResource(android.R.drawable.star_on)
-        iv.setColorFilter(config.primary)
+
+        val vector = node.getAttribute("imageVector", node.getAttribute("painter", node.getAttribute("arg_0", "")))
+        val iconRes = when {
+            vector.contains("Favorite") || vector.contains("Heart") -> android.R.drawable.star_on
+            vector.contains("Home") -> android.R.drawable.ic_menu_myplaces
+            vector.contains("Settings") -> android.R.drawable.ic_menu_preferences
+            vector.contains("Search") -> android.R.drawable.ic_menu_search
+            vector.contains("Person") || vector.contains("Account") || vector.contains("Profile") -> android.R.drawable.ic_menu_myplaces
+            vector.contains("Share") -> android.R.drawable.ic_menu_share
+            vector.contains("Delete") -> android.R.drawable.ic_menu_delete
+            vector.contains("Add") -> android.R.drawable.ic_input_add
+            vector.contains("Edit") -> android.R.drawable.ic_menu_edit
+            vector.contains("DarkMode") || vector.contains("Dark") -> android.R.drawable.ic_menu_agenda
+            vector.contains("Notifications") -> android.R.drawable.ic_popup_reminder
+            vector.contains("Check") -> android.R.drawable.checkbox_on_background
+            vector.contains("Close") -> android.R.drawable.ic_menu_close_clear_cancel
+            vector.contains("Palette") -> android.R.drawable.ic_menu_gallery
+            vector.contains("Info") -> android.R.drawable.ic_dialog_info
+            vector.contains("Vibration") || vector.contains("Analytics") -> android.R.drawable.ic_menu_view
+            else -> android.R.drawable.star_on
+        }
+        iv.setImageResource(iconRes)
+
+        val tintAttr = node.getAttribute("tint", "")
+        if (tintAttr.isNotEmpty()) {
+            iv.setColorFilter(parseColorExpression(tintAttr, config.primary))
+        } else {
+            iv.setColorFilter(config.primary)
+        }
         return iv
     }
 

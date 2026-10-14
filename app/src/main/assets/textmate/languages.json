@@ -15,22 +15,26 @@
     {
       "name": "C++",
       "scopeName": "source.cpp",
-      "grammar": "textmate/cpp.json"
+      "grammar": "textmate/cpp.json",
+      "languageConfiguration": "textmate/language-configuration.json"
     },
     {
       "name": "Gradle",
       "scopeName": "source.groovy",
-      "grammar": "textmate/gradle.json"
+      "grammar": "textmate/gradle.json",
+      "languageConfiguration": "textmate/language-configuration.json"
     },
     {
       "name": "XML",
       "scopeName": "text.xml",
-      "grammar": "textmate/xml.json"
+      "grammar": "textmate/xml.json",
+      "languageConfiguration": "textmate/language-configuration.json"
     },
     {
       "name": "CMake",
       "scopeName": "source.cmake",
-      "grammar": "textmate/cmake.json"
+      "grammar": "textmate/cmake.json",
+      "languageConfiguration": "textmate/language-configuration.json"
     }
   ]
 }

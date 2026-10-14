@@ -1,29 +1,31 @@
 package org.cat.editor.ui.preview
 
-import android.content.ClipData
-import android.content.ClipboardManager
 import android.content.Context
 import android.widget.Toast
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.slideInVertically
-import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.outlined.Adjust
+import androidx.compose.material.icons.outlined.DarkMode
+import androidx.compose.material.icons.outlined.LightMode
+import androidx.compose.material.icons.outlined.PhoneAndroid
+import androidx.compose.material.icons.outlined.PhotoCamera
+import androidx.compose.material.icons.outlined.TrackChanges
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
@@ -36,13 +38,39 @@ import androidx.compose.ui.viewinterop.AndroidView
 import org.cat.editor.R
 import java.io.File
 
+private fun getNodeIcon(type: String): ImageVector {
+    return when (type) {
+        "Column", "LazyColumn", "Row", "LazyRow", "Box", "Scaffold", "Surface" -> Icons.Default.Layers
+        "Card", "ElevatedCard", "OutlinedCard" -> Icons.Default.Layers
+        "Text", "BasicText" -> Icons.Default.TextFields
+        "Icon", "Image" -> Icons.Default.Image
+        "Button", "ElevatedButton", "FilledTonalButton", "OutlinedButton", "TextButton", "IconButton", "FloatingActionButton" -> Icons.Default.SmartButton
+        "TextField", "OutlinedTextField", "BasicTextField", "Checkbox", "Switch", "RadioButton", "Slider" -> Icons.Default.Tune
+        else -> Icons.Default.Code
+    }
+}
+
 /**
- * Node structure for the indented Hierarchy Tree.
+ * Node structure for the indented Component Hierarchy Tree.
+ * Precomputes icon, branch prefix, parameters preview and id to eliminate per-frame allocations during scrolling.
  */
 data class FlatTreeNode(
     val node: ComposeNode,
     val depth: Int,
-    val isLastSibling: Boolean
+    val isLastSibling: Boolean,
+    val id: Int = System.identityHashCode(node),
+    val branchPrefix: String = if (depth > 0) (if (isLastSibling) "└── " else "├── ") else "",
+    val icon: ImageVector = getNodeIcon(node.type),
+    val paramsPreview: String = run {
+        when {
+            node.attributes.containsKey("text") -> "\"${node.attributes["text"]}\""
+            node.attributes.containsKey("title") -> "\"${node.attributes["title"]}\""
+            node.modifiers.isNotEmpty() -> node.modifiers.first()
+            node.attributes.isNotEmpty() -> node.attributes.entries.first().let { "${it.key}: ${it.value}" }
+            else -> ""
+        }
+    },
+    val childrenCountText: String = if (node.children.isNotEmpty()) "${node.children.size}" else ""
 )
 
 private fun buildFlatTree(
@@ -67,27 +95,28 @@ private fun collectAllNodes(node: ComposeNode?, list: MutableList<ComposeNode>) 
     }
 }
 
-enum class PreviewTabMode(val label: String, val icon: ImageVector) {
-    CANVAS("Preview", Icons.Default.PhoneAndroid),
-    TREE("Hierarchy Tree", Icons.Default.AccountTree),
-    TEMPLATES("Templates", Icons.Default.AutoAwesome)
+enum class PreviewTabMode(val label: String) {
+    CANVAS("Preview"),
+    TREE("Component Tree")
 }
 
 /**
- * Android Studio-grade Jetpack Compose & XML Preview Tool Window.
+ * Jetpack Compose & XML Preview Tool Window matching Cipher IDE.
  * Features:
- * - Interactive Device Frame Canvas with realistic frame, system UI, and pan/zoom
- * - Component Inspection mode with highlight rectangles and Inspector Card
- * - Interactive Component Hierarchy Tree with branch prefixes, icons, parameters, and selection sync
- * - Prev / Next component stepping through the AST
- * - Multi-preview chip variants
- * - Material 3 Compose Code Templates / Assistant
- * - Bulletproof safety against non-UI files (HTML, Java, binary, images)
+ * - Real-time in-memory preview updates (no file saving required)
+ * - Composable function chips row (SettingsTheme, SettingsScreen, etc.)
+ * - Pill buttons: Light/Dark, Inspect On/Off, Frame On/Off, Device Presets
+ * - Authentic device frame canvas with pan & pinch-zoom
+ * - Docked Inspector Bottom Card with parameter & modifier inspection
+ * - Indented Component Tree
+ * - Snapshot capture tool
  */
 @Composable
 fun PreviewScreen(
     activeFilePath: String,
+    sourceCode: String = "",
     currentRootNode: ComposeNode? = null,
+    onBackClick: (() -> Unit)? = null,
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
@@ -101,7 +130,7 @@ fun PreviewScreen(
     }
 
     val file = remember(activeFilePath) { File(activeFilePath) }
-    if (!file.exists()) {
+    if (!file.exists() || !file.isFile) {
         EmptyPreviewPlaceholder(
             title = "File not found",
             subtitle = "The selected file does not exist on disk."
@@ -117,7 +146,7 @@ fun PreviewScreen(
         return
     }
 
-    // 2. Read file content safely
+    // 2. Read file content safely (fallback if sourceCode is blank)
     val fileContent = remember(activeFilePath, file.lastModified()) {
         try {
             file.readText()
@@ -125,6 +154,8 @@ fun PreviewScreen(
             ""
         }
     }
+
+    val effectiveContent = if (sourceCode.isNotBlank()) sourceCode else fileContent
 
     // Determine preview type
     val isKotlin = fileName.endsWith(".kt") || fileName.endsWith(".kts")
@@ -139,7 +170,7 @@ fun PreviewScreen(
     }
 
     // If XML, check whether it is a layout XML or a resource XML (strings/colors/etc.)
-    if (isXml && !XmlLayoutParser.isLayoutXml(fileContent)) {
+    if (isXml && !XmlLayoutParser.isLayoutXml(effectiveContent)) {
         EmptyPreviewPlaceholder(
             title = "XML Resource / Manifest File",
             subtitle = "Layout preview is only applicable for Android UI layouts (e.g. LinearLayout, ConstraintLayout, etc.), not value resources."
@@ -148,7 +179,7 @@ fun PreviewScreen(
     }
 
     // If Kotlin, check if it contains Compose code
-    val isCompose = isKotlin && ComposePreviewParser.isComposeSource(fileContent)
+    val isCompose = isKotlin && ComposePreviewParser.isComposeSource(effectiveContent)
     if (isKotlin && !isCompose) {
         EmptyPreviewPlaceholder(
             title = "Kotlin File (No UI Detected)",
@@ -159,19 +190,18 @@ fun PreviewScreen(
 
     // State for preview canvas
     var isDarkMode by remember { mutableStateOf(false) }
-    var showDeviceFrame by remember { mutableStateOf(true) }
-    var showSystemUi by remember { mutableStateOf(true) }
+    var showDeviceFrame by remember { mutableStateOf(false) }
+    var showSystemUi by remember { mutableStateOf(false) }
     var isInspectMode by remember { mutableStateOf(true) }
-    var selectedPreset by remember { mutableStateOf(ComposePreviewView.DevicePreset.PHONE) }
     var previewViewRef by remember { mutableStateOf<ComposePreviewView?>(null) }
-    var showPresetMenu by remember { mutableStateOf(false) }
     var activeTabMode by remember { mutableStateOf(PreviewTabMode.CANVAS) }
+    var refreshTrigger by remember { mutableIntStateOf(0) }
 
     // Multi-preview variants for Compose
-    val previews = remember(fileContent, activeFilePath) {
+    val previews = remember(effectiveContent, activeFilePath, refreshTrigger) {
         if (isCompose) {
             try {
-                ComposePreviewParser.parse(fileContent)
+                ComposePreviewParser.parse(effectiveContent)
             } catch (_: Throwable) {
                 emptyList()
             }
@@ -179,18 +209,23 @@ fun PreviewScreen(
             emptyList()
         }
     }
-    var activePreviewIndex by remember(previews) { mutableStateOf(0) }
 
-    // Parse AST
-    val astRoot = remember(fileContent, activeFilePath, activePreviewIndex) {
+    val initialPreviewIndex = remember(previews) {
+        val screenIdx = previews.indexOfFirst { it.functionName.endsWith("Screen") || it.functionName.endsWith("View") }
+        if (screenIdx != -1) screenIdx else 0
+    }
+    var activePreviewIndex by remember(previews) { mutableIntStateOf(initialPreviewIndex) }
+
+    // Parse AST directly from live effective content
+    val astRoot = remember(effectiveContent, activeFilePath, activePreviewIndex, refreshTrigger) {
         try {
             if (isXml) {
-                XmlLayoutParser.parse(fileContent)
+                XmlLayoutParser.parse(effectiveContent)
             } else if (previews.isNotEmpty()) {
                 val model = previews.getOrElse(activePreviewIndex) { previews[0] }
-                ComposeAstParser.parse(model.functionBody, fileContent)
+                ComposeAstParser.parse(model.functionBody, effectiveContent)
             } else {
-                ComposeAstParser.parse(fileContent, fileContent)
+                ComposeAstParser.parse(effectiveContent, effectiveContent)
             }
         } catch (e: Throwable) {
             ComposeNode("Column").apply {
@@ -226,7 +261,14 @@ fun PreviewScreen(
             previewViewRef?.setInspectMode(true)
         }
         val targetView = ComposeRenderer.findViewForNode(previewViewRef?.viewportContent, node)
-        previewViewRef?.setInspectedView(targetView)
+        if (targetView != null) {
+            previewViewRef?.setInspectedView(targetView)
+        } else {
+            previewViewRef?.post {
+                val tv = ComposeRenderer.findViewForNode(previewViewRef?.viewportContent, node)
+                previewViewRef?.setInspectedView(tv)
+            }
+        }
     }
 
     fun navigateInspector(delta: Int) {
@@ -249,164 +291,64 @@ fun PreviewScreen(
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
     ) {
-        // Toolbar with preview controls
-        Surface(
-            color = MaterialTheme.colorScheme.surfaceVariant,
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 8.dp, vertical = 4.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                // Preset selector dropdown button
-                Box {
-                    FilledTonalButton(
-                        onClick = { showPresetMenu = true },
-                        contentPadding = PaddingValues(horizontal = 10.dp, vertical = 6.dp),
-                        modifier = Modifier.height(36.dp)
-                    ) {
-                        Icon(
-                            Icons.Default.PhoneAndroid,
-                            contentDescription = null,
-                            modifier = Modifier.size(16.dp)
-                        )
-                        Spacer(modifier = Modifier.width(6.dp))
-                        Text(
-                            text = selectedPreset.label.substringBefore(" ("),
-                            fontSize = 12.sp,
-                            fontWeight = FontWeight.Medium
-                        )
-                        Icon(
-                            Icons.Default.ArrowDropDown,
-                            contentDescription = null,
-                            modifier = Modifier.size(16.dp)
-                        )
-                    }
-
-                    DropdownMenu(
-                        expanded = showPresetMenu,
-                        onDismissRequest = { showPresetMenu = false }
-                    ) {
-                        ComposePreviewView.DevicePreset.values().forEach { preset ->
-                            DropdownMenuItem(
-                                text = { Text(preset.label, fontSize = 13.sp) },
-                                onClick = {
-                                    selectedPreset = preset
-                                    previewViewRef?.setDevicePreset(preset)
-                                    showPresetMenu = false
-                                }
-                            )
-                        }
-                    }
-                }
-
-                // Action buttons: Theme, Frame, Inspect, Zoom
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    IconButton(
-                        onClick = {
-                            isDarkMode = !isDarkMode
-                            val config = ComposeRenderer.RenderConfig.create(isDarkMode)
-                            previewViewRef?.applyThemeConfig(config)
-                        },
-                        modifier = Modifier.size(34.dp)
-                    ) {
-                        Icon(
-                            if (isDarkMode) Icons.Default.LightMode else Icons.Default.DarkMode,
-                            contentDescription = "Toggle Theme",
-                            modifier = Modifier.size(18.dp)
-                        )
-                    }
-
-                    IconButton(
-                        onClick = {
-                            showDeviceFrame = !showDeviceFrame
-                            previewViewRef?.setShowDeviceFrame(showDeviceFrame)
-                        },
-                        modifier = Modifier.size(34.dp)
-                    ) {
-                        Icon(
-                            if (showDeviceFrame) Icons.Default.CropPortrait else Icons.Default.CropFree,
-                            contentDescription = "Toggle Frame",
-                            modifier = Modifier.size(18.dp),
-                            tint = if (showDeviceFrame) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    }
-
-                    IconButton(
-                        onClick = {
-                            isInspectMode = !isInspectMode
-                            previewViewRef?.setInspectMode(isInspectMode)
-                            if (!isInspectMode) {
-                                inspectedNode = null
-                                previewViewRef?.setInspectedView(null)
-                            }
-                        },
-                        modifier = Modifier.size(34.dp)
-                    ) {
-                        Icon(
-                            Icons.Default.Highlight,
-                            contentDescription = "Inspect Element",
-                            modifier = Modifier.size(18.dp),
-                            tint = if (isInspectMode) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    }
-
-                    IconButton(
-                        onClick = { previewViewRef?.zoomOut() },
-                        modifier = Modifier.size(34.dp)
-                    ) {
-                        Icon(Icons.Default.ZoomOut, contentDescription = "Zoom Out", modifier = Modifier.size(18.dp))
-                    }
-
-                    IconButton(
-                        onClick = { previewViewRef?.zoomIn() },
-                        modifier = Modifier.size(34.dp)
-                    ) {
-                        Icon(Icons.Default.ZoomIn, contentDescription = "Zoom In", modifier = Modifier.size(18.dp))
-                    }
-
-                    IconButton(
-                        onClick = { previewViewRef?.zoomFit() },
-                        modifier = Modifier.size(34.dp)
-                    ) {
-                        Icon(Icons.Default.FitScreen, contentDescription = "Fit Canvas", modifier = Modifier.size(18.dp))
-                    }
-                }
-            }
-        }
-
-        // Multi-preview variants bar
-        if (previews.size > 1) {
+        // 1. Composable Function Chips Row
+        if (previews.isNotEmpty()) {
             Surface(
-                color = MaterialTheme.colorScheme.surfaceContainer,
+                color = MaterialTheme.colorScheme.surface,
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
                         .horizontalScroll(rememberScrollState())
-                        .padding(horizontal = 8.dp, vertical = 4.dp),
-                    horizontalArrangement = Arrangement.spacedBy(6.dp)
+                        .padding(horizontal = 12.dp, vertical = 6.dp),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
                     previews.forEachIndexed { index, previewModel ->
+                        val isSelected = activePreviewIndex == index
                         FilterChip(
-                            selected = activePreviewIndex == index,
-                            onClick = { activePreviewIndex = index },
-                            label = { Text(previewModel.displayName, fontSize = 11.sp) },
-                            modifier = Modifier.height(28.dp)
+                            selected = isSelected,
+                            onClick = {
+                                activePreviewIndex = index
+                                inspectedNode = null
+                                previewViewRef?.setInspectedView(null)
+                            },
+                            leadingIcon = if (isSelected) {
+                                {
+                                    Icon(
+                                        imageVector = Icons.Default.Check,
+                                        contentDescription = null,
+                                        modifier = Modifier.size(16.dp)
+                                    )
+                                }
+                            } else null,
+                            label = {
+                                Text(
+                                    text = previewModel.displayName.removeSuffix(" (Auto)"),
+                                    fontSize = 12.sp,
+                                    fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Normal
+                                )
+                            },
+                            shape = RoundedCornerShape(12.dp),
+                            colors = FilterChipDefaults.filterChipColors(
+                                selectedContainerColor = MaterialTheme.colorScheme.secondaryContainer,
+                                selectedLabelColor = MaterialTheme.colorScheme.onSecondaryContainer,
+                                selectedLeadingIconColor = MaterialTheme.colorScheme.onSecondaryContainer,
+                                containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+                                labelColor = MaterialTheme.colorScheme.onSurface
+                            ),
+                            border = null
                         )
                     }
                 }
             }
         }
 
-        // Mode Navigation Tabs: Preview Canvas | Hierarchy Tree | Templates
+        // 2. Mode Navigation Tabs: Preview | Component Tree
         TabRow(
             selectedTabIndex = activeTabMode.ordinal,
-            containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
+            containerColor = MaterialTheme.colorScheme.surface,
             contentColor = MaterialTheme.colorScheme.primary,
             modifier = Modifier.fillMaxWidth()
         ) {
@@ -415,63 +357,61 @@ fun PreviewScreen(
                     selected = activeTabMode == mode,
                     onClick = { activeTabMode = mode },
                     text = {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Icon(mode.icon, contentDescription = null, modifier = Modifier.size(16.dp))
-                            Spacer(modifier = Modifier.width(6.dp))
-                            Text(mode.label, fontSize = 12.sp, fontWeight = FontWeight.SemiBold)
-                        }
+                        Text(
+                            text = mode.label,
+                            fontSize = 13.sp,
+                            fontWeight = if (activeTabMode == mode) FontWeight.Bold else FontWeight.Medium
+                        )
                     }
                 )
             }
         }
 
-        // Main Tab Content
+        // 3. Main Content
         Box(
             modifier = Modifier
                 .fillMaxWidth()
                 .weight(1f)
         ) {
-            when (activeTabMode) {
-                PreviewTabMode.CANVAS -> {
-                    // Preview Canvas Viewport
-                    Box(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .background(Color(0xFF1E1E1E))
-                    ) {
-                        AndroidView(
-                            factory = { ctx ->
-                                ComposePreviewView(ctx).apply {
-                                    previewViewRef = this
-                                    setShowDeviceFrame(showDeviceFrame)
-                                    setShowSystemUi(showSystemUi)
-                                    setDevicePreset(selectedPreset)
-                                    setInspectMode(isInspectMode)
-                                    onNodeTapListener = ComposeRenderer.OnNodeSelectedListener { node, view ->
-                                        selectAndInspectNode(node)
-                                    }
+            // Preview Viewport (fits screen, scrollable) - kept mounted to preserve scroll & allow instant auto-scroll
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(Color(0xFF1E1E1E))
+                    .graphicsLayer {
+                        val isVisible = activeTabMode == PreviewTabMode.CANVAS
+                        alpha = if (isVisible) 1f else 0f
+                        translationX = if (isVisible) 0f else 20000f
+                    }
+            ) {
+                AndroidView(
+                    factory = { ctx ->
+                        ComposePreviewView(ctx).apply {
+                            previewViewRef = this
+                            setShowDeviceFrame(showDeviceFrame)
+                            setInspectMode(isInspectMode)
+                            onNodeTapListener = ComposeRenderer.OnNodeSelectedListener { node, _ ->
+                                selectAndInspectNode(node)
+                            }
 
                                     val config = ComposeRenderer.RenderConfig.create(isDarkMode).apply {
                                         this.isInspectMode = isInspectMode
-                                        this.inspectListener = ComposeRenderer.OnNodeSelectedListener { node, view ->
+                                        this.inspectListener = ComposeRenderer.OnNodeSelectedListener { node, _ ->
                                             selectAndInspectNode(node)
                                         }
                                     }
                                     applyThemeConfig(config)
                                     val rendered = ComposeRenderer.render(ctx, astRoot, config)
                                     setContent(rendered)
-                                    post { zoomFit() }
                                 }
                             },
                             update = { pv ->
                                 previewViewRef = pv
                                 pv.setShowDeviceFrame(showDeviceFrame)
-                                pv.setShowSystemUi(showSystemUi)
-                                pv.setDevicePreset(selectedPreset)
                                 pv.setInspectMode(isInspectMode)
                                 val config = ComposeRenderer.RenderConfig.create(isDarkMode).apply {
                                     this.isInspectMode = isInspectMode
-                                    this.inspectListener = ComposeRenderer.OnNodeSelectedListener { node, view ->
+                                    this.inspectListener = ComposeRenderer.OnNodeSelectedListener { node, _ ->
                                         selectAndInspectNode(node)
                                     }
                                 }
@@ -479,7 +419,6 @@ fun PreviewScreen(
                                 val rendered = ComposeRenderer.render(pv.context, astRoot, config)
                                 pv.setContent(rendered)
 
-                                // Keep inspected view highlighted if node exists
                                 if (inspectedNode != null) {
                                     val targetView = ComposeRenderer.findViewForNode(pv.viewportContent, inspectedNode)
                                     pv.setInspectedView(targetView)
@@ -488,14 +427,104 @@ fun PreviewScreen(
                             modifier = Modifier.fillMaxSize()
                         )
 
-                        // Inspector Bottom Card
-                        val currentNode = inspectedNode
-                        if (isInspectMode && currentNode != null) {
-                            Box(
+                        // Bottom Container: Floating Actions vertically stacked directly above the Inspector Card (No Overlap!)
+                        Column(
+                            modifier = Modifier
+                                .align(Alignment.BottomCenter)
+                                .fillMaxWidth()
+                        ) {
+                            // Floating Actions Column (Theme, Inspect, Frame, Edit) placed above bottom card
+                            Column(
                                 modifier = Modifier
-                                    .align(Alignment.BottomCenter)
-                                    .fillMaxWidth()
+                                    .align(Alignment.End)
+                                    .padding(end = 16.dp, bottom = 12.dp),
+                                horizontalAlignment = Alignment.End,
+                                verticalArrangement = Arrangement.spacedBy(8.dp)
                             ) {
+                                // Theme Toggle FAB
+                                SmallFloatingActionButton(
+                                    onClick = {
+                                        isDarkMode = !isDarkMode
+                                        val config = ComposeRenderer.RenderConfig.create(isDarkMode).apply {
+                                            this.isInspectMode = isInspectMode
+                                            this.inspectListener = ComposeRenderer.OnNodeSelectedListener { node, _ ->
+                                                selectAndInspectNode(node)
+                                            }
+                                        }
+                                        previewViewRef?.applyThemeConfig(config)
+                                    },
+                                    containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+                                    contentColor = MaterialTheme.colorScheme.onSurface,
+                                    shape = RoundedCornerShape(12.dp)
+                                ) {
+                                    Icon(
+                                        imageVector = if (isDarkMode) Icons.Outlined.DarkMode else Icons.Outlined.LightMode,
+                                        contentDescription = "Toggle Theme",
+                                        modifier = Modifier.size(20.dp)
+                                    )
+                                }
+
+                                // Inspect Toggle FAB
+                                SmallFloatingActionButton(
+                                    onClick = {
+                                        isInspectMode = !isInspectMode
+                                        previewViewRef?.setInspectMode(isInspectMode)
+                                        if (!isInspectMode) {
+                                            inspectedNode = null
+                                            previewViewRef?.setInspectedView(null)
+                                        }
+                                    },
+                                    containerColor = if (isInspectMode) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surfaceContainerHigh,
+                                    contentColor = if (isInspectMode) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurface,
+                                    shape = RoundedCornerShape(12.dp)
+                                ) {
+                                    Icon(
+                                        imageVector = if (isInspectMode) Icons.Outlined.TrackChanges else Icons.Outlined.Adjust,
+                                        contentDescription = "Toggle Inspect Mode",
+                                        modifier = Modifier.size(20.dp)
+                                    )
+                                }
+
+                                // Frame Toggle FAB
+                                SmallFloatingActionButton(
+                                    onClick = {
+                                        showDeviceFrame = !showDeviceFrame
+                                        previewViewRef?.setShowDeviceFrame(showDeviceFrame)
+                                    },
+                                    containerColor = if (showDeviceFrame) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surfaceContainerHigh,
+                                    contentColor = if (showDeviceFrame) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurface,
+                                    shape = RoundedCornerShape(12.dp)
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Outlined.PhoneAndroid,
+                                        contentDescription = "Toggle Device Frame",
+                                        modifier = Modifier.size(20.dp)
+                                    )
+                                }
+
+                                // Edit Floating Action Button
+                                ExtendedFloatingActionButton(
+                                    onClick = { onBackClick?.invoke() },
+                                    icon = {
+                                        Icon(
+                                            Icons.Default.Edit,
+                                            contentDescription = null
+                                        )
+                                    },
+                                    text = {
+                                        Text(
+                                            text = "Edit",
+                                            fontWeight = FontWeight.SemiBold
+                                        )
+                                    },
+                                    containerColor = MaterialTheme.colorScheme.primaryContainer,
+                                    contentColor = MaterialTheme.colorScheme.onPrimaryContainer
+                                )
+                            }
+
+                            // Docked Inspector Bottom Card (Never overlapped by FABs because it is laid out underneath)
+                            val currentNode = inspectedNode
+                            if (isInspectMode && currentNode != null) {
                                 InspectorBottomCard(
                                     node = currentNode,
                                     currentIndex = currentInspectedIndex,
@@ -510,31 +539,24 @@ fun PreviewScreen(
                             }
                         }
                     }
-                }
 
-                PreviewTabMode.TREE -> {
-                    // Hierarchy Tree View
-                    ComponentHierarchyTreeView(
-                        flatTree = flatTreeList,
-                        selectedNode = inspectedNode,
-                        onNodeClick = { node ->
-                            selectAndInspectNode(node)
-                            activeTabMode = PreviewTabMode.CANVAS
-                        }
-                    )
-                }
-
-                PreviewTabMode.TEMPLATES -> {
-                    // Code Templates / Assistant
-                    ComposeTemplatesView(context = context)
+                    // Indented Hierarchy Tree View
+                    if (activeTabMode == PreviewTabMode.TREE) {
+                        ComponentHierarchyTreeView(
+                            flatTree = flatTreeList,
+                            selectedNode = inspectedNode,
+                            onNodeClick = { node ->
+                                selectAndInspectNode(node)
+                                activeTabMode = PreviewTabMode.CANVAS
+                            }
+                        )
+                    }
                 }
             }
         }
-    }
-}
 
 /**
- * Inspector Card shown when inspecting a component.
+ * Docked Inspector Card matching Cipher IDE.
  */
 @Composable
 private fun InspectorBottomCard(
@@ -545,118 +567,104 @@ private fun InspectorBottomCard(
     onNext: () -> Unit,
     onDismiss: () -> Unit
 ) {
-    ElevatedCard(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(10.dp),
-        shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.elevatedCardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceContainerHigh
-        ),
-        elevation = CardDefaults.elevatedCardElevation(defaultElevation = 6.dp)
+    Surface(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp),
+        color = MaterialTheme.colorScheme.surfaceContainerHigh,
+        shadowElevation = 8.dp
     ) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = 14.dp, vertical = 10.dp)
         ) {
-            // Header: Icon, Name, Prev/Next, Dismiss
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Icon(
-                    imageVector = getNodeIcon(node.type),
+                    imageVector = Icons.Default.Code,
                     contentDescription = null,
                     tint = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.size(20.dp)
+                    modifier = Modifier.size(18.dp)
                 )
-                Spacer(modifier = Modifier.width(8.dp))
+                Spacer(modifier = Modifier.width(6.dp))
                 Text(
                     text = node.type,
                     fontWeight = FontWeight.Bold,
-                    fontSize = 15.sp,
+                    fontSize = 14.sp,
                     fontFamily = FontFamily.Monospace,
-                    modifier = Modifier.weight(1f),
-                    color = MaterialTheme.colorScheme.onSurface
+                    color = MaterialTheme.colorScheme.onSurface,
+                    modifier = Modifier.weight(1f)
                 )
 
                 IconButton(
                     onClick = onPrev,
-                    modifier = Modifier.size(30.dp)
+                    modifier = Modifier.size(28.dp)
                 ) {
                     Icon(
                         Icons.Default.ChevronLeft,
-                        contentDescription = "Previous Component",
-                        modifier = Modifier.size(20.dp),
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant
+                        contentDescription = "Previous",
+                        modifier = Modifier.size(18.dp),
+                        tint = MaterialTheme.colorScheme.onSurface
                     )
                 }
 
                 Text(
                     text = "${currentIndex + 1} / $totalCount",
-                    fontSize = 11.sp,
-                    fontWeight = FontWeight.Bold,
+                    fontSize = 12.sp,
                     fontFamily = FontFamily.Monospace,
-                    color = MaterialTheme.colorScheme.primary,
+                    fontWeight = FontWeight.SemiBold,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.padding(horizontal = 4.dp)
                 )
 
                 IconButton(
                     onClick = onNext,
-                    modifier = Modifier.size(30.dp)
+                    modifier = Modifier.size(28.dp)
                 ) {
                     Icon(
                         Icons.Default.ChevronRight,
-                        contentDescription = "Next Component",
-                        modifier = Modifier.size(20.dp),
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant
+                        contentDescription = "Next",
+                        modifier = Modifier.size(18.dp),
+                        tint = MaterialTheme.colorScheme.onSurface
                     )
                 }
 
                 IconButton(
                     onClick = onDismiss,
-                    modifier = Modifier.size(26.dp)
+                    modifier = Modifier.size(28.dp)
                 ) {
                     Icon(
                         Icons.Default.Close,
-                        contentDescription = "Dismiss Inspector",
+                        contentDescription = "Dismiss",
                         modifier = Modifier.size(16.dp),
                         tint = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
             }
 
-            HorizontalDivider(modifier = Modifier.padding(vertical = 6.dp))
-
-            // Details: Attributes & Modifiers
-            val detailLines = remember(node) {
-                val list = mutableListOf<String>()
-                if (node.attributes.isNotEmpty()) {
-                    list.add("Parameters: " + node.attributes.entries.joinToString(", ") { "${it.key} = \"${it.value}\"" })
-                }
-                if (node.modifiers.isNotEmpty()) {
-                    list.add("Modifiers: " + node.modifiers.joinToString(" • "))
-                }
-                if (list.isEmpty() && node.rawSource.isNotBlank()) {
-                    list.add(node.rawSource.take(120))
-                }
-                if (list.isEmpty()) {
-                    list.add("Standard ${node.type} component without custom parameters.")
-                }
-                list
-            }
-
-            detailLines.forEach { line ->
+            if (node.modifiers.isNotEmpty()) {
+                Spacer(modifier = Modifier.height(4.dp))
                 Text(
-                    text = line,
+                    text = "Modifiers: [" + node.modifiers.joinToString(", ") + "]",
                     fontSize = 11.sp,
                     fontFamily = FontFamily.Monospace,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    maxLines = 2,
-                    overflow = TextOverflow.Ellipsis,
-                    lineHeight = 15.sp,
-                    modifier = Modifier.padding(vertical = 1.dp)
+                    maxLines = 3,
+                    overflow = TextOverflow.Ellipsis
+                )
+            }
+
+            if (node.attributes.isNotEmpty()) {
+                Spacer(modifier = Modifier.height(2.dp))
+                Text(
+                    text = "Parameters: {" + node.attributes.entries.joinToString(", ") { "${it.key} = \"${it.value}\"" } + "}",
+                    fontSize = 11.sp,
+                    fontFamily = FontFamily.Monospace,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    maxLines = 3,
+                    overflow = TextOverflow.Ellipsis
                 )
             }
         }
@@ -665,6 +673,8 @@ private fun InspectorBottomCard(
 
 /**
  * Component Hierarchy Tree list view with authentic branch indentation.
+ * Optimized with stable item keys and precomputed values for silky-smooth 60-120fps scrolling.
+ * Automatically scrolls to the currently inspected node.
  */
 @Composable
 private fun ComponentHierarchyTreeView(
@@ -682,13 +692,30 @@ private fun ComponentHierarchyTreeView(
         return
     }
 
+    val listState = rememberLazyListState()
+
+    // Auto-scroll hierarchy to selected node
+    LaunchedEffect(selectedNode, flatTree) {
+        if (selectedNode != null) {
+            val idx = flatTree.indexOfFirst { it.node === selectedNode }
+            if (idx >= 0) {
+                listState.animateScrollToItem(maxOf(0, idx - 2))
+            }
+        }
+    }
+
     LazyColumn(
+        state = listState,
         modifier = Modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.surface)
-            .padding(vertical = 8.dp)
+            .padding(vertical = 4.dp)
     ) {
-        items(flatTree) { item ->
+        items(
+            items = flatTree,
+            key = { it.id },
+            contentType = { "tree_item" }
+        ) { item ->
             val isSelected = item.node === selectedNode
             val node = item.node
 
@@ -705,9 +732,9 @@ private fun ComponentHierarchyTreeView(
             ) {
                 // Indentation
                 if (item.depth > 0) {
-                    Spacer(modifier = Modifier.width((item.depth * 18).dp))
+                    Spacer(modifier = Modifier.width((item.depth * 16).dp))
                     Text(
-                        text = if (item.isLastSibling) "└── " else "├── ",
+                        text = item.branchPrefix,
                         fontFamily = FontFamily.Monospace,
                         fontSize = 12.sp,
                         color = MaterialTheme.colorScheme.outline
@@ -716,7 +743,7 @@ private fun ComponentHierarchyTreeView(
 
                 // Component Icon
                 Icon(
-                    imageVector = getNodeIcon(node.type),
+                    imageVector = item.icon,
                     contentDescription = null,
                     tint = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.secondary,
                     modifier = Modifier.size(18.dp)
@@ -734,20 +761,10 @@ private fun ComponentHierarchyTreeView(
                 )
 
                 // Parameters summary
-                val paramsPreview = remember(node) {
-                    when {
-                        node.attributes.containsKey("text") -> "\"${node.attributes["text"]}\""
-                        node.attributes.containsKey("title") -> "\"${node.attributes["title"]}\""
-                        node.modifiers.isNotEmpty() -> node.modifiers.first()
-                        node.attributes.isNotEmpty() -> node.attributes.entries.first().let { "${it.key}: ${it.value}" }
-                        else -> ""
-                    }
-                }
-
-                if (paramsPreview.isNotBlank()) {
+                if (item.paramsPreview.isNotBlank()) {
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
-                        text = paramsPreview,
+                        text = item.paramsPreview,
                         fontFamily = FontFamily.Monospace,
                         fontSize = 11.sp,
                         color = MaterialTheme.colorScheme.outline,
@@ -759,12 +776,12 @@ private fun ComponentHierarchyTreeView(
                     Spacer(modifier = Modifier.weight(1f))
                 }
 
-                if (node.children.isNotEmpty()) {
+                if (item.childrenCountText.isNotEmpty()) {
                     Badge(
                         containerColor = MaterialTheme.colorScheme.surfaceVariant,
                         contentColor = MaterialTheme.colorScheme.onSurfaceVariant
                     ) {
-                        Text("${node.children.size}", fontSize = 10.sp)
+                        Text(item.childrenCountText, fontSize = 10.sp)
                     }
                 }
             }
@@ -772,164 +789,24 @@ private fun ComponentHierarchyTreeView(
     }
 }
 
-/**
- * Compose Templates Assistant (from Cipher IDE).
- */
-@Composable
-private fun ComposeTemplatesView(context: Context) {
-    val templates = listOf(
-        TemplateItem(
-            title = "@Preview Composable Function",
-            desc = "Inserts standard @Preview annotation with Light & Dark preview parameters",
-            snippet = """
-                @androidx.compose.ui.tooling.preview.Preview(showBackground = true)
-                @androidx.compose.ui.tooling.preview.Preview(uiMode = android.content.res.Configuration.UI_MODE_NIGHT_YES)
-                @androidx.compose.runtime.Composable
-                fun ScreenPreview() {
-                    MaterialTheme {
-                        // YourScreenContent()
-                    }
-                }
-            """.trimIndent()
-        ),
-        TemplateItem(
-            title = "Scaffold Screen with TopBar",
-            desc = "Full-screen Scaffold with Material 3 TopAppBar and inner padding content",
-            snippet = """
-                Scaffold(
-                    topBar = {
-                        TopAppBar(
-                            title = { Text("Screen Title") }
-                        )
-                    }
-                ) { innerPadding ->
-                    Column(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .padding(innerPadding)
-                            .padding(16.dp)
-                    ) {
-                        Text("Hello Compose!")
-                    }
-                }
-            """.trimIndent()
-        ),
-        TemplateItem(
-            title = "Material 3 Elevated Card",
-            desc = "Elevated card with title, subtitle, and action buttons",
-            snippet = """
-                ElevatedCard(
-                    modifier = Modifier.fillMaxWidth().padding(8.dp)
-                ) {
-                    Column(modifier = Modifier.padding(16.dp)) {
-                        Text("Card Title", style = MaterialTheme.typography.titleMedium)
-                        Spacer(modifier = Modifier.height(6.dp))
-                        Text("Card description text goes here.", style = MaterialTheme.typography.bodySmall)
-                        Spacer(modifier = Modifier.height(12.dp))
-                        FilledTonalButton(onClick = { /* action */ }) {
-                            Text("Action")
-                        }
-                    }
-                }
-            """.trimIndent()
-        ),
-        TemplateItem(
-            title = "LazyColumn Scrollable List",
-            desc = "Vertically scrollable list container with spaced items",
-            snippet = """
-                LazyColumn(
-                    modifier = Modifier.fillMaxSize(),
-                    verticalArrangement = Arrangement.spacedBy(8.dp),
-                    contentPadding = PaddingValues(16.dp)
-                ) {
-                    items(10) { index ->
-                        OutlinedCard(modifier = Modifier.fillMaxWidth()) {
-                            Text(
-                                text = "Item #" + (index + 1),
-                                modifier = Modifier.padding(16.dp)
-                            )
-                        }
-                    }
-                }
-            """.trimIndent()
-        )
-    )
-
-    LazyColumn(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(MaterialTheme.colorScheme.surface)
-            .padding(16.dp),
-        verticalArrangement = Arrangement.spacedBy(12.dp)
-    ) {
-        items(templates) { item ->
-            ElevatedCard(
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(14.dp),
-                colors = CardDefaults.elevatedCardColors(
-                    containerColor = MaterialTheme.colorScheme.surfaceContainerHigh
-                )
-            ) {
-                Column(modifier = Modifier.padding(16.dp)) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Icon(
-                            Icons.Default.AutoAwesome,
-                            contentDescription = null,
-                            tint = MaterialTheme.colorScheme.primary,
-                            modifier = Modifier.size(20.dp)
-                        )
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text(
-                            text = item.title,
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 15.sp,
-                            color = MaterialTheme.colorScheme.onSurface
-                        )
-                    }
-
-                    Spacer(modifier = Modifier.height(6.dp))
-                    Text(
-                        text = item.desc,
-                        fontSize = 12.sp,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-
-                    Spacer(modifier = Modifier.height(10.dp))
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.End
-                    ) {
-                        FilledTonalButton(
-                            onClick = {
-                                val cm = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-                                cm.setPrimaryClip(ClipData.newPlainText("Compose Template", item.snippet))
-                                Toast.makeText(context, "Snippet copied to clipboard!", Toast.LENGTH_SHORT).show()
-                            },
-                            contentPadding = PaddingValues(horizontal = 12.dp, vertical = 6.dp),
-                            modifier = Modifier.height(34.dp)
-                        ) {
-                            Icon(Icons.Default.ContentCopy, contentDescription = null, modifier = Modifier.size(16.dp))
-                            Spacer(modifier = Modifier.width(6.dp))
-                            Text("Copy Snippet", fontSize = 12.sp)
-                        }
-                    }
-                }
-            }
-        }
+private fun takePreviewSnapshot(previewView: ComposePreviewView?, context: Context, baseName: String) {
+    if (previewView == null) {
+        Toast.makeText(context, "Preview not ready", Toast.LENGTH_SHORT).show()
+        return
     }
-}
-
-private data class TemplateItem(val title: String, val desc: String, val snippet: String)
-
-private fun getNodeIcon(type: String): ImageVector {
-    return when (type) {
-        "Column", "LazyColumn", "Row", "LazyRow", "Box", "Scaffold", "Surface" -> Icons.Default.Layers
-        "Card", "ElevatedCard", "OutlinedCard" -> Icons.Default.Layers
-        "Text", "BasicText" -> Icons.Default.TextFields
-        "Icon", "Image" -> Icons.Default.Image
-        "Button", "ElevatedButton", "FilledTonalButton", "OutlinedButton", "TextButton", "IconButton", "FloatingActionButton" -> Icons.Default.SmartButton
-        "TextField", "OutlinedTextField", "BasicTextField", "Checkbox", "Switch", "RadioButton", "Slider" -> Icons.Default.Tune
-        else -> Icons.Default.Code
+    try {
+        val bitmap = previewView.captureSnapshot()
+        if (bitmap == null) {
+            Toast.makeText(context, "Failed to capture preview image", Toast.LENGTH_SHORT).show()
+            return
+        }
+        val file = File(context.cacheDir, "${baseName}_preview_${System.currentTimeMillis()}.png")
+        java.io.FileOutputStream(file).use { out ->
+            bitmap.compress(android.graphics.Bitmap.CompressFormat.PNG, 100, out)
+        }
+        Toast.makeText(context, "Snapshot saved: ${file.name}", Toast.LENGTH_SHORT).show()
+    } catch (e: Throwable) {
+        Toast.makeText(context, "Snapshot failed: ${e.message}", Toast.LENGTH_SHORT).show()
     }
 }
 

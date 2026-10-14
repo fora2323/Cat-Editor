@@ -25,7 +25,9 @@ import org.cat.editor.ui.IdeMainScreen
 import org.cat.editor.ui.theme.AppTheme
 import org.cat.editor.ui.preview.ComposeNode
 import org.cat.editor.utility.IdComposeParser
+import org.cat.editor.utils.ConfigPath
 import org.cat.editor.utils.LocaleHelper
+import org.cat.editor.utils.SafProjectsManager
 import org.cat.editor.utils.StorageUtils
 import java.io.File
 
@@ -43,6 +45,9 @@ class MainActivity : ComponentActivity() {
             projectPath = intentPath
             getSharedPreferences("app_data", Context.MODE_PRIVATE)
                 .edit().putString("last_project", intentPath).apply()
+            if (!intentPath.startsWith(ConfigPath.VAR_PROJECTS_PATH) && File(intentPath).isDirectory) {
+                SafProjectsManager.addProject(this, intentPath)
+            }
             showProjectPicker = false
             startAppLogic()
         }
@@ -80,7 +85,7 @@ class MainActivity : ComponentActivity() {
         val validTabs = rawList.filter { filePath ->
             try {
                 val f = File(filePath)
-                f.exists() && f.canonicalFile.startsWith(projectDir)
+                f.exists() && f.isFile && f.canonicalFile.startsWith(projectDir)
             } catch (_: Throwable) {
                 false
             }
@@ -89,7 +94,7 @@ class MainActivity : ComponentActivity() {
         openedFiles = validTabs
 
         val savedActive = prefs.getString(getProjectActiveFileKey(path), "") ?: ""
-        activeFilePath = if (savedActive.isNotEmpty() && validTabs.contains(savedActive) && File(savedActive).exists()) {
+        activeFilePath = if (savedActive.isNotEmpty() && validTabs.contains(savedActive) && File(savedActive).isFile) {
             savedActive
         } else {
             validTabs.lastOrNull() ?: ""
@@ -113,6 +118,9 @@ class MainActivity : ComponentActivity() {
             .remove("last_preview")
             .apply()
         showProjectPicker = false
+        if (!newPath.startsWith(ConfigPath.VAR_PROJECTS_PATH) && File(newPath).isDirectory) {
+            SafProjectsManager.addProject(this, newPath)
+        }
         loadProjectTabs(newPath)
     }
 
@@ -122,6 +130,7 @@ class MainActivity : ComponentActivity() {
         uri?.let {
             val path = getRealPathFromURI(it)
             if (path != null) {
+                SafProjectsManager.addProject(this, path, it.toString())
                 switchProject(path)
                 startAppLogic()
             } else {
@@ -143,6 +152,9 @@ class MainActivity : ComponentActivity() {
         projectPath = initialProject
         if (initialProject.isNotEmpty()) {
             prefs.edit().putString("last_project", initialProject).apply()
+            if (!initialProject.startsWith(ConfigPath.VAR_PROJECTS_PATH) && File(initialProject).isDirectory) {
+                SafProjectsManager.addProject(this, initialProject)
+            }
         }
 
         loadProjectTabs(initialProject)
@@ -210,9 +222,9 @@ class MainActivity : ComponentActivity() {
     }
 
     private fun openFileInTab(path: String) {
-        if (projectPath.isBlank()) return
+        if (projectPath.isBlank() || path.isBlank()) return
         val file = File(path)
-        if (!file.exists()) return
+        if (!file.exists() || !file.isFile) return
 
         if (!openedFiles.contains(path)) {
             openedFiles = openedFiles + path
@@ -225,6 +237,10 @@ class MainActivity : ComponentActivity() {
     }
 
     private fun setupPreview(path: String) {
+        if (path.isBlank()) return
+        val file = File(path)
+        if (!file.exists() || !file.isFile) return
+
         activeFilePath = path
         if (projectPath.isNotBlank()) {
             getSharedPreferences("app_data", Context.MODE_PRIVATE)
@@ -235,7 +251,6 @@ class MainActivity : ComponentActivity() {
         loadFileAndParse()
 
         fileObserver?.stopWatching()
-        val file = File(path)
         val parentDir = file.parent
 
         if (parentDir != null) {
@@ -273,51 +288,63 @@ class MainActivity : ComponentActivity() {
     }
 
     private fun loadFileAndParse() {
-        if (activeFilePath.isBlank()) return
-        try {
-            val file = File(activeFilePath)
-            if (!file.exists()) return
+        val path = activeFilePath
+        if (path.isBlank()) return
+        Thread {
+            try {
+                val file = File(path)
+                if (!file.exists() || !file.isFile) return@Thread
 
-            if (org.cat.editor.ui.preview.isBinaryFile(file.name)) {
-                // Do not read binary or image files as text
-                runOnUiThread {
-                    currentRootNode = ComposeNode("ImageFile")
+                if (org.cat.editor.ui.preview.isBinaryFile(file.name)) {
+                    // Do not read binary or image files as text
+                    runOnUiThread {
+                        currentRootNode = ComposeNode("ImageFile")
+                    }
+                    return@Thread
                 }
-                return
-            }
 
-            val lower = file.name.lowercase()
-            val isKotlin = lower.endsWith(".kt") || lower.endsWith(".kts")
-            val isXml = lower.endsWith(".xml")
+                val lower = file.name.lowercase()
+                val isKotlin = lower.endsWith(".kt") || lower.endsWith(".kts")
+                val isXml = lower.endsWith(".xml")
 
-            if (!isKotlin && !isXml) {
-                // Non-previewable text file (e.g. Java, HTML, Gradle, JSON, CMake, etc.)
-                runOnUiThread {
-                    currentRootNode = ComposeNode("TextFile")
+                if (!isKotlin && !isXml) {
+                    // Non-previewable text file (e.g. Java, HTML, Gradle, JSON, CMake, etc.)
+                    runOnUiThread {
+                        currentRootNode = ComposeNode("TextFile")
+                    }
+                    return@Thread
                 }
-                return
-            }
 
-            val code = file.readText()
-            val parsed = if (isXml) {
-                if (org.cat.editor.ui.preview.XmlLayoutParser.isLayoutXml(code)) {
-                    org.cat.editor.ui.preview.XmlLayoutParser.parse(code)
+                val code = try {
+                    file.readText()
+                } catch (_: Throwable) {
+                    try {
+                        file.readBytes().toString(Charsets.ISO_8859_1)
+                    } catch (_: Throwable) {
+                        ""
+                    }
+                }
+
+                val parsed = if (isXml) {
+                    if (org.cat.editor.ui.preview.XmlLayoutParser.isLayoutXml(code)) {
+                        org.cat.editor.ui.preview.XmlLayoutParser.parse(code)
+                    } else {
+                        ComposeNode("XmlResource")
+                    }
                 } else {
-                    ComposeNode("XmlResource")
+                    if (org.cat.editor.ui.preview.ComposePreviewParser.isComposeSource(code)) {
+                        org.cat.editor.ui.preview.ComposeAstParser.parse(code, code)
+                    } else {
+                        ComposeNode("KotlinFile")
+                    }
                 }
-            } else {
-                if (org.cat.editor.ui.preview.ComposePreviewParser.isComposeSource(code)) {
-                    org.cat.editor.ui.preview.ComposeAstParser.parse(code, code)
-                } else {
-                    ComposeNode("KotlinFile")
+                runOnUiThread {
+                    currentRootNode = parsed
                 }
+            } catch (e: Throwable) {
+                e.printStackTrace()
             }
-            runOnUiThread {
-                currentRootNode = parsed
-            }
-        } catch (e: Throwable) {
-            e.printStackTrace()
-        }
+        }.start()
     }
 
     private fun checkPermissionsAndStart() {

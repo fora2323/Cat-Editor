@@ -3,30 +3,48 @@
   "scopeName": "source.groovy",
   "fileTypes": ["gradle"],
   "patterns": [
-    { "include": "#comments" },
-    { "include": "#strings" },
-    { "include": "#keywords" }
-  ],
-  "repository": {
-    "comments": {
-      "patterns": [
-        { "name": "comment.line.double-slash.groovy", "match": "//.*$" },
-        { "name": "comment.block.groovy", "begin": "/\\*", "end": "\\*/" }
-      ]
+    {
+      "name": "comment.line.double-slash.groovy",
+      "match": "//.*$"
     },
-    "strings": {
-      "patterns": [
-        { "name": "string.quoted.double.groovy", "begin": "\"", "end": "\"" },
-        { "name": "string.quoted.single.groovy", "begin": "'", "end": "'" }
-      ]
+    {
+      "name": "comment.block.groovy",
+      "begin": "/\\*",
+      "end": "\\*/"
     },
-    "keywords": {
+    {
+      "name": "string.quoted.double.groovy",
+      "begin": "\"",
+      "end": "\"",
       "patterns": [
         {
-          "name": "keyword.control.groovy",
-          "match": "\\b(plugins|android|dependencies|implementation|api|compileOnly|testImplementation|buildTypes|defaultConfig|task|def)\\b"
+          "name": "constant.character.escape.groovy",
+          "match": "\\\\."
         }
       ]
+    },
+    {
+      "name": "string.quoted.single.groovy",
+      "begin": "'",
+      "end": "'",
+      "patterns": [
+        {
+          "name": "constant.character.escape.groovy",
+          "match": "\\\\."
+        }
+      ]
+    },
+    {
+      "name": "keyword.control.groovy",
+      "match": "\\b(plugins|android|dependencies|implementation|api|compileOnly|testImplementation|androidTestImplementation|buildTypes|defaultConfig|task|def|apply|from|allprojects|subprojects|repositories|google|mavenCentral)\\b"
+    },
+    {
+      "name": "keyword.other.groovy",
+      "match": "\\b(if|else|for|while|return|new|true|false|null|import)\\b"
+    },
+    {
+      "name": "constant.numeric.groovy",
+      "match": "\\b(\\d+|\\d+\\.\\d+)\\b"
     }
-  }
+  ]
 }

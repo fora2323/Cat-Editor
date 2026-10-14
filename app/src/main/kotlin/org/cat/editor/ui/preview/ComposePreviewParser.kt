@@ -74,11 +74,11 @@ object ComposePreviewParser {
             index = composablePos + 11
         }
 
-        // If no @Preview annotation was explicitly declared, auto-discover all @Composable functions
-        if (previews.isEmpty()) {
-            val m = COMPOSABLE_PATTERN.matcher(codeWithoutComments)
-            while (m.find()) {
-                val functionName = m.group(1) ?: continue
+        // Auto-discover all @Composable functions so any composable can be previewed
+        val m = COMPOSABLE_PATTERN.matcher(codeWithoutComments)
+        while (m.find()) {
+            val functionName = m.group(1) ?: continue
+            if (previews.none { it.functionName == functionName }) {
                 val bodyStart = m.end()
                 val body = extractFunctionBody(codeWithoutComments, bodyStart)
 

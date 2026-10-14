@@ -1,95 +1,183 @@
 package org.cat.editor.ui
 
+import android.content.Context
+import android.util.Log
 import androidx.compose.foundation.background
+import androidx.compose.foundation.gestures.awaitEachGesture
+import androidx.compose.foundation.gestures.awaitFirstDown
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.viewinterop.AndroidView
+import io.github.rosemoe.sora.event.ClickEvent
 import io.github.rosemoe.sora.event.ContentChangeEvent
+import io.github.rosemoe.sora.event.SelectionChangeEvent
+import io.github.rosemoe.sora.lang.EmptyLanguage
+import io.github.rosemoe.sora.lang.Language
+import io.github.rosemoe.sora.langs.textmate.TextMateColorScheme
 import io.github.rosemoe.sora.langs.textmate.TextMateLanguage
 import io.github.rosemoe.sora.langs.textmate.registry.FileProviderRegistry
 import io.github.rosemoe.sora.langs.textmate.registry.GrammarRegistry
+import io.github.rosemoe.sora.langs.textmate.registry.ThemeRegistry
 import io.github.rosemoe.sora.langs.textmate.registry.provider.AssetsFileResolver
 import io.github.rosemoe.sora.widget.CodeEditor
 import io.github.rosemoe.sora.widget.schemes.EditorColorScheme
+import org.cat.editor.ui.preview.isBinaryFile
+import org.eclipse.tm4e.core.registry.IThemeSource
 import java.io.File
 
-private fun getScopeForFile(filePath: String): String {
+private const val TAG = "CodeEditor"
+
+private fun getScopeForFile(filePath: String): String? {
     return when (File(filePath).extension.lowercase()) {
         "kt", "kts" -> "source.kotlin"
         "java" -> "source.java"
         "cpp", "cc", "cxx", "hpp", "c", "h" -> "source.cpp"
-        "gradle", "gradle.kts" -> "source.groovy"
-        "xml" -> "text.xml"
+        "gradle", "groovy" -> "source.groovy"
+        "xml", "html", "htm", "xhtml", "svg" -> "text.xml"
         "cmake" -> "source.cmake"
-        else -> "source.kotlin"
+        else -> null
     }
 }
 
-private var grammarRegistered = false
+private var textMateInitialized = false
+
+@Synchronized
+fun ensureTextMateInitialized(context: Context) {
+    if (textMateInitialized) return
+    try {
+        FileProviderRegistry.getInstance().addFileProvider(
+            AssetsFileResolver(context.assets)
+        )
+        GrammarRegistry.getInstance().loadGrammars("textmate/languages.json")
+
+        val inputStream = context.assets.open("textmate/darcula.json")
+        val themeSource = IThemeSource.fromInputStream(inputStream, "darcula.json", null)
+        ThemeRegistry.getInstance().loadTheme(themeSource)
+        ThemeRegistry.getInstance().setTheme("Darcula")
+        textMateInitialized = true
+        Log.d(TAG, "TextMate grammars and Darcula theme successfully initialized")
+    } catch (e: Throwable) {
+        Log.e(TAG, "Failed to initialize TextMate environment", e)
+    }
+}
+
+private fun createEditorLanguage(filePath: String): Language {
+    val scope = getScopeForFile(filePath) ?: return EmptyLanguage()
+    return try {
+        TextMateLanguage.create(scope, true)
+    } catch (e: Throwable) {
+        Log.w(TAG, "Failed to create TextMateLanguage for $scope, falling back to basic/empty", e)
+        try {
+            TextMateLanguage.create(scope, false)
+        } catch (_: Throwable) {
+            EmptyLanguage()
+        }
+    }
+}
+
+private fun createEditorColorScheme(): EditorColorScheme {
+    return try {
+        TextMateColorScheme.create(ThemeRegistry.getInstance())
+    } catch (e: Throwable) {
+        Log.w(TAG, "Failed to create TextMateColorScheme, falling back to KotlinDarkColorScheme", e)
+        KotlinDarkColorScheme()
+    }
+}
 
 @Composable
 fun KotlinCodeEditor(
     filePath: String,
-    onCodeChange: (String) -> Unit
+    onCodeChange: (String) -> Unit,
+    onEditorInteraction: (() -> Unit)? = null
 ) {
     val context = LocalContext.current
-    var codeContent by remember { mutableStateOf("") }
+    LaunchedEffect(Unit) {
+        ensureTextMateInitialized(context)
+    }
 
-    LaunchedEffect(filePath) {
-        if (filePath.isNotEmpty()) {
+    // Read initial text synchronously so editor renders immediately with code
+    val initialContent = remember(filePath) {
+        if (filePath.isNotEmpty() && !isBinaryFile(filePath)) {
             try {
                 val file = File(filePath)
-                if (file.exists()) {
-                    codeContent = file.readText()
-                }
-            } catch (e: Exception) {
-                e.printStackTrace()
+                if (file.exists()) file.readText() else ""
+            } catch (e: Throwable) {
+                Log.e(TAG, "Failed to read file $filePath", e)
+                ""
             }
-        }
+        } else ""
     }
+
+    var currentLoadedPath by remember { mutableStateOf(filePath) }
+    var editorInstance by remember { mutableStateOf<CodeEditor?>(null) }
 
     Box(
         modifier = Modifier
             .fillMaxSize()
             .background(Color(0xFF1E1E1E))
+            .pointerInput(Unit) {
+                awaitEachGesture {
+                    awaitFirstDown()
+                    onEditorInteraction?.invoke()
+                }
+            }
     ) {
         AndroidView(
             factory = { ctx ->
-                if (!grammarRegistered) {
-                    FileProviderRegistry.getInstance().addFileProvider(
-                        AssetsFileResolver(ctx.assets)
-                    )
-                    GrammarRegistry.getInstance().loadGrammars("textmate/languages.json")
-                    grammarRegistered = true
-                }
+                ensureTextMateInitialized(ctx)
 
                 CodeEditor(ctx).apply {
-                    val scope = getScopeForFile(filePath)
-                    setEditorLanguage(TextMateLanguage.create(scope, true))
-                    colorScheme = KotlinDarkColorScheme()
+                    editorInstance = this
+                    currentLoadedPath = filePath
+
+                    colorScheme = createEditorColorScheme()
+                    setEditorLanguage(createEditorLanguage(filePath))
                     typefaceText = org.cat.editor.utils.SettingsManager.getEditorTypeface(ctx)
-                    setText(codeContent)
+                    setText(initialContent)
                     isWordwrap = true
+                    isLineNumberEnabled = true
+                    setTextSize(14f)
 
                     subscribeAlways(ContentChangeEvent::class.java) { _ ->
                         onCodeChange(text.toString())
                     }
+
+                    subscribeAlways(SelectionChangeEvent::class.java) { _ ->
+                        onEditorInteraction?.invoke()
+                    }
+
+                    subscribeAlways(ClickEvent::class.java) { _ ->
+                        onEditorInteraction?.invoke()
+                    }
+
+                    setOnTouchListener { _, event ->
+                        if (event.action == android.view.MotionEvent.ACTION_DOWN) {
+                            onEditorInteraction?.invoke()
+                        }
+                        false
+                    }
                 }
             },
             update = { editor ->
-                val scope = getScopeForFile(filePath)
-                editor.setEditorLanguage(TextMateLanguage.create(scope, true))
+                editorInstance = editor
                 editor.typefaceText = org.cat.editor.utils.SettingsManager.getEditorTypeface(editor.context)
-                editor.setText(codeContent)
+
+                // Only reload text when switching files, preserving cursor & active edits
+                if (currentLoadedPath != filePath) {
+                    currentLoadedPath = filePath
+                    editor.colorScheme = createEditorColorScheme()
+                    editor.setEditorLanguage(createEditorLanguage(filePath))
+                    val file = File(filePath)
+                    val textToSet = if (file.exists() && !isBinaryFile(filePath)) {
+                        try { file.readText() } catch (_: Throwable) { "" }
+                    } else ""
+                    editor.setText(textToSet)
+                }
             },
             modifier = Modifier.fillMaxSize()
         )

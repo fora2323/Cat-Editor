@@ -2,7 +2,9 @@ package org.cat.editor.ui
 
 import android.content.Intent
 import android.widget.Toast
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -20,6 +22,7 @@ import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.InsertDriveFile
 import androidx.compose.material.icons.automirrored.filled.Redo
 import androidx.compose.material.icons.automirrored.filled.Undo
 import androidx.compose.material.icons.filled.Add
@@ -38,6 +41,21 @@ import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Shield
 import androidx.compose.material.icons.filled.Source
+import androidx.compose.material.icons.filled.ContentCopy
+import androidx.compose.material.icons.filled.CreateNewFolder
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.DriveFileRenameOutline
+import androidx.compose.material.icons.filled.Folder
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.FilterChip
+import androidx.compose.material3.TextButton
+import androidx.compose.runtime.mutableStateMapOf
+import androidx.compose.runtime.snapshots.SnapshotStateMap
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalClipboardManager
+import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.filled.Fullscreen
@@ -83,14 +101,26 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.launch
+import androidx.compose.foundation.gestures.awaitEachGesture
+import androidx.compose.foundation.gestures.awaitFirstDown
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.material.icons.filled.Visibility
+import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material3.ExtendedFloatingActionButton
+import androidx.compose.material3.LocalContentColor
 import org.cat.editor.R
 import org.cat.editor.SettingsActivity
 import org.cat.editor.ui.KotlinCodeEditor
 import org.cat.editor.ui.preview.ImagePreviewIcon
+import org.cat.editor.ui.preview.ImageDetailViewer
+import org.cat.editor.ui.preview.BinaryFilePlaceholder
 import org.cat.editor.ui.preview.PreviewScreen
 import org.cat.editor.ui.preview.isImageFile
-import org.cat.editor.utility.ComposeNode
+import org.cat.editor.ui.preview.isBinaryFile
+import org.cat.editor.ui.preview.ComposeNode
 import java.io.File
+
+enum class EditorViewMode { EDIT, PREVIEW }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -98,7 +128,7 @@ fun IdeMainScreen(
     projectPath: String,
     openedFiles: List<String>,
     activeFilePath: String,
-    currentRootNode: ComposeNode.Layout,
+    currentRootNode: ComposeNode = ComposeNode("Root"),
     onProjectPicked: (String) -> Unit,
     onFileSelected: (File) -> Unit,
     onTabSelected: (String) -> Unit,
@@ -115,6 +145,16 @@ fun IdeMainScreen(
     var isToolbarVisible by remember { mutableStateOf(true) }
     var currentCode by remember { mutableStateOf("") }
     var showMoreMenu by remember { mutableStateOf(false) }
+    var viewMode by remember { mutableStateOf(EditorViewMode.EDIT) }
+
+    val clipboardManager = LocalClipboardManager.current
+    var treeRefreshTrigger by remember { mutableIntStateOf(0) }
+    var showCreateDialog by remember { mutableStateOf(false) }
+    var targetCreateFolder by remember { mutableStateOf<File?>(null) }
+    var selectedFileForActions by remember { mutableStateOf<File?>(null) }
+    var fileToRename by remember { mutableStateOf<File?>(null) }
+    var fileToDelete by remember { mutableStateOf<File?>(null) }
+    val expandedPaths = remember { mutableStateMapOf<String, Boolean>() }
 
     if (projectPath.isEmpty()) {
         WelcomeScreen(onBrowseClick = { onTogglePicker(true) })
@@ -131,22 +171,44 @@ fun IdeMainScreen(
         drawerState = drawerState,
         drawerContent = {
             DismissibleDrawerSheet(modifier = Modifier.width(300.dp)) {
-                Text(
-                    text = stringResource(id = R.string.project_files),
-                    modifier = Modifier.padding(16.dp),
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 18.sp
-                )
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(start = 16.dp, end = 8.dp, top = 8.dp, bottom = 4.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Text(
+                        text = stringResource(id = R.string.project_files),
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 18.sp,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                    IconButton(onClick = {
+                        targetCreateFolder = File(projectPath)
+                        showCreateDialog = true
+                    }) {
+                        Icon(
+                            imageVector = Icons.Default.Add,
+                            contentDescription = stringResource(id = R.string.create_new)
+                        )
+                    }
+                }
                 HorizontalDivider()
                 if (projectPath.isNotEmpty()) {
                     Column {
                         FileTreeView(
                             root = File(projectPath),
+                            refreshKey = treeRefreshTrigger,
+                            expandedPaths = expandedPaths,
                             onFileClick = { file ->
                                 onFileSelected(file)
                                 scope.launch {
                                     drawerState.close()
                                 }
+                            },
+                            onFileLongClick = { file ->
+                                selectedFileForActions = file
                             }
                         )
                     }
@@ -219,9 +281,31 @@ fun IdeMainScreen(
                             }
 
                             IconButton(onClick = {
+                                targetCreateFolder = if (activeFilePath.isNotEmpty()) {
+                                    val active = File(activeFilePath)
+                                    if (active.isDirectory) active else active.parentFile ?: File(projectPath)
+                                } else {
+                                    File(projectPath)
+                                }
+                                showCreateDialog = true
                                 onAddFile?.invoke()
                             }) {
                                 Icon(Icons.Default.Add, contentDescription = stringResource(id = R.string.add))
+                            }
+
+                            if (activeFilePath.isNotEmpty()) {
+                                IconButton(onClick = {
+                                    viewMode = if (viewMode == EditorViewMode.EDIT) EditorViewMode.PREVIEW else EditorViewMode.EDIT
+                                    if (drawerState.isOpen) {
+                                        scope.launch { drawerState.close() }
+                                    }
+                                }) {
+                                    Icon(
+                                        if (viewMode == EditorViewMode.EDIT) Icons.Default.Visibility else Icons.Default.Edit,
+                                        contentDescription = if (viewMode == EditorViewMode.EDIT) "Preview" else "Edit",
+                                        tint = if (viewMode == EditorViewMode.PREVIEW) MaterialTheme.colorScheme.primary else LocalContentColor.current
+                                    )
+                                }
                             }
 
                             Box {
@@ -235,6 +319,16 @@ fun IdeMainScreen(
                                     expanded = showMoreMenu,
                                     onDismissRequest = { showMoreMenu = false }
                                 ) {
+                                    DropdownMenuItem(
+                                        text = { Text("Open Project") },
+                                        leadingIcon = {
+                                            Icon(Icons.Default.Add, contentDescription = null)
+                                        },
+                                        onClick = {
+                                            showMoreMenu = false
+                                            onTogglePicker(true)
+                                        }
+                                    )
                                     DropdownMenuItem(
                                         text = { Text(stringResource(id = R.string.settings)) },
                                         leadingIcon = {
@@ -254,8 +348,23 @@ fun IdeMainScreen(
                     )
                 }
 
-                    if (openedFiles.isNotEmpty()) {
-                        val activeIndex = openedFiles.indexOf(activeFilePath).coerceAtLeast(0)
+                    val validOpenedFiles = remember(openedFiles, projectPath) {
+                        if (projectPath.isBlank()) emptyList()
+                        else {
+                            try {
+                                val projectDir = File(projectPath).canonicalFile
+                                openedFiles.filter { path ->
+                                    val f = File(path)
+                                    f.exists() && f.canonicalFile.startsWith(projectDir)
+                                }
+                            } catch (_: Throwable) {
+                                emptyList()
+                            }
+                        }
+                    }
+
+                    if (validOpenedFiles.isNotEmpty()) {
+                        val activeIndex = validOpenedFiles.indexOf(activeFilePath).coerceAtLeast(0)
 
                         ScrollableTabRow(
                             selectedTabIndex = activeIndex,
@@ -263,7 +372,7 @@ fun IdeMainScreen(
                             containerColor = MaterialTheme.colorScheme.surfaceVariant,
                             divider = { HorizontalDivider() }
                         ) {
-                            openedFiles.forEachIndexed { index, path ->
+                            validOpenedFiles.forEachIndexed { index, path ->
                                 val file = File(path)
                                 Tab(
                                     selected = activeFilePath == path,
@@ -300,44 +409,95 @@ fun IdeMainScreen(
                 }
             },
             floatingActionButton = {
-                if (isSmartToolbar && !isToolbarVisible) {
-                    SmallFloatingActionButton(
-                        onClick = { isToolbarVisible = true },
-                        containerColor = MaterialTheme.colorScheme.primaryContainer,
-                        contentColor = MaterialTheme.colorScheme.onPrimaryContainer
-                    ) {
-                        Icon(Icons.Default.FullscreenExit, contentDescription = "Show Toolbar")
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    if (isSmartToolbar && !isToolbarVisible) {
+                        SmallFloatingActionButton(
+                            onClick = { isToolbarVisible = true },
+                            containerColor = MaterialTheme.colorScheme.primaryContainer,
+                            contentColor = MaterialTheme.colorScheme.onPrimaryContainer
+                        ) {
+                            Icon(Icons.Default.FullscreenExit, contentDescription = "Show Toolbar")
+                        }
+                    }
+
+                    val isImgOrBin = remember(activeFilePath) {
+                        isImageFile(activeFilePath) || isBinaryFile(activeFilePath)
+                    }
+
+                    if (activeFilePath.isNotEmpty() && !isImgOrBin) {
+                        ExtendedFloatingActionButton(
+                            onClick = {
+                                viewMode = if (viewMode == EditorViewMode.EDIT) EditorViewMode.PREVIEW else EditorViewMode.EDIT
+                                if (drawerState.isOpen) {
+                                    scope.launch { drawerState.close() }
+                                }
+                            },
+                            icon = {
+                                Icon(
+                                    if (viewMode == EditorViewMode.EDIT) Icons.Default.Visibility else Icons.Default.Edit,
+                                    contentDescription = null
+                                )
+                            },
+                            text = {
+                                Text(
+                                    text = if (viewMode == EditorViewMode.EDIT) "Preview" else "Edit",
+                                    fontWeight = FontWeight.SemiBold
+                                )
+                            },
+                            containerColor = if (viewMode == EditorViewMode.PREVIEW) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.secondaryContainer,
+                            contentColor = if (viewMode == EditorViewMode.PREVIEW) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSecondaryContainer
+                        )
                     }
                 }
             }
         ) { paddingValues ->
             Box(modifier = Modifier.padding(paddingValues).fillMaxSize()) {
                 if (activeFilePath.isNotEmpty()) {
-                    Row(modifier = Modifier.fillMaxSize()) {
-                        Box(
-                            modifier = Modifier
-                                .weight(1f)
-                                .fillMaxHeight()
-                        ) {
-                            KotlinCodeEditor(
-                                filePath = activeFilePath,
-                                onCodeChange = { newCode ->
-                                    currentCode = newCode
+                    val activeFile = remember(activeFilePath) { File(activeFilePath) }
+                    val isImg = remember(activeFilePath) { isImageFile(activeFilePath) }
+                    val isBin = remember(activeFilePath) { isBinaryFile(activeFilePath) }
+
+                    if (isImg) {
+                        ImageDetailViewer(file = activeFile)
+                    } else if (isBin) {
+                        BinaryFilePlaceholder(file = activeFile)
+                    } else {
+                        when (viewMode) {
+                            EditorViewMode.EDIT -> {
+                                Box(
+                                    modifier = Modifier
+                                        .fillMaxSize()
+                                        .pointerInput(Unit) {
+                                            awaitEachGesture {
+                                                awaitFirstDown()
+                                                if (drawerState.isOpen) {
+                                                    scope.launch { drawerState.close() }
+                                                }
+                                            }
+                                        }
+                                ) {
+                                    KotlinCodeEditor(
+                                        filePath = activeFilePath,
+                                        onCodeChange = { newCode ->
+                                            currentCode = newCode
+                                        },
+                                        onEditorInteraction = {
+                                            if (drawerState.isOpen) {
+                                                scope.launch { drawerState.close() }
+                                            }
+                                        }
+                                    )
                                 }
-                            )
-                        }
-
-                        VerticalDivider(
-                            color = MaterialTheme.colorScheme.surfaceVariant,
-                            thickness = 1.dp
-                        )
-
-                        Box(
-                            modifier = Modifier
-                                .weight(1f)
-                                .fillMaxHeight()
-                        ) {
-                            PreviewScreen(activeFilePath, currentRootNode)
+                            }
+                            EditorViewMode.PREVIEW -> {
+                                PreviewScreen(
+                                    activeFilePath = activeFilePath,
+                                    currentRootNode = currentRootNode
+                                )
+                            }
                         }
                     }
                 } else {
@@ -345,6 +505,93 @@ fun IdeMainScreen(
                 }
             }
         }
+    }
+
+    if (showCreateDialog && targetCreateFolder != null) {
+        CreateItemDialog(
+            targetFolder = targetCreateFolder!!,
+            projectRoot = File(projectPath),
+            onDismiss = {
+                showCreateDialog = false
+                targetCreateFolder = null
+            },
+            onItemCreated = { newFile ->
+                expandedPaths[targetCreateFolder!!.absolutePath] = true
+                treeRefreshTrigger++
+                if (newFile.isFile) {
+                    onFileSelected(newFile)
+                }
+            }
+        )
+    }
+
+    if (selectedFileForActions != null) {
+        val file = selectedFileForActions!!
+        FileActionsBottomSheet(
+            file = file,
+            projectRoot = File(projectPath),
+            onDismiss = { selectedFileForActions = null },
+            onNewInside = {
+                selectedFileForActions = null
+                targetCreateFolder = file
+                showCreateDialog = true
+            },
+            onRename = {
+                selectedFileForActions = null
+                fileToRename = file
+            },
+            onDelete = {
+                selectedFileForActions = null
+                fileToDelete = file
+            },
+            onCopyPath = { path ->
+                clipboardManager.setText(AnnotatedString(path))
+                Toast.makeText(context, context.getString(R.string.path_copied), Toast.LENGTH_SHORT).show()
+                selectedFileForActions = null
+            },
+            onCopyRelativePath = { relPath ->
+                clipboardManager.setText(AnnotatedString(relPath))
+                Toast.makeText(context, context.getString(R.string.path_copied), Toast.LENGTH_SHORT).show()
+                selectedFileForActions = null
+            }
+        )
+    }
+
+    if (fileToRename != null) {
+        val file = fileToRename!!
+        RenameFileDialog(
+            file = file,
+            onDismiss = { fileToRename = null },
+            onRenamed = { renamedFile ->
+                treeRefreshTrigger++
+                if (openedFiles.contains(file.absolutePath)) {
+                    onCloseFile?.invoke(file.absolutePath)
+                    if (renamedFile.isFile) {
+                        onFileSelected(renamedFile)
+                    }
+                }
+            }
+        )
+    }
+
+    if (fileToDelete != null) {
+        val file = fileToDelete!!
+        DeleteFileDialog(
+            file = file,
+            onDismiss = { fileToDelete = null },
+            onDeleted = {
+                treeRefreshTrigger++
+                if (file.isDirectory) {
+                    openedFiles.filter { it.startsWith(file.absolutePath) }.forEach {
+                        onCloseFile?.invoke(it)
+                    }
+                } else {
+                    if (openedFiles.contains(file.absolutePath)) {
+                        onCloseFile?.invoke(file.absolutePath)
+                    }
+                }
+            }
+        )
     }
 }
 
@@ -374,9 +621,15 @@ fun FileIcon(file: File, modifier: Modifier = Modifier) {
 private fun borderModifier(selected: Boolean): Modifier = Modifier
 
 @Composable
-fun FileTreeView(root: File, onFileClick: (File) -> Unit) {
+fun FileTreeView(
+    root: File,
+    refreshKey: Int = 0,
+    expandedPaths: SnapshotStateMap<String, Boolean>,
+    onFileClick: (File) -> Unit,
+    onFileLongClick: (File) -> Unit
+) {
     var searchQuery by remember { mutableStateOf("") }
-    var refreshTrigger by remember { mutableIntStateOf(0) }
+    var localRefreshTrigger by remember { mutableIntStateOf(0) }
 
     Column(modifier = Modifier.fillMaxSize()) {
         Row(
@@ -402,12 +655,12 @@ fun FileTreeView(root: File, onFileClick: (File) -> Unit) {
                 textStyle = TextStyle(fontSize = 12.sp)
             )
             Spacer(Modifier.width(4.dp))
-            IconButton(onClick = { refreshTrigger++ }) {
+            IconButton(onClick = { localRefreshTrigger++ }) {
                 Icon(Icons.Default.Refresh, stringResource(id = R.string.refresh), modifier = Modifier.size(20.dp))
             }
         }
 
-        key(refreshTrigger) {
+        key(refreshKey, localRefreshTrigger) {
             val scrollStateH = rememberScrollState()
             val scrollStateV = rememberScrollState()
             Box(
@@ -418,9 +671,20 @@ fun FileTreeView(root: File, onFileClick: (File) -> Unit) {
             ) {
                 Column {
                     if (searchQuery.isEmpty()) {
-                        FileTreeNode(root = root, level = 0, onFileClick = onFileClick)
+                        FileTreeNode(
+                            root = root,
+                            level = 0,
+                            expandedPaths = expandedPaths,
+                            onFileClick = onFileClick,
+                            onFileLongClick = onFileLongClick
+                        )
                     } else {
-                        SearchResults(root = root, query = searchQuery, onFileClick = onFileClick)
+                        SearchResults(
+                            root = root,
+                            query = searchQuery,
+                            onFileClick = onFileClick,
+                            onFileLongClick = onFileLongClick
+                        )
                     }
                 }
             }
@@ -428,8 +692,14 @@ fun FileTreeView(root: File, onFileClick: (File) -> Unit) {
     }
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun SearchResults(root: File, query: String, onFileClick: (File) -> Unit) {
+fun SearchResults(
+    root: File,
+    query: String,
+    onFileClick: (File) -> Unit,
+    onFileLongClick: (File) -> Unit
+) {
     val results = remember(query) {
         root.walkTopDown()
             .filter { it.isFile && it.name.contains(query, ignoreCase = true) }
@@ -442,7 +712,10 @@ fun SearchResults(root: File, query: String, onFileClick: (File) -> Unit) {
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .clickable { onFileClick(file) }
+                    .combinedClickable(
+                        onClick = { onFileClick(file) },
+                        onLongClick = { onFileLongClick(file) }
+                    )
                     .padding(horizontal = 8.dp, vertical = 6.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
@@ -457,8 +730,15 @@ fun SearchResults(root: File, query: String, onFileClick: (File) -> Unit) {
     }
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun FileTreeNode(root: File, level: Int = 0, onFileClick: (File) -> Unit) {
+fun FileTreeNode(
+    root: File,
+    level: Int = 0,
+    expandedPaths: SnapshotStateMap<String, Boolean>,
+    onFileClick: (File) -> Unit,
+    onFileLongClick: (File) -> Unit
+) {
     val files = root.listFiles()
         ?.filter { !it.name.startsWith(".") }
         ?.sortedWith(compareBy({ !it.isDirectory }, { it.name.lowercase() }))
@@ -475,15 +755,23 @@ fun FileTreeNode(root: File, level: Int = 0, onFileClick: (File) -> Unit) {
     }
 
     files.forEach { file ->
-        var isExpanded by remember { mutableStateOf(false) }
+        val isExpanded = expandedPaths[file.absolutePath] == true
 
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .clickable {
-                    if (file.isDirectory) isExpanded = !isExpanded
-                    else onFileClick(file)
-                }
+                .combinedClickable(
+                    onClick = {
+                        if (file.isDirectory) {
+                            expandedPaths[file.absolutePath] = !isExpanded
+                        } else {
+                            onFileClick(file)
+                        }
+                    },
+                    onLongClick = {
+                        onFileLongClick(file)
+                    }
+                )
                 .padding(start = (level * 16 + 8).dp, top = 8.dp, bottom = 8.dp, end = 16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
@@ -512,7 +800,13 @@ fun FileTreeNode(root: File, level: Int = 0, onFileClick: (File) -> Unit) {
         }
 
         if (file.isDirectory && isExpanded) {
-            FileTreeNode(root = file, level = level + 1, onFileClick = onFileClick)
+            FileTreeNode(
+                root = file,
+                level = level + 1,
+                expandedPaths = expandedPaths,
+                onFileClick = onFileClick,
+                onFileLongClick = onFileLongClick
+            )
         }
     }
 }
@@ -531,5 +825,389 @@ fun FolderIcon(
         contentDescription = folderName,
         modifier = modifier,
         tint = Color.Unspecified
+    )
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun CreateItemDialog(
+    targetFolder: File,
+    projectRoot: File,
+    onDismiss: () -> Unit,
+    onItemCreated: (File) -> Unit
+) {
+    var isFolder by remember { mutableStateOf(false) }
+    var itemName by remember { mutableStateOf("") }
+    var errorMessage by remember { mutableStateOf<String?>(null) }
+    val context = LocalContext.current
+
+    val relativePath = targetFolder.relativeToOrNull(projectRoot)?.path?.ifEmpty { "/" } ?: targetFolder.name
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = {
+            Text(
+                text = stringResource(id = R.string.create_new),
+                style = MaterialTheme.typography.titleLarge,
+                fontWeight = FontWeight.Bold
+            )
+        },
+        text = {
+            Column(
+                modifier = Modifier.fillMaxWidth(),
+                verticalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                Text(
+                    text = "${stringResource(id = R.string.project_files)}: $relativePath",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    FilterChip(
+                        selected = !isFolder,
+                        onClick = { isFolder = false },
+                        label = { Text(stringResource(id = R.string.type_file)) },
+                        leadingIcon = {
+                            Icon(
+                                imageVector = Icons.AutoMirrored.Filled.InsertDriveFile,
+                                contentDescription = null,
+                                modifier = Modifier.size(18.dp)
+                            )
+                        }
+                    )
+                    FilterChip(
+                        selected = isFolder,
+                        onClick = { isFolder = true },
+                        label = { Text(stringResource(id = R.string.type_folder)) },
+                        leadingIcon = {
+                            Icon(
+                                imageVector = Icons.Default.Folder,
+                                contentDescription = null,
+                                modifier = Modifier.size(18.dp)
+                            )
+                        }
+                    )
+                }
+
+                OutlinedTextField(
+                    value = itemName,
+                    onValueChange = {
+                        itemName = it
+                        errorMessage = null
+                    },
+                    label = { Text(stringResource(id = R.string.name_hint)) },
+                    placeholder = {
+                        Text(if (isFolder) "models" else "Main.kt")
+                    },
+                    singleLine = true,
+                    isError = errorMessage != null,
+                    supportingText = errorMessage?.let {
+                        { Text(it, color = MaterialTheme.colorScheme.error) }
+                    },
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
+        },
+        confirmButton = {
+            Button(
+                onClick = {
+                    val trimmed = itemName.trim()
+                    if (trimmed.isEmpty()) {
+                        errorMessage = context.getString(R.string.file_name_empty)
+                        return@Button
+                    }
+                    val target = File(targetFolder, trimmed)
+                    if (target.exists()) {
+                        errorMessage = context.getString(R.string.file_already_exists)
+                        return@Button
+                    }
+                    try {
+                        val created = if (isFolder) {
+                            target.mkdirs()
+                        } else {
+                            target.parentFile?.mkdirs()
+                            target.createNewFile()
+                        }
+                        if (created || target.exists()) {
+                            Toast.makeText(context, context.getString(R.string.file_created), Toast.LENGTH_SHORT).show()
+                            onItemCreated(target)
+                            onDismiss()
+                        } else {
+                            errorMessage = context.getString(R.string.file_create_failed, "Permission denied")
+                        }
+                    } catch (e: Exception) {
+                        errorMessage = context.getString(R.string.file_create_failed, e.localizedMessage ?: "")
+                    }
+                }
+            ) {
+                Text(stringResource(id = R.string.action_create))
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text(stringResource(id = R.string.action_cancel))
+            }
+        }
+    )
+}
+
+@Composable
+fun FileActionRow(
+    icon: ImageVector,
+    title: String,
+    description: String,
+    isDestructive: Boolean = false,
+    onClick: () -> Unit
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { onClick() }
+            .padding(vertical = 12.dp, horizontal = 8.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Icon(
+            imageVector = icon,
+            contentDescription = title,
+            tint = if (isDestructive) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.size(24.dp)
+        )
+        Spacer(modifier = Modifier.width(16.dp))
+        Column {
+            Text(
+                text = title,
+                style = MaterialTheme.typography.bodyLarge,
+                fontWeight = FontWeight.Medium,
+                color = if (isDestructive) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurface
+            )
+            Text(
+                text = description,
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun FileActionsBottomSheet(
+    file: File,
+    projectRoot: File,
+    onDismiss: () -> Unit,
+    onNewInside: () -> Unit,
+    onRename: () -> Unit,
+    onDelete: () -> Unit,
+    onCopyPath: (String) -> Unit,
+    onCopyRelativePath: (String) -> Unit
+) {
+    val relativePath = file.relativeToOrNull(projectRoot)?.path ?: file.name
+
+    BottomSheetDialog(onDismissRequest = onDismiss) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 8.dp, horizontal = 8.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            if (file.isDirectory) {
+                FolderIcon(folderName = file.name, isExpanded = false, modifier = Modifier.size(28.dp))
+            } else {
+                FileIcon(file = file, modifier = Modifier.size(28.dp))
+            }
+            Spacer(modifier = Modifier.width(12.dp))
+            Column {
+                Text(
+                    text = file.name,
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+                Text(
+                    text = relativePath,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+        }
+
+        HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
+
+        if (file.isDirectory) {
+            FileActionRow(
+                icon = Icons.Default.CreateNewFolder,
+                title = stringResource(id = R.string.new_item_here),
+                description = stringResource(id = R.string.new_item_here_desc),
+                onClick = onNewInside
+            )
+        }
+
+        FileActionRow(
+            icon = Icons.Default.DriveFileRenameOutline,
+            title = stringResource(id = R.string.rename),
+            description = stringResource(id = R.string.rename_desc),
+            onClick = onRename
+        )
+
+        FileActionRow(
+            icon = Icons.Default.Delete,
+            title = stringResource(id = R.string.delete),
+            description = stringResource(id = R.string.delete_desc),
+            isDestructive = true,
+            onClick = onDelete
+        )
+
+        FileActionRow(
+            icon = Icons.Default.ContentCopy,
+            title = stringResource(id = R.string.copy_relative_path),
+            description = stringResource(id = R.string.copy_relative_path_desc),
+            onClick = { onCopyRelativePath(relativePath) }
+        )
+
+        FileActionRow(
+            icon = Icons.Default.ContentCopy,
+            title = stringResource(id = R.string.copy_path),
+            description = stringResource(id = R.string.copy_path_desc),
+            onClick = { onCopyPath(file.absolutePath) }
+        )
+
+        Spacer(modifier = Modifier.height(24.dp))
+    }
+}
+
+@Composable
+fun RenameFileDialog(
+    file: File,
+    onDismiss: () -> Unit,
+    onRenamed: (File) -> Unit
+) {
+    var newName by remember { mutableStateOf(file.name) }
+    var errorMessage by remember { mutableStateOf<String?>(null) }
+    val context = LocalContext.current
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = {
+            Text(
+                text = stringResource(id = R.string.rename),
+                style = MaterialTheme.typography.titleLarge,
+                fontWeight = FontWeight.Bold
+            )
+        },
+        text = {
+            Column(
+                modifier = Modifier.fillMaxWidth(),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                OutlinedTextField(
+                    value = newName,
+                    onValueChange = {
+                        newName = it
+                        errorMessage = null
+                    },
+                    label = { Text(stringResource(id = R.string.enter_new_name)) },
+                    singleLine = true,
+                    isError = errorMessage != null,
+                    supportingText = errorMessage?.let {
+                        { Text(it, color = MaterialTheme.colorScheme.error) }
+                    },
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
+        },
+        confirmButton = {
+            Button(
+                onClick = {
+                    val trimmed = newName.trim()
+                    if (trimmed.isEmpty()) {
+                        errorMessage = context.getString(R.string.file_name_empty)
+                        return@Button
+                    }
+                    if (trimmed == file.name) {
+                        onDismiss()
+                        return@Button
+                    }
+                    val target = File(file.parentFile, trimmed)
+                    if (target.exists()) {
+                        errorMessage = context.getString(R.string.file_already_exists)
+                        return@Button
+                    }
+                    if (file.renameTo(target)) {
+                        Toast.makeText(context, context.getString(R.string.file_renamed), Toast.LENGTH_SHORT).show()
+                        onRenamed(target)
+                        onDismiss()
+                    } else {
+                        errorMessage = context.getString(R.string.file_rename_failed)
+                    }
+                }
+            ) {
+                Text(stringResource(id = R.string.rename))
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text(stringResource(id = R.string.action_cancel))
+            }
+        }
+    )
+}
+
+@Composable
+fun DeleteFileDialog(
+    file: File,
+    onDismiss: () -> Unit,
+    onDeleted: () -> Unit
+) {
+    val context = LocalContext.current
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = {
+            Text(
+                text = stringResource(id = R.string.delete_confirm_title, file.name),
+                style = MaterialTheme.typography.titleLarge,
+                fontWeight = FontWeight.Bold
+            )
+        },
+        text = {
+            val itemTypeStr = if (file.isDirectory) {
+                stringResource(id = R.string.type_folder).lowercase()
+            } else {
+                stringResource(id = R.string.type_file).lowercase()
+            }
+            Text(
+                text = stringResource(id = R.string.delete_confirm_msg, itemTypeStr),
+                style = MaterialTheme.typography.bodyMedium
+            )
+        },
+        confirmButton = {
+            Button(
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.error,
+                    contentColor = MaterialTheme.colorScheme.onError
+                ),
+                onClick = {
+                    val success = if (file.isDirectory) file.deleteRecursively() else file.delete()
+                    if (success) {
+                        Toast.makeText(context, context.getString(R.string.file_deleted), Toast.LENGTH_SHORT).show()
+                        onDeleted()
+                        onDismiss()
+                    } else {
+                        Toast.makeText(context, context.getString(R.string.file_delete_failed), Toast.LENGTH_SHORT).show()
+                    }
+                }
+            ) {
+                Text(stringResource(id = R.string.delete))
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text(stringResource(id = R.string.action_cancel))
+            }
+        }
     )
 }

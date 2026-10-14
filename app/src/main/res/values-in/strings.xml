@@ -181,6 +181,46 @@
     <string name="sync_github">Sinkronkan Info GitHub</string>
     <string name="syncing_github">Menyinkronkan dengan GitHub…</string>
     <string name="synced_github_success">Berhasil disinkronkan dengan GitHub</string>
-    <string name="sync_failed">Gagal menyinkronkan dengan GitHub</string>
     <string name="build_latest_remote_commit">Commit GitHub terbaru</string>
+
+    <!-- Project Option Sheet -->
+    <string name="project_pin">Pin</string>
+    <string name="project_pin_desc">Sematkan proyek ini di atas</string>
+    <string name="project_clone">Klon</string>
+    <string name="project_clone_desc">Buat salinan proyek ini</string>
+    <string name="project_backup">Cadangkan</string>
+    <string name="project_backup_desc">Cadangkan ke penyimpanan lain</string>
+    <string name="project_remove">Hapus</string>
+    <string name="project_remove_desc">Hapus direktori proyek secara permanen</string>
+
+    <!-- Drawer File Actions & New Dialog -->
+    <string name="create_new">Buat Baru</string>
+    <string name="type_file">File</string>
+    <string name="type_folder">Folder</string>
+    <string name="name_hint">Nama</string>
+    <string name="file_name_empty">Nama tidak boleh kosong</string>
+    <string name="file_created">Berhasil dibuat</string>
+    <string name="file_create_failed">Gagal membuat: %1$s</string>
+    <string name="file_actions">Aksi File</string>
+    <string name="rename">Ganti Nama</string>
+    <string name="rename_desc">Ubah nama file atau folder</string>
+    <string name="delete">Hapus</string>
+    <string name="delete_desc">Hapus item ini secara permanen</string>
+    <string name="delete_confirm_title">Hapus %1$s?</string>
+    <string name="delete_confirm_msg">Apakah Anda yakin ingin menghapus %1$s ini? Tindakan ini tidak dapat dibatalkan.</string>
+    <string name="copy_path">Salin Jalur</string>
+    <string name="copy_path_desc">Salin jalur absolut ke papan klip</string>
+    <string name="copy_relative_path">Salin Jalur Relatif</string>
+    <string name="copy_relative_path_desc">Salin jalur relatif terhadap proyek</string>
+    <string name="path_copied">Jalur disalin ke papan klip</string>
+    <string name="new_item_here">Baru di Sini</string>
+    <string name="new_item_here_desc">Buat file atau folder di dalam direktori ini</string>
+    <string name="file_renamed">Berhasil diganti nama</string>
+    <string name="file_deleted">Berhasil dihapus</string>
+    <string name="file_delete_failed">Gagal menghapus</string>
+    <string name="enter_new_name">Masukkan nama baru</string>
+    <string name="action_cancel">Batal</string>
+    <string name="action_create">Buat</string>
+    <string name="file_already_exists">Item dengan nama ini sudah ada</string>
+    <string name="file_rename_failed">Gagal mengganti nama</string>
 </resources>

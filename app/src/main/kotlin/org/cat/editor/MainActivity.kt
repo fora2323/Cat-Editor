@@ -23,7 +23,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import org.cat.editor.ui.IdeMainScreen
 import org.cat.editor.ui.theme.AppTheme
-import org.cat.editor.utility.ComposeNode
+import org.cat.editor.ui.preview.ComposeNode
 import org.cat.editor.utility.IdComposeParser
 import org.cat.editor.utils.LocaleHelper
 import org.cat.editor.utils.StorageUtils
@@ -50,11 +50,71 @@ class MainActivity : ComponentActivity() {
 
     private var fileObserver: FileObserver? = null
 
-    private var currentRootNode by mutableStateOf<ComposeNode.Layout>(ComposeNode.Layout("Root"))
+    private var currentRootNode by mutableStateOf<ComposeNode>(ComposeNode("Root"))
     private var projectPath by mutableStateOf("")
     private var activeFilePath by mutableStateOf("")
     private var openedFiles by mutableStateOf<List<String>>(emptyList())
     private var showProjectPicker by mutableStateOf(false)
+
+    private fun getProjectTabsKey(path: String): String {
+        return "opened_files_" + path.hashCode()
+    }
+
+    private fun getProjectActiveFileKey(path: String): String {
+        return "active_file_" + path.hashCode()
+    }
+
+    private fun loadProjectTabs(path: String) {
+        if (path.isBlank() || !File(path).exists()) {
+            openedFiles = emptyList()
+            activeFilePath = ""
+            currentRootNode = ComposeNode("Empty")
+            return
+        }
+
+        val prefs = getSharedPreferences("app_data", Context.MODE_PRIVATE)
+        val savedTabs = prefs.getString(getProjectTabsKey(path), "") ?: ""
+        val rawList = if (savedTabs.isNotEmpty()) savedTabs.split(",").filter { it.isNotBlank() } else emptyList()
+
+        val projectDir = try { File(path).canonicalFile } catch (_: Throwable) { File(path) }
+        val validTabs = rawList.filter { filePath ->
+            try {
+                val f = File(filePath)
+                f.exists() && f.canonicalFile.startsWith(projectDir)
+            } catch (_: Throwable) {
+                false
+            }
+        }
+
+        openedFiles = validTabs
+
+        val savedActive = prefs.getString(getProjectActiveFileKey(path), "") ?: ""
+        activeFilePath = if (savedActive.isNotEmpty() && validTabs.contains(savedActive) && File(savedActive).exists()) {
+            savedActive
+        } else {
+            validTabs.lastOrNull() ?: ""
+        }
+
+        if (activeFilePath.isNotEmpty()) {
+            setupPreview(activeFilePath)
+        } else {
+            currentRootNode = ComposeNode("Empty")
+        }
+    }
+
+    private fun switchProject(newPath: String) {
+        if (newPath == projectPath && openedFiles.isNotEmpty()) return
+        fileObserver?.stopWatching()
+        projectPath = newPath
+        getSharedPreferences("app_data", Context.MODE_PRIVATE)
+            .edit()
+            .putString("last_project", newPath)
+            .remove("opened_files")
+            .remove("last_preview")
+            .apply()
+        showProjectPicker = false
+        loadProjectTabs(newPath)
+    }
 
     private val folderPickerLauncher = registerForActivityResult(
         ActivityResultContracts.OpenDocumentTree()
@@ -62,10 +122,7 @@ class MainActivity : ComponentActivity() {
         uri?.let {
             val path = getRealPathFromURI(it)
             if (path != null) {
-                projectPath = path
-                getSharedPreferences("app_data", Context.MODE_PRIVATE)
-                    .edit().putString("last_project", path).apply()
-                showProjectPicker = false
+                switchProject(path)
                 startAppLogic()
             } else {
                 Toast.makeText(this, getString(R.string.cannot_access_folder), Toast.LENGTH_SHORT).show()
@@ -79,20 +136,16 @@ class MainActivity : ComponentActivity() {
         org.cat.editor.utils.SettingsManager.applyFullscreen(this)
 
         val prefs = getSharedPreferences("app_data", Context.MODE_PRIVATE)
-        projectPath = prefs.getString("last_project", "") ?: ""
-
+        val savedProject = prefs.getString("last_project", "") ?: ""
         val intentPath = intent.getStringExtra("project_path")
-        if (!intentPath.isNullOrEmpty()) {
-            projectPath = intentPath
-            prefs.edit().putString("last_project", intentPath).apply()
+        val initialProject = if (!intentPath.isNullOrEmpty()) intentPath else savedProject
+
+        projectPath = initialProject
+        if (initialProject.isNotEmpty()) {
+            prefs.edit().putString("last_project", initialProject).apply()
         }
 
-        activeFilePath = prefs.getString("last_preview", "") ?: ""
-
-        val savedTabs = prefs.getString("opened_files", "") ?: ""
-        if (savedTabs.isNotEmpty()) {
-            openedFiles = savedTabs.split(",")
-        }
+        loadProjectTabs(initialProject)
 
         setContent {
             AppTheme {
@@ -106,8 +159,7 @@ class MainActivity : ComponentActivity() {
                         activeFilePath = activeFilePath,
                         currentRootNode = currentRootNode,
                         onProjectPicked = { path ->
-                            projectPath = path
-                            prefs.edit().putString("last_project", path).apply()
+                            switchProject(path)
                         },
                         onFileSelected = { file ->
                             openFileInTab(file.absolutePath)
@@ -122,11 +174,22 @@ class MainActivity : ComponentActivity() {
                         },
                         onCloseFile = { path ->
                             openedFiles = openedFiles.filter { it != path }
-                            prefs.edit()
-                                .putString("opened_files", openedFiles.joinToString(","))
-                                .apply()
+                            if (projectPath.isNotBlank()) {
+                                prefs.edit()
+                                    .putString(getProjectTabsKey(projectPath), openedFiles.joinToString(","))
+                                    .apply()
+                            }
                             activeFilePath = openedFiles.lastOrNull() ?: ""
-                            if (activeFilePath.isNotEmpty()) setupPreview(activeFilePath)
+                            if (projectPath.isNotBlank()) {
+                                prefs.edit()
+                                    .putString(getProjectActiveFileKey(projectPath), activeFilePath)
+                                    .apply()
+                            }
+                            if (activeFilePath.isNotEmpty()) {
+                                setupPreview(activeFilePath)
+                            } else {
+                                currentRootNode = ComposeNode("Empty")
+                            }
                         },
                         onAddFile = {
                             Toast.makeText(this@MainActivity, getString(R.string.add_file_coming_soon), Toast.LENGTH_SHORT).show()
@@ -147,18 +210,28 @@ class MainActivity : ComponentActivity() {
     }
 
     private fun openFileInTab(path: String) {
+        if (projectPath.isBlank()) return
+        val file = File(path)
+        if (!file.exists()) return
+
         if (!openedFiles.contains(path)) {
             openedFiles = openedFiles + path
             getSharedPreferences("app_data", Context.MODE_PRIVATE)
-                .edit().putString("opened_files", openedFiles.joinToString(",")).apply()
+                .edit()
+                .putString(getProjectTabsKey(projectPath), openedFiles.joinToString(","))
+                .apply()
         }
         setupPreview(path)
     }
 
     private fun setupPreview(path: String) {
         activeFilePath = path
-        getSharedPreferences("app_data", Context.MODE_PRIVATE)
-            .edit().putString("last_preview", path).apply()
+        if (projectPath.isNotBlank()) {
+            getSharedPreferences("app_data", Context.MODE_PRIVATE)
+                .edit()
+                .putString(getProjectActiveFileKey(projectPath), path)
+                .apply()
+        }
         loadFileAndParse()
 
         fileObserver?.stopWatching()
@@ -173,9 +246,19 @@ class MainActivity : ComponentActivity() {
                             runOnUiThread {
                                 fileObserver?.stopWatching()
                                 openedFiles = openedFiles.filter { it != path }
-                                getSharedPreferences("app_data", Context.MODE_PRIVATE)
-                                    .edit().putString("opened_files", openedFiles.joinToString(",")).apply()
+                                if (projectPath.isNotBlank()) {
+                                    getSharedPreferences("app_data", Context.MODE_PRIVATE)
+                                        .edit()
+                                        .putString(getProjectTabsKey(projectPath), openedFiles.joinToString(","))
+                                        .apply()
+                                }
                                 activeFilePath = openedFiles.lastOrNull() ?: ""
+                                if (projectPath.isNotBlank()) {
+                                    getSharedPreferences("app_data", Context.MODE_PRIVATE)
+                                        .edit()
+                                        .putString(getProjectActiveFileKey(projectPath), activeFilePath)
+                                        .apply()
+                                }
                                 if (activeFilePath.isNotEmpty()) setupPreview(activeFilePath)
                                 Toast.makeText(this@MainActivity, getString(R.string.file_preview_deleted), Toast.LENGTH_SHORT).show()
                             }
@@ -190,14 +273,49 @@ class MainActivity : ComponentActivity() {
     }
 
     private fun loadFileAndParse() {
+        if (activeFilePath.isBlank()) return
         try {
             val file = File(activeFilePath)
             if (!file.exists()) return
-            val code = file.readText()
-            runOnUiThread {
-                currentRootNode = IdComposeParser.parse(code)
+
+            if (org.cat.editor.ui.preview.isBinaryFile(file.name)) {
+                // Do not read binary or image files as text
+                runOnUiThread {
+                    currentRootNode = ComposeNode("ImageFile")
+                }
+                return
             }
-        } catch (e: Exception) {
+
+            val lower = file.name.lowercase()
+            val isKotlin = lower.endsWith(".kt") || lower.endsWith(".kts")
+            val isXml = lower.endsWith(".xml")
+
+            if (!isKotlin && !isXml) {
+                // Non-previewable text file (e.g. Java, HTML, Gradle, JSON, CMake, etc.)
+                runOnUiThread {
+                    currentRootNode = ComposeNode("TextFile")
+                }
+                return
+            }
+
+            val code = file.readText()
+            val parsed = if (isXml) {
+                if (org.cat.editor.ui.preview.XmlLayoutParser.isLayoutXml(code)) {
+                    org.cat.editor.ui.preview.XmlLayoutParser.parse(code)
+                } else {
+                    ComposeNode("XmlResource")
+                }
+            } else {
+                if (org.cat.editor.ui.preview.ComposePreviewParser.isComposeSource(code)) {
+                    org.cat.editor.ui.preview.ComposeAstParser.parse(code, code)
+                } else {
+                    ComposeNode("KotlinFile")
+                }
+            }
+            runOnUiThread {
+                currentRootNode = parsed
+            }
+        } catch (e: Throwable) {
             e.printStackTrace()
         }
     }

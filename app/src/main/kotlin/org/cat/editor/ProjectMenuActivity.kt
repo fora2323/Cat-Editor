@@ -516,26 +516,26 @@ fun ProjectMenuScreen(
 
             ProjectMenuItem(
                 icon = Icons.Default.PushPin,
-                title = "Pin",
-                description = "Sematkan proyek ini di atas",
+                title = stringResource(id = R.string.project_pin),
+                description = stringResource(id = R.string.project_pin_desc),
                 onClick = { showProjectMenu = false } // Fitur Diskip
             )
             ProjectMenuItem(
                 icon = Icons.Default.ContentCopy,
-                title = "Clone",
-                description = "Buat salinan proyek ini",
+                title = stringResource(id = R.string.project_clone),
+                description = stringResource(id = R.string.project_clone_desc),
                 onClick = { showProjectMenu = false } // Fitur Diskip
             )
             ProjectMenuItem(
                 icon = Icons.Default.SdStorage,
-                title = "Backup",
-                description = "Cadangkan ke penyimpanan lain",
+                title = stringResource(id = R.string.project_backup),
+                description = stringResource(id = R.string.project_backup_desc),
                 onClick = { showProjectMenu = false } // Fitur Diskip
             )
             ProjectMenuItem(
                 icon = Icons.Default.Delete,
-                title = "Remove",
-                description = "Hapus direktori proyek",
+                title = stringResource(id = R.string.project_remove),
+                description = stringResource(id = R.string.project_remove_desc),
                 isDestructive = true,
                 onClick = {
                     showProjectMenu = false

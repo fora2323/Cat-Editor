@@ -128,6 +128,31 @@
     <string name="setting_manage_fonts_desc">Manage application fonts</string>
     <string name="section_feature_toggles">Feature toggles</string>
     <string name="setting_debug_options_title">Debug options</string>
+    
+    <!-- Editor Settings Screen -->
+    <string name="editor_cat_smart_features">Smart features</string>
+    <string name="editor_auto_compile_title">Auto compile</string>
+    <string name="editor_auto_compile_desc">Automatically compile and update preview when code changes</string>
+    <string name="editor_auto_close_tag_title">Auto close tags</string>
+    <string name="editor_auto_close_tag_desc">Automatically close HTML and XML tags</string>
+    <string name="editor_color_preview_title">Color preview</string>
+    <string name="editor_color_preview_desc">Show color preview in the editor when no language server is connected</string>
+
+    <string name="editor_cat_content">Content</string>
+    <string name="editor_word_wrap_title">Word wrap</string>
+    <string name="editor_word_wrap_desc">Enable word wrap in all editors</string>
+    <string name="editor_wrap_txt_title">Wrap TXT files</string>
+    <string name="editor_wrap_txt_desc">Automatically wrap TXT files</string>
+    <string name="editor_read_only_title">Read-only mode</string>
+    <string name="editor_read_only_desc">Enable read-only mode by default</string>
+
+    <string name="editor_cat_editor">Editor</string>
+    <string name="editor_line_numbers_title">Line numbers</string>
+    <string name="editor_line_numbers_desc">Show line numbers beside the editor</string>
+    <string name="editor_disable_virtual_kbd_title">Disable virtual keyboard</string>
+    <string name="editor_disable_virtual_kbd_desc">Disable virtual keyboard when a physical keyboard is available</string>
+    <string name="editor_cursor_anim_title">Cursor animation</string>
+    <string name="editor_cursor_anim_desc">Enable smooth cursor animation</string>
 
     <!-- Language Screen -->
     <string name="language_warning_notice">Changing language will restart this screen to apply the new language immediately. This may briefly display a blank screen, potentially causing discomfort for people with photosensitive epilepsy.</string>

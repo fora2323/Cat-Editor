@@ -1,7 +1,9 @@
 package org.cat.editor.ui
 
 import android.content.Context
+import android.content.res.Configuration
 import android.util.Log
+import android.view.inputmethod.InputMethodManager
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.awaitEachGesture
 import androidx.compose.foundation.gestures.awaitFirstDown
@@ -99,6 +101,17 @@ private fun createEditorColorScheme(): EditorColorScheme {
     }
 }
 
+private fun hideSoftKeyboardIfNeeded(editor: CodeEditor) {
+    val context = editor.context
+    val disableVirtualKbd = SettingsManager.getPrefs(context).getBoolean("editor_disable_virtual_kbd", false)
+    val hasPhysicalKeyboard = context.resources.configuration.keyboard != Configuration.KEYBOARD_NOKEYS
+
+    if (disableVirtualKbd && hasPhysicalKeyboard) {
+        val imm = context.getSystemService(Context.INPUT_METHOD_SERVICE) as? InputMethodManager
+        imm?.hideSoftInputFromWindow(editor.windowToken, 0)
+    }
+}
+
 private fun applyEditorSettings(editor: CodeEditor, filePath: String) {
     val context = editor.context
     val prefs = SettingsManager.getPrefs(context)
@@ -108,15 +121,15 @@ private fun applyEditorSettings(editor: CodeEditor, filePath: String) {
     val wrapTxt = prefs.getBoolean("editor_wrap_txt", true)
     val showLineNumbers = prefs.getBoolean("editor_line_numbers", true)
     val readOnly = prefs.getBoolean("editor_read_only", false)
-    val disableVirtualKbd = prefs.getBoolean("editor_disable_virtual_kbd", false)
     val cursorAnimation = prefs.getBoolean("editor_cursor_animation", true)
 
     editor.typefaceText = SettingsManager.getEditorTypeface(context)
     editor.isWordwrap = wordWrap || (isTxtFile && wrapTxt)
     editor.isLineNumberEnabled = showLineNumbers
     editor.isEditable = !readOnly
-    editor.showSoftInputOnFocus = !disableVirtualKbd
     editor.isCursorAnimationEnabled = cursorAnimation
+
+    hideSoftKeyboardIfNeeded(editor)
 }
 
 @Composable
@@ -199,6 +212,7 @@ fun KotlinCodeEditor(
 
                     subscribeAlways(ClickEvent::class.java) { _ ->
                         onEditorInteraction?.invoke()
+                        hideSoftKeyboardIfNeeded(this)
                     }
 
                     setOnTouchListener { _, event ->

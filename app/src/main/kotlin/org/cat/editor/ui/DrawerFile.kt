@@ -4,7 +4,6 @@ import android.content.Intent
 import android.widget.Toast
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.gestures.awaitEachGesture
@@ -79,6 +78,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.ScrollableTabRow
 import androidx.compose.material3.SmallFloatingActionButton
@@ -104,7 +104,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshots.SnapshotStateMap
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.pointer.pointerInput
@@ -114,7 +113,6 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
-import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -142,6 +140,16 @@ import kotlin.coroutines.coroutineContext
 
 enum class EditorViewMode { EDIT, PREVIEW }
 
+enum class DrawerSortMode(val value: Int) {
+    NAME(0),
+    SIZE(1),
+    DATE(2);
+
+    companion object {
+        fun fromInt(value: Int): DrawerSortMode = entries.firstOrNull { it.value == value } ?: NAME
+    }
+}
+
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
 fun IdeMainScreen(
@@ -161,6 +169,7 @@ fun IdeMainScreen(
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val scope = rememberCoroutineScope()
     val context = LocalContext.current
+    val prefs = remember { SettingsManager.getPrefs(context) }
     val isSmartToolbar = remember { SettingsManager.isSmartToolbarEnabled(context) }
     var isToolbarVisible by remember { mutableStateOf(true) }
     var currentCode by remember { mutableStateOf("") }
@@ -176,13 +185,24 @@ fun IdeMainScreen(
     var fileToDelete by remember { mutableStateOf<File?>(null) }
     val expandedPaths = remember { mutableStateMapOf<String, Boolean>() }
 
-    // State untuk menu Search di Drawer (BottomSheet, Cari File, Cari Kode, dan Indeks Proyek)
+    // State untuk menu titik tiga Drawer (Show hidden files, Compact folders, Sort mode)
     var showDrawerMoreMenu by remember { mutableStateOf(false) }
+    var showHiddenFiles by remember {
+        mutableStateOf(prefs.getBoolean("drawer_show_hidden_files", false))
+    }
+    var compactFolders by remember {
+        mutableStateOf(prefs.getBoolean("drawer_compact_folders", false))
+    }
+    var sortMode by remember {
+        mutableStateOf(DrawerSortMode.fromInt(prefs.getInt("drawer_sort_mode", 0)))
+    }
+
+    // State untuk menu Search di Drawer
     var showSearchBottomSheet by remember { mutableStateOf(false) }
     var showSearchFileDialog by remember { mutableStateOf(false) }
     var showSearchCodeDialog by remember { mutableStateOf(false) }
     var isProjectIndexed by remember {
-        mutableStateOf(SettingsManager.getPrefs(context).getBoolean("index_project", false))
+        mutableStateOf(prefs.getBoolean("index_project", false))
     }
     var indexedFilesCache by remember(projectPath) { mutableStateOf<List<File>?>(null) }
 
@@ -198,18 +218,23 @@ fun IdeMainScreen(
         }
     }
 
-    // Jika fitur Indeks Proyek aktif, simpan daftar file proyek di memori agar pencarian lebih cepat
-    LaunchedEffect(projectPath, isProjectIndexed, treeRefreshTrigger) {
+    // Jika Indeks Proyek aktif, simpan daftar file di memori sesuai filter hidden files
+    LaunchedEffect(projectPath, isProjectIndexed, showHiddenFiles, treeRefreshTrigger) {
         if (projectPath.isNotEmpty() && isProjectIndexed) {
             withContext(Dispatchers.IO) {
                 val rootFile = File(projectPath)
                 val list = mutableListOf<File>()
                 try {
                     rootFile.walkTopDown()
-                        .onEnter { dir -> dir.name != ".git" && dir.name != "build" && dir.name != ".gradle" }
+                        .onEnter { dir ->
+                            dir.absolutePath == rootFile.absolutePath ||
+                                (!dir.name.startsWith(".") && dir.name != "build")
+                        }
                         .forEach { f ->
                             if (f.absolutePath != rootFile.absolutePath) {
-                                list.add(f)
+                                if (!f.name.startsWith(".") || (showHiddenFiles && f.isFile)) {
+                                    list.add(f)
+                                }
                             }
                         }
                 } catch (_: Throwable) {}
@@ -239,7 +264,6 @@ fun IdeMainScreen(
                     .fillMaxHeight(),
                 windowInsets = WindowInsets.systemBars
             ) {
-                // Header Drawer sesuai gambar referensi: Ikon Refresh, Search, dan Titik Tiga di kanan
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -266,17 +290,75 @@ fun IdeMainScreen(
                                 contentDescription = stringResource(id = R.string.more_options)
                             )
                         }
+                        // Menu opsi tampilan dan urutan file sesuai gambar referensi
                         DropdownMenu(
                             expanded = showDrawerMoreMenu,
-                            onDismissRequest = { showDrawerMoreMenu = false }
+                            onDismissRequest = { showDrawerMoreMenu = false },
+                            shape = RoundedCornerShape(16.dp)
                         ) {
                             DropdownMenuItem(
-                                text = { Text(stringResource(id = R.string.create_new)) },
-                                leadingIcon = { Icon(Icons.Default.Add, contentDescription = null) },
+                                text = { Text(stringResource(id = R.string.drawer_show_hidden_files)) },
+                                leadingIcon = {
+                                    Checkbox(
+                                        checked = showHiddenFiles,
+                                        onCheckedChange = null
+                                    )
+                                },
                                 onClick = {
-                                    showDrawerMoreMenu = false
-                                    targetCreateFolder = File(projectPath)
-                                    showCreateDialog = true
+                                    showHiddenFiles = !showHiddenFiles
+                                    prefs.edit().putBoolean("drawer_show_hidden_files", showHiddenFiles).apply()
+                                }
+                            )
+                            DropdownMenuItem(
+                                text = { Text(stringResource(id = R.string.drawer_compact_folders)) },
+                                leadingIcon = {
+                                    Checkbox(
+                                        checked = compactFolders,
+                                        onCheckedChange = null
+                                    )
+                                },
+                                onClick = {
+                                    compactFolders = !compactFolders
+                                    prefs.edit().putBoolean("drawer_compact_folders", compactFolders).apply()
+                                }
+                            )
+                            DropdownMenuItem(
+                                text = { Text(stringResource(id = R.string.drawer_sort_by_name)) },
+                                leadingIcon = {
+                                    RadioButton(
+                                        selected = sortMode == DrawerSortMode.NAME,
+                                        onClick = null
+                                    )
+                                },
+                                onClick = {
+                                    sortMode = DrawerSortMode.NAME
+                                    prefs.edit().putInt("drawer_sort_mode", DrawerSortMode.NAME.value).apply()
+                                }
+                            )
+                            DropdownMenuItem(
+                                text = { Text(stringResource(id = R.string.drawer_sort_by_size)) },
+                                leadingIcon = {
+                                    RadioButton(
+                                        selected = sortMode == DrawerSortMode.SIZE,
+                                        onClick = null
+                                    )
+                                },
+                                onClick = {
+                                    sortMode = DrawerSortMode.SIZE
+                                    prefs.edit().putInt("drawer_sort_mode", DrawerSortMode.SIZE.value).apply()
+                                }
+                            )
+                            DropdownMenuItem(
+                                text = { Text(stringResource(id = R.string.drawer_sort_by_date)) },
+                                leadingIcon = {
+                                    RadioButton(
+                                        selected = sortMode == DrawerSortMode.DATE,
+                                        onClick = null
+                                    )
+                                },
+                                onClick = {
+                                    sortMode = DrawerSortMode.DATE
+                                    prefs.edit().putInt("drawer_sort_mode", DrawerSortMode.DATE.value).apply()
                                 }
                             )
                         }
@@ -288,6 +370,9 @@ fun IdeMainScreen(
                         FileTreeView(
                             root = File(projectPath),
                             refreshKey = treeRefreshTrigger,
+                            showHiddenFiles = showHiddenFiles,
+                            compactFolders = compactFolders,
+                            sortMode = sortMode,
                             expandedPaths = expandedPaths,
                             onFileClick = { file ->
                                 if (!file.exists() || file.isDirectory) return@FileTreeView
@@ -415,7 +500,7 @@ fun IdeMainScreen(
                                         onDismissRequest = { showMoreMenu = false }
                                     ) {
                                         DropdownMenuItem(
-                                            text = { Text("Open Project") },
+                                            text = { Text(stringResource(id = R.string.open_folder_saf)) },
                                             leadingIcon = {
                                                 Icon(Icons.Default.Add, contentDescription = null)
                                             },
@@ -641,13 +726,12 @@ fun IdeMainScreen(
         }
     }
 
-    // BottomSheet menu pencarian seperti di gambar ke-1
     if (showSearchBottomSheet) {
         SearchOptionsBottomSheet(
             isProjectIndexed = isProjectIndexed,
             onToggleIndexProject = { checked ->
                 isProjectIndexed = checked
-                SettingsManager.getPrefs(context).edit().putBoolean("index_project", checked).apply()
+                prefs.edit().putBoolean("index_project", checked).apply()
             },
             onSearchFilesClick = {
                 showSearchBottomSheet = false
@@ -661,10 +745,10 @@ fun IdeMainScreen(
         )
     }
 
-    // Dialog Cari File dalam Proyek seperti di gambar ke-4
     if (showSearchFileDialog) {
         SearchFileDialog(
             projectRoot = File(projectPath),
+            showHiddenFiles = showHiddenFiles,
             cachedFiles = indexedFilesCache,
             onDismiss = { showSearchFileDialog = false },
             onItemSelected = { selectedFile ->
@@ -691,10 +775,10 @@ fun IdeMainScreen(
         )
     }
 
-    // Dialog Cari Kode dalam Proyek (dengan UI Loading anti-lag) seperti di gambar ke-2 & ke-3
     if (showSearchCodeDialog) {
         SearchCodeDialog(
             projectRoot = File(projectPath),
+            showHiddenFiles = showHiddenFiles,
             cachedFiles = indexedFilesCache,
             onDismiss = { showSearchCodeDialog = false },
             onResultClick = { matchedFile ->
@@ -798,7 +882,6 @@ fun IdeMainScreen(
     }
 }
 
-// BottomSheet untuk memilih tipe pencarian (Cari File / Cari Kode) & Indeks Proyek
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SearchOptionsBottomSheet(
@@ -832,14 +915,14 @@ fun SearchOptionsBottomSheet(
                 Spacer(modifier = Modifier.width(16.dp))
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
-                        text = "Indeks proyek",
+                        text = stringResource(id = R.string.search_index_project_title),
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Medium,
                         color = MaterialTheme.colorScheme.onSurface
                     )
                     Spacer(modifier = Modifier.height(2.dp))
                     Text(
-                        text = "Pengindeksan dapat meningkatkan waktu pencarian untuk proyek besar",
+                        text = stringResource(id = R.string.search_index_project_desc),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -867,7 +950,7 @@ fun SearchOptionsBottomSheet(
             )
             Spacer(modifier = Modifier.width(16.dp))
             Text(
-                text = "Cari file dalam proyek",
+                text = stringResource(id = R.string.search_files_in_project),
                 style = MaterialTheme.typography.bodyLarge,
                 color = MaterialTheme.colorScheme.onSurface
             )
@@ -888,7 +971,7 @@ fun SearchOptionsBottomSheet(
             )
             Spacer(modifier = Modifier.width(16.dp))
             Text(
-                text = "Cari kode dalam proyek",
+                text = stringResource(id = R.string.search_code_in_project),
                 style = MaterialTheme.typography.bodyLarge,
                 color = MaterialTheme.colorScheme.onSurface
             )
@@ -898,10 +981,10 @@ fun SearchOptionsBottomSheet(
     }
 }
 
-// Dialog Cari File dalam Proyek sesuai gambar referensi
 @Composable
 fun SearchFileDialog(
     projectRoot: File,
+    showHiddenFiles: Boolean,
     cachedFiles: List<File>?,
     onDismiss: () -> Unit,
     onItemSelected: (File) -> Unit
@@ -910,7 +993,7 @@ fun SearchFileDialog(
     var allProjectItems by remember { mutableStateOf<List<File>>(emptyList()) }
     var isScanning by remember { mutableStateOf(true) }
 
-    LaunchedEffect(projectRoot, cachedFiles) {
+    LaunchedEffect(projectRoot, showHiddenFiles, cachedFiles) {
         isScanning = true
         val items = withContext(Dispatchers.IO) {
             if (cachedFiles != null) {
@@ -919,10 +1002,15 @@ fun SearchFileDialog(
                 val list = mutableListOf<File>()
                 try {
                     projectRoot.walkTopDown()
-                        .onEnter { dir -> dir.name != ".git" && dir.name != "build" }
+                        .onEnter { dir ->
+                            dir.absolutePath == projectRoot.absolutePath ||
+                                (!dir.name.startsWith(".") && dir.name != "build")
+                        }
                         .forEach { f ->
                             if (f.absolutePath != projectRoot.absolutePath) {
-                                list.add(f)
+                                if (!f.name.startsWith(".") || (showHiddenFiles && f.isFile)) {
+                                    list.add(f)
+                                }
                             }
                         }
                 } catch (_: Throwable) {}
@@ -962,7 +1050,7 @@ fun SearchFileDialog(
                 ) {
                     if (query.isEmpty()) {
                         Text(
-                            text = "Masukkan nama",
+                            text = stringResource(id = R.string.search_enter_name_hint),
                             style = MaterialTheme.typography.bodyLarge,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
@@ -990,16 +1078,16 @@ fun SearchFileDialog(
                         .padding(horizontal = 20.dp, vertical = 10.dp)
                 ) {
                     Text(
-                        text = "Mencari di: ${projectRoot.name}",
+                        text = stringResource(id = R.string.searching_in_project, projectRoot.name),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(
                         text = if (filteredItems.isEmpty() && !isScanning) {
-                            "Tidak ada hasil ditemukan"
+                            stringResource(id = R.string.search_no_results)
                         } else {
-                            "${filteredItems.size} hasil ditemukan"
+                            stringResource(id = R.string.search_results_count, filteredItems.size)
                         },
                         style = MaterialTheme.typography.titleMedium,
                         color = MaterialTheme.colorScheme.onSurface
@@ -1082,10 +1170,10 @@ data class CodeSearchMatch(
     val lineSnippet: String
 )
 
-// Dialog Cari Kode dalam Proyek beserta Loading UI di IO thread agar tidak lag
 @Composable
 fun SearchCodeDialog(
     projectRoot: File,
+    showHiddenFiles: Boolean,
     cachedFiles: List<File>?,
     onDismiss: () -> Unit,
     onResultClick: (File) -> Unit
@@ -1099,8 +1187,7 @@ fun SearchCodeDialog(
     var isSearching by remember { mutableStateOf(false) }
     var results by remember { mutableStateOf<List<CodeSearchMatch>>(emptyList()) }
 
-    // Jalankan pencarian seluruh isi kode di IO thread dengan debounce 300ms agar UI tidak lag
-    LaunchedEffect(query, ignoreCase, fileFilter, projectRoot, cachedFiles) {
+    LaunchedEffect(query, ignoreCase, fileFilter, projectRoot, showHiddenFiles, cachedFiles) {
         val trimmedQuery = query.trim()
         if (trimmedQuery.isEmpty()) {
             results = emptyList()
@@ -1122,10 +1209,13 @@ fun SearchCodeDialog(
                 try {
                     projectRoot.walkTopDown()
                         .onEnter { dir ->
-                            !dir.name.startsWith(".") && dir.name != "build"
+                            dir.absolutePath == projectRoot.absolutePath ||
+                                (!dir.name.startsWith(".") && dir.name != "build")
                         }
                         .forEach { f ->
-                            if (f.isFile) list.add(f)
+                            if (f.isFile && (!f.name.startsWith(".") || showHiddenFiles)) {
+                                list.add(f)
+                            }
                         }
                 } catch (_: Throwable) {}
                 list
@@ -1135,7 +1225,7 @@ fun SearchCodeDialog(
                 coroutineContext.ensureActive()
                 if (!file.isFile) continue
                 if (isBinaryFile(file.name) || isImageFile(file.name)) continue
-                if (file.length() > 2 * 1024 * 1024) continue // Lewati file > 2MB agar tetap ringan
+                if (file.length() > 2 * 1024 * 1024) continue
 
                 if (filterExtensions.isNotEmpty()) {
                     val ext = file.extension.lowercase()
@@ -1205,7 +1295,7 @@ fun SearchCodeDialog(
                     ) {
                         if (query.isEmpty()) {
                             Text(
-                                text = "Cari",
+                                text = stringResource(id = R.string.search_hint),
                                 style = MaterialTheme.typography.bodyLarge,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
@@ -1237,7 +1327,7 @@ fun SearchCodeDialog(
                             shape = RoundedCornerShape(16.dp)
                         ) {
                             DropdownMenuItem(
-                                text = { Text("Abaikan huruf besar/kecil") },
+                                text = { Text(stringResource(id = R.string.search_ignore_case)) },
                                 leadingIcon = {
                                     Checkbox(
                                         checked = ignoreCase,
@@ -1249,7 +1339,7 @@ fun SearchCodeDialog(
                                 }
                             )
                             DropdownMenuItem(
-                                text = { Text("Filter file") },
+                                text = { Text(stringResource(id = R.string.search_filter_files)) },
                                 leadingIcon = {
                                     Icon(
                                         imageVector = Icons.Default.Edit,
@@ -1274,7 +1364,7 @@ fun SearchCodeDialog(
                         OutlinedTextField(
                             value = fileFilter,
                             onValueChange = { fileFilter = it },
-                            label = { Text("Filter ekstensi (contoh: kt, xml, java)") },
+                            label = { Text(stringResource(id = R.string.search_filter_ext_hint)) },
                             singleLine = true,
                             modifier = Modifier.fillMaxWidth()
                         )
@@ -1292,18 +1382,18 @@ fun SearchCodeDialog(
                         .padding(horizontal = 20.dp, vertical = 10.dp)
                 ) {
                     Text(
-                        text = "Mencari di: ${projectRoot.name}",
+                        text = stringResource(id = R.string.searching_in_project, projectRoot.name),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(
                         text = if (query.isBlank() || (results.isEmpty() && !isSearching)) {
-                            "Tidak ada hasil ditemukan"
+                            stringResource(id = R.string.search_no_results)
                         } else if (isSearching) {
-                            "Mencari kode..."
+                            stringResource(id = R.string.search_code_searching)
                         } else {
-                            "${results.size} hasil ditemukan"
+                            stringResource(id = R.string.search_results_count, results.size)
                         },
                         style = MaterialTheme.typography.titleMedium,
                         color = MaterialTheme.colorScheme.onSurface
@@ -1326,7 +1416,7 @@ fun SearchCodeDialog(
                                 )
                                 Spacer(modifier = Modifier.height(12.dp))
                                 Text(
-                                    text = "Masukkan kata kunci\npencarian untuk\nmenemukan di file",
+                                    text = stringResource(id = R.string.search_code_empty_prompt),
                                     style = MaterialTheme.typography.bodyLarge,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                                     textAlign = TextAlign.Center
@@ -1334,7 +1424,6 @@ fun SearchCodeDialog(
                             }
                         }
                     } else if (isSearching) {
-                        // Tampilkan UI Loading saat mencari di seluruh file kode agar tidak lag
                         Box(
                             modifier = Modifier.fillMaxSize(),
                             contentAlignment = Alignment.Center
@@ -1347,7 +1436,7 @@ fun SearchCodeDialog(
                                 )
                                 Spacer(modifier = Modifier.height(12.dp))
                                 Text(
-                                    text = "Memindai isi kode proyek...",
+                                    text = stringResource(id = R.string.search_code_scanning),
                                     style = MaterialTheme.typography.bodyMedium,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
@@ -1437,20 +1526,71 @@ fun FileIcon(file: File, modifier: Modifier = Modifier) {
 
 data class FileTreeItem(
     val file: File,
+    val displayName: String,
     val level: Int,
     val isDirectory: Boolean,
     val isExpanded: Boolean
 )
 
-private fun loadDirectoryChildren(dir: File): List<File> {
+// Filter hanya menampilkan file berawalan '.' jika showHiddenFiles = true, lalu urutkan sesuai sortMode
+private fun loadDirectoryChildren(
+    dir: File,
+    showHiddenFiles: Boolean,
+    sortMode: DrawerSortMode
+): List<File> {
     return try {
+        val comparator = when (sortMode) {
+            DrawerSortMode.SIZE -> compareBy<File> { !it.isDirectory }
+                .thenByDescending { if (it.isFile) it.length() else 0L }
+                .thenBy { it.name.lowercase() }
+            DrawerSortMode.DATE -> compareBy<File> { !it.isDirectory }
+                .thenByDescending { it.lastModified() }
+                .thenBy { it.name.lowercase() }
+            DrawerSortMode.NAME -> compareBy<File> { !it.isDirectory }
+                .thenBy { it.name.lowercase() }
+        }
         dir.listFiles()
-            ?.filter { !it.name.startsWith(".") || it.name == ".github" }
-            ?.sortedWith(compareBy({ !it.isDirectory }, { it.name.lowercase() }))
+            ?.filter { file ->
+                if (file.name.startsWith(".")) {
+                    showHiddenFiles && file.isFile
+                } else {
+                    true
+                }
+            }
+            ?.sortedWith(comparator)
             ?: emptyList()
     } catch (_: Throwable) {
         emptyList()
     }
+}
+
+// Muat isi direktori sekaligus menelusuri rantai subfolder tunggal untuk fitur Compact Folders
+private fun loadDirectoryWithCompactChains(
+    dir: File,
+    showHiddenFiles: Boolean,
+    sortMode: DrawerSortMode
+): Map<String, List<File>> {
+    val result = mutableMapOf<String, List<File>>()
+    val children = loadDirectoryChildren(dir, showHiddenFiles, sortMode)
+    result[dir.absolutePath] = children
+
+    for (child in children) {
+        if (child.isDirectory) {
+            var curr = child
+            var depth = 0
+            while (depth < 15) {
+                val sub = loadDirectoryChildren(curr, showHiddenFiles, sortMode)
+                result[curr.absolutePath] = sub
+                if (sub.size == 1 && sub[0].isDirectory) {
+                    curr = sub[0]
+                    depth++
+                } else {
+                    break
+                }
+            }
+        }
+    }
+    return result
 }
 
 @OptIn(ExperimentalFoundationApi::class)
@@ -1458,6 +1598,9 @@ private fun loadDirectoryChildren(dir: File): List<File> {
 fun FileTreeView(
     root: File,
     refreshKey: Int = 0,
+    showHiddenFiles: Boolean,
+    compactFolders: Boolean,
+    sortMode: DrawerSortMode,
     expandedPaths: SnapshotStateMap<String, Boolean>,
     onFileClick: (File) -> Unit,
     onFileLongClick: (File) -> Unit
@@ -1467,7 +1610,7 @@ fun FileTreeView(
     val dirChildrenCache = remember(root) { mutableStateMapOf<String, List<File>>() }
     val loadingPaths = remember(root) { mutableStateMapOf<String, Boolean>() }
 
-    LaunchedEffect(root, refreshKey) {
+    LaunchedEffect(root, refreshKey, showHiddenFiles, compactFolders, sortMode) {
         if (!expandedPaths.containsKey(root.absolutePath)) {
             expandedPaths[root.absolutePath] = true
         }
@@ -1475,7 +1618,11 @@ fun FileTreeView(
         pathsToLoad.forEach { path -> loadingPaths[path] = true }
 
         val loadedMap = withContext(Dispatchers.IO) {
-            pathsToLoad.associateWith { path -> loadDirectoryChildren(File(path)) }
+            val combined = mutableMapOf<String, List<File>>()
+            for (path in pathsToLoad) {
+                combined.putAll(loadDirectoryWithCompactChains(File(path), showHiddenFiles, sortMode))
+            }
+            combined
         }
 
         dirChildrenCache.clear()
@@ -1483,20 +1630,37 @@ fun FileTreeView(
         pathsToLoad.forEach { path -> loadingPaths.remove(path) }
     }
 
-    // Tampilkan folder root proyek sebagai node paling atas seperti di gambar referensi
-    val visibleItems = remember(root, expandedPaths.toMap(), dirChildrenCache.toMap()) {
+    // Susun daftar item tree: gabungkan folder yang hanya punya 1 subfolder menjadi "com/simple" jika compactFolders aktif
+    val visibleItems = remember(root, expandedPaths.toMap(), dirChildrenCache.toMap(), compactFolders) {
         val items = mutableListOf<FileTreeItem>()
         val isRootExpanded = expandedPaths[root.absolutePath] ?: true
-        items.add(FileTreeItem(root, 0, true, isRootExpanded))
+        items.add(FileTreeItem(root, root.name, 0, true, isRootExpanded))
 
         fun traverse(dir: File, level: Int) {
             val children = dirChildrenCache[dir.absolutePath] ?: emptyList()
             for (file in children) {
-                val isDir = file.isDirectory
-                val isExpanded = isDir && (expandedPaths[file.absolutePath] == true)
-                items.add(FileTreeItem(file, level, isDir, isExpanded))
-                if (isExpanded) {
-                    traverse(file, level + 1)
+                if (file.isDirectory) {
+                    var targetDir = file
+                    var displayName = file.name
+                    if (compactFolders) {
+                        while (true) {
+                            val subChildren = dirChildrenCache[targetDir.absolutePath]
+                            if (subChildren != null && subChildren.size == 1 && subChildren[0].isDirectory) {
+                                val singleChild = subChildren[0]
+                                displayName = "$displayName/${singleChild.name}"
+                                targetDir = singleChild
+                            } else {
+                                break
+                            }
+                        }
+                    }
+                    val isExpanded = expandedPaths[targetDir.absolutePath] == true
+                    items.add(FileTreeItem(targetDir, displayName, level, true, isExpanded))
+                    if (isExpanded) {
+                        traverse(targetDir, level + 1)
+                    }
+                } else {
+                    items.add(FileTreeItem(file, file.name, level, false, false))
                 }
             }
         }
@@ -1550,17 +1714,13 @@ fun FileTreeView(
                                 if (item.isExpanded) {
                                     expandedPaths[itemPath] = false
                                 } else {
-                                    if (dirChildrenCache.containsKey(itemPath)) {
-                                        expandedPaths[itemPath] = true
-                                    } else {
-                                        loadingPaths[itemPath] = true
-                                        scope.launch(Dispatchers.IO) {
-                                            val children = loadDirectoryChildren(item.file)
-                                            withContext(Dispatchers.Main) {
-                                                dirChildrenCache[itemPath] = children
-                                                loadingPaths.remove(itemPath)
-                                                expandedPaths[itemPath] = true
-                                            }
+                                    loadingPaths[itemPath] = true
+                                    scope.launch(Dispatchers.IO) {
+                                        val loaded = loadDirectoryWithCompactChains(item.file, showHiddenFiles, sortMode)
+                                        withContext(Dispatchers.Main) {
+                                            dirChildrenCache.putAll(loaded)
+                                            loadingPaths.remove(itemPath)
+                                            expandedPaths[itemPath] = true
                                         }
                                     }
                                 }
@@ -1614,7 +1774,7 @@ private fun FileTreeItemRow(
                 )
             }
             Spacer(Modifier.width(4.dp))
-            FolderIcon(folderName = file.name, isExpanded = isExpanded, modifier = Modifier.size(20.dp))
+            FolderIcon(folderName = item.displayName, isExpanded = isExpanded, modifier = Modifier.size(20.dp))
         } else {
             Spacer(Modifier.width(22.dp))
             FileIcon(file = file, modifier = Modifier.size(20.dp))
@@ -1622,7 +1782,7 @@ private fun FileTreeItemRow(
 
         Spacer(Modifier.width(8.dp))
         Text(
-            text = file.name,
+            text = item.displayName,
             fontSize = 14.sp,
             color = MaterialTheme.colorScheme.onSurface,
             maxLines = 1,

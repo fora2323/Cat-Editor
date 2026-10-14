@@ -261,4 +261,27 @@
     <string name="action_create">Create</string>
     <string name="file_already_exists">An item with this name already exists</string>
     <string name="file_rename_failed">Failed to rename</string>
+    
+        <!-- Drawer More Menu & Search -->
+    <string name="drawer_show_hidden_files">Show hidden files</string>
+    <string name="drawer_compact_folders">Compact folders</string>
+    <string name="drawer_sort_by_name">Sort by name</string>
+    <string name="drawer_sort_by_size">Sort by size</string>
+    <string name="drawer_sort_by_date">Sort by date</string>
+
+    <string name="search_index_project_title">Index project</string>
+    <string name="search_index_project_desc">Indexing can improve search speed for large projects</string>
+    <string name="search_files_in_project">Search files in project</string>
+    <string name="search_code_in_project">Search code in project</string>
+    <string name="search_enter_name_hint">Enter name</string>
+    <string name="search_hint">Search</string>
+    <string name="searching_in_project">Searching in: %1$s</string>
+    <string name="search_no_results">No results found</string>
+    <string name="search_results_count">%1$d results found</string>
+    <string name="search_ignore_case">Ignore case</string>
+    <string name="search_filter_files">Filter files</string>
+    <string name="search_filter_ext_hint">Filter extensions (e.g. kt, xml, java)</string>
+    <string name="search_code_empty_prompt">Enter a search keyword to\nfind in files</string>
+    <string name="search_code_searching">Searching code…</string>
+    <string name="search_code_scanning">Scanning project code…</string>
 </resources>

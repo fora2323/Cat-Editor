@@ -68,7 +68,12 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.ExtendedFloatingActionButton
+import androidx.compose.material3.FloatingActionButtonMenu
+import androidx.compose.material3.FloatingActionButtonMenuItem
+import androidx.compose.material3.ToggleFloatingActionButton
+import androidx.compose.material3.ToggleFloatingActionButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -84,20 +89,27 @@ import androidx.compose.material3.ripple
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.stateDescription
+import androidx.compose.ui.semantics.traversalIndex
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -170,7 +182,7 @@ class ProjectMenuActivity : ComponentActivity() {
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun ProjectMenuScreen(
     onProjectSelected: (ProjectItem) -> Unit
@@ -180,9 +192,12 @@ fun ProjectMenuScreen(
     val scope = rememberCoroutineScope()
     val activity = context as? Activity
     var showExitDialog by remember { mutableStateOf(false) }
+    var isFabExpanded by rememberSaveable { mutableStateOf(false) }
 
     BackHandler(enabled = true) {
-        if (org.cat.editor.utils.SettingsManager.isExitDialogEnabled(context)) {
+        if (isFabExpanded) {
+            isFabExpanded = false
+        } else if (org.cat.editor.utils.SettingsManager.isExitDialogEnabled(context)) {
             showExitDialog = true
         } else {
             activity?.finish()
@@ -217,7 +232,6 @@ fun ProjectMenuScreen(
     var projects by remember { mutableStateOf<List<ProjectItem>>(emptyList()) }
     var isLoading by remember { mutableStateOf(hasPermission) }
     var isRefreshing by remember { mutableStateOf(false) }
-    var isFabExpanded by remember { mutableStateOf(false) }
     
     var selectedProjectForMenu by remember { mutableStateOf<ProjectItem?>(null) }
     var showProjectMenu by remember { mutableStateOf(false) }
@@ -228,7 +242,6 @@ fun ProjectMenuScreen(
     suspend fun refresh() {
         isRefreshing = true
         try {
-            delay(600)
             projects = withContext(Dispatchers.IO) {
                 loadAllProjects(context)
             }
@@ -323,9 +336,11 @@ fun ProjectMenuScreen(
                 hasPermission = currentPermission
                 if (currentPermission) {
                     showPermissionDialog = false
-                    scope.launch {
-                        projects = withContext(Dispatchers.IO) {
-                            loadAllProjects(context)
+                    if (projects.isEmpty()) {
+                        scope.launch {
+                            projects = withContext(Dispatchers.IO) {
+                                loadAllProjects(context)
+                            }
                         }
                     }
                 }
@@ -374,126 +389,87 @@ fun ProjectMenuScreen(
             )
         },
         floatingActionButton = {
-            Column(
-                horizontalAlignment = Alignment.End,
-                verticalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                AnimatedVisibility(
-                    visible = isFabExpanded,
-                    enter = fadeIn() + slideInVertically(initialOffsetY = { it / 2 }),
-                    exit = fadeOut() + slideOutVertically(targetOffsetY = { it / 2 })
-                ) {
-                    Column(
-                        horizontalAlignment = Alignment.End,
-                        verticalArrangement = Arrangement.spacedBy(10.dp)
+            FloatingActionButtonMenu(
+                expanded = isFabExpanded,
+                button = {
+                    ToggleFloatingActionButton(
+                        modifier = Modifier.semantics {
+                            traversalIndex = -1f
+                            stateDescription = if (isFabExpanded) "Expanded" else "Collapsed"
+                            contentDescription = "Toggle menu"
+                        },
+                        checked = isFabExpanded,
+                        onCheckedChange = { isFabExpanded = !isFabExpanded }
                     ) {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.End
-                        ) {
-                            Text(
-                                text = stringResource(id = R.string.git_clone),
-                                style = MaterialTheme.typography.labelLarge,
-                                color = MaterialTheme.colorScheme.onSurface,
-                                modifier = Modifier
-                                    .background(
-                                        color = MaterialTheme.colorScheme.surfaceContainerHigh,
-                                        shape = RoundedCornerShape(6.dp)
-                                    )
-                                    .padding(horizontal = 8.dp, vertical = 4.dp)
-                            )
-                            Spacer(modifier = Modifier.width(8.dp))
-                            SmallFloatingActionButton(
-                                onClick = {
-                                    isFabExpanded = false
-                                    val intent = Intent(context, GitCloneActivity::class.java)
-                                    context.startActivity(intent)
-                                },
-                                containerColor = MaterialTheme.colorScheme.secondaryContainer,
-                                contentColor = MaterialTheme.colorScheme.onSecondaryContainer
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Default.CloudDownload,
-                                    contentDescription = stringResource(id = R.string.git_clone)
-                                )
+                        val imageVector by remember {
+                            derivedStateOf {
+                                if (checkedProgress > 0.5f) Icons.Default.Close else Icons.Default.Add
                             }
                         }
-
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.End
-                        ) {
-                            Text(
-                                text = stringResource(id = R.string.open_folder_saf),
-                                style = MaterialTheme.typography.labelLarge,
-                                color = MaterialTheme.colorScheme.onSurface,
-                                modifier = Modifier
-                                    .background(
-                                        color = MaterialTheme.colorScheme.surfaceContainerHigh,
-                                        shape = RoundedCornerShape(6.dp)
-                                    )
-                                    .padding(horizontal = 8.dp, vertical = 4.dp)
-                            )
-                            Spacer(modifier = Modifier.width(8.dp))
-                            SmallFloatingActionButton(
-                                onClick = {
-                                    isFabExpanded = false
-                                    openDocumentTreeLauncher.launch(null)
-                                },
-                                containerColor = MaterialTheme.colorScheme.secondaryContainer,
-                                contentColor = MaterialTheme.colorScheme.onSecondaryContainer
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Default.FolderOpen,
-                                    contentDescription = stringResource(id = R.string.select_folder)
-                                )
+                        Icon(
+                            painter = rememberVectorPainter(imageVector),
+                            contentDescription = null,
+                            modifier = with(ToggleFloatingActionButtonDefaults) {
+                                Modifier.animateIcon({ checkedProgress })
                             }
-                        }
-                        
-                        Row(
-                           verticalAlignment = Alignment.CenterVertically,
-                           horizontalArrangement = Arrangement.End
-                        ) {
-                            Text(
-                                text = stringResource(id = R.string.new_empty_project),
-                                style = MaterialTheme.typography.labelLarge,
-                                color = MaterialTheme.colorScheme.onSurface,
-                                modifier = Modifier
-                                    .background(
-                                        color = MaterialTheme.colorScheme.surfaceContainerHigh,
-                                        shape = RoundedCornerShape(6.dp)
-                                    )
-                                    .padding(horizontal = 8.dp, vertical = 4.dp)
-                            )
-                            Spacer(modifier = Modifier.width(8.dp))
-                            SmallFloatingActionButton(
-                                onClick = {
-                                    isFabExpanded = false
-                                    Toast.makeText(context, context.getString(R.string.feature_new_empty_project), Toast.LENGTH_SHORT).show()
-                                },
-                               containerColor = MaterialTheme.colorScheme.secondaryContainer,
-                               contentColor = MaterialTheme.colorScheme.onSecondaryContainer
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Default.Create,
-                                    contentDescription = stringResource(id = R.string.new_empty_project)
-                                )
-                            }
-                        }
+                        )
                     }
                 }
-
-                ExtendedFloatingActionButton(
-                    text = { Text(text = if (isFabExpanded) stringResource(id = R.string.close) else stringResource(id = R.string.new_project)) },
+            ) {
+                FloatingActionButtonMenuItem(
+                    modifier = Modifier.semantics {
+                        traversalIndex = 0f
+                    },
+                    onClick = {
+                        isFabExpanded = false
+                        Toast.makeText(context, context.getString(R.string.feature_new_empty_project), Toast.LENGTH_SHORT).show()
+                    },
                     icon = {
                         Icon(
-                            imageVector = if (isFabExpanded) Icons.Default.Close else Icons.Default.Add,
+                            imageVector = Icons.Default.Create,
                             contentDescription = null
                         )
                     },
-                    onClick = { isFabExpanded = !isFabExpanded },
-                    containerColor = MaterialTheme.colorScheme.primary,
-                    contentColor = MaterialTheme.colorScheme.onPrimary
+                    text = {
+                        Text(text = stringResource(id = R.string.new_empty_project))
+                    }
+                )
+                FloatingActionButtonMenuItem(
+                    modifier = Modifier.semantics {
+                        traversalIndex = 1f
+                    },
+                    onClick = {
+                        isFabExpanded = false
+                        openDocumentTreeLauncher.launch(null)
+                    },
+                    icon = {
+                        Icon(
+                            imageVector = Icons.Default.FolderOpen,
+                            contentDescription = null
+                        )
+                    },
+                    text = {
+                        Text(text = stringResource(id = R.string.open_folder_saf))
+                    }
+                )
+                FloatingActionButtonMenuItem(
+                    modifier = Modifier.semantics {
+                        traversalIndex = 2f
+                    },
+                    onClick = {
+                        isFabExpanded = false
+                        val intent = Intent(context, GitCloneActivity::class.java)
+                        context.startActivity(intent)
+                    },
+                    icon = {
+                        Icon(
+                            imageVector = Icons.Default.CloudDownload,
+                            contentDescription = null
+                        )
+                    },
+                    text = {
+                        Text(text = stringResource(id = R.string.git_clone))
+                    }
                 )
             }
         },
@@ -1047,7 +1023,12 @@ fun scanProjects(basePath: String, pinnedPaths: List<String> = emptyList()): Lis
     }.sortedBy { it.name.lowercase() }
 }
 
+private val projectIconCache = mutableMapOf<String, Bitmap>()
+
 fun findProjectIcon(projectDir: File): Bitmap? {
+    val absPath = projectDir.absolutePath
+    projectIconCache[absPath]?.let { return it }
+
     val candidateManifests = listOf(
         File(projectDir, "app/src/main/AndroidManifest.xml"),
         File(projectDir, "src/main/AndroidManifest.xml"),
@@ -1087,7 +1068,10 @@ fun findProjectIcon(projectDir: File): Bitmap? {
 
     for (targetName in targetNames) {
         val bitmap = loadIconBitmapForName(resDir, targetName)
-        if (bitmap != null) return bitmap
+        if (bitmap != null) {
+            projectIconCache[absPath] = bitmap
+            return bitmap
+        }
     }
 
     return null

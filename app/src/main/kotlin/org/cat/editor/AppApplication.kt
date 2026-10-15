@@ -24,6 +24,12 @@ class AppApplication : Application() {
     override fun onCreate() {
         super.onCreate()
         setupCrashHandler()
+        // Pre-warm TextMate grammars and Darcula theme in background to eliminate UI freeze when opening projects
+        Thread {
+            try {
+                org.cat.editor.ui.ensureTextMateInitialized(applicationContext)
+            } catch (_: Throwable) {}
+        }.start()
     }
 
     private fun setupCrashHandler() {

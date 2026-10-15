@@ -3,7 +3,9 @@ package org.cat.editor.ui
 import android.content.Context
 import android.content.res.Configuration
 import android.util.Log
+import android.view.WindowManager
 import android.view.inputmethod.InputMethodManager
+import android.widget.PopupWindow
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.awaitEachGesture
 import androidx.compose.foundation.gestures.awaitFirstDown
@@ -44,6 +46,7 @@ import io.github.rosemoe.sora.langs.textmate.registry.GrammarRegistry
 import io.github.rosemoe.sora.langs.textmate.registry.ThemeRegistry
 import io.github.rosemoe.sora.langs.textmate.registry.provider.AssetsFileResolver
 import io.github.rosemoe.sora.widget.CodeEditor
+import io.github.rosemoe.sora.widget.component.EditorAutoCompletion
 import io.github.rosemoe.sora.widget.schemes.EditorColorScheme
 import org.cat.editor.ui.preview.isBinaryFile
 import org.cat.editor.utils.SettingsManager
@@ -105,9 +108,19 @@ private fun createEditorLanguage(filePath: String, autoComplete: Boolean = true)
     }
 }
 
+fun applyCompletionWindowTheme(scheme: EditorColorScheme) {
+    scheme.setColor(EditorColorScheme.COMPLETION_WND_BACKGROUND, 0xFF252526.toInt())
+    scheme.setColor(EditorColorScheme.COMPLETION_WND_CORNER, 0xFF3C3C3C.toInt())
+    scheme.setColor(EditorColorScheme.COMPLETION_WND_TEXT_PRIMARY, 0xFFE0E0E0.toInt())
+    scheme.setColor(EditorColorScheme.COMPLETION_WND_TEXT_SECONDARY, 0xFF9E9E9E.toInt())
+    scheme.setColor(EditorColorScheme.COMPLETION_WND_ITEM_CURRENT, 0xFF0E639C.toInt())
+}
+
 private fun createEditorColorScheme(): EditorColorScheme {
     return try {
-        TextMateColorScheme.create(ThemeRegistry.getInstance())
+        val scheme = TextMateColorScheme.create(ThemeRegistry.getInstance())
+        applyCompletionWindowTheme(scheme)
+        scheme
     } catch (e: Throwable) {
         Log.w(TAG, "Failed to create TextMateColorScheme, falling back to KotlinDarkColorScheme", e)
         KotlinDarkColorScheme()
@@ -167,6 +180,19 @@ private fun applyEditorSettings(editor: CodeEditor, filePath: String) {
     editor.isEditable = !readOnly
     editor.isCursorAnimationEnabled = cursorAnimation
 
+    editor.colorScheme?.let { applyCompletionWindowTheme(it) }
+    try {
+        val autoCompletion = editor.getComponent(EditorAutoCompletion::class.java)
+        autoCompletion?.apply {
+            applyColorScheme()
+            popup?.apply {
+                inputMethodMode = PopupWindow.INPUT_METHOD_NEEDED
+                softInputMode = WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE
+                isClippingEnabled = true
+            }
+        }
+    } catch (_: Throwable) {}
+
     hideSoftKeyboardIfNeeded(editor)
 }
 
@@ -220,17 +246,12 @@ fun KotlinCodeEditor(
         modifier = Modifier
             .fillMaxSize()
             .background(Color(0xFF1E1E1E))
+            .imePadding()
     ) {
         Box(
             modifier = Modifier
                 .weight(1f)
                 .fillMaxWidth()
-                .pointerInput(Unit) {
-                    awaitEachGesture {
-                        awaitFirstDown()
-                        onEditorInteraction?.invoke()
-                    }
-                }
         ) {
             AndroidView(
                 factory = { ctx ->
@@ -240,6 +261,7 @@ fun KotlinCodeEditor(
                     CodeEditor(ctx).apply {
                         editorInstance = this
                         currentLoadedPath = filePath
+                        isHorizontalScrollBarEnabled = true
 
                         applyLanguageAndTheme(this, filePath, autoCloseTag)
                         isProgrammaticTextUpdate = true
@@ -267,9 +289,19 @@ fun KotlinCodeEditor(
                             hideSoftKeyboardIfNeeded(this)
                         }
 
-                        setOnTouchListener { _, event ->
-                            if (event.action == android.view.MotionEvent.ACTION_DOWN) {
-                                onEditorInteraction?.invoke()
+                        setOnTouchListener { v, event ->
+                            when (event.actionMasked) {
+                                android.view.MotionEvent.ACTION_DOWN -> {
+                                    v.parent?.requestDisallowInterceptTouchEvent(true)
+                                    onEditorInteraction?.invoke()
+                                }
+                                android.view.MotionEvent.ACTION_MOVE -> {
+                                    v.parent?.requestDisallowInterceptTouchEvent(true)
+                                }
+                                android.view.MotionEvent.ACTION_UP,
+                                android.view.MotionEvent.ACTION_CANCEL -> {
+                                    v.parent?.requestDisallowInterceptTouchEvent(false)
+                                }
                             }
                             false
                         }
@@ -333,8 +365,7 @@ fun KotlinCodeEditor(
                             Log.e(TAG, "Error inserting quick symbol", e)
                         }
                     }
-                },
-                modifier = Modifier.imePadding()
+                }
             )
         }
     }
@@ -356,5 +387,6 @@ class KotlinDarkColorScheme : EditorColorScheme() {
         setColor(FUNCTION_NAME, 0xFF9CDCFE.toInt())
         setColor(IDENTIFIER_NAME, 0xFF9CDCFE.toInt())
         setColor(ANNOTATION, 0xFFDCDCAA.toInt())
+        applyCompletionWindowTheme(this)
     }
 }

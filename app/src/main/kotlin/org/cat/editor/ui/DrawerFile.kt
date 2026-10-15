@@ -94,6 +94,7 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateMapOf
@@ -233,6 +234,7 @@ fun IdeMainScreen(
 
     DismissibleNavigationDrawer(
         drawerState = drawerState,
+        gesturesEnabled = drawerState.isOpen,
         drawerContent = {
             DismissibleDrawerSheet(
                 modifier = Modifier
@@ -603,16 +605,7 @@ fun IdeMainScreen(
                         when (viewMode) {
                             EditorViewMode.EDIT -> {
                                 Box(
-                                    modifier = Modifier
-                                        .fillMaxSize()
-                                        .pointerInput(Unit) {
-                                            awaitEachGesture {
-                                                awaitFirstDown()
-                                                if (drawerState.isOpen) {
-                                                    scope.launch { drawerState.close() }
-                                                }
-                                            }
-                                        }
+                                    modifier = Modifier.fillMaxSize()
                                 ) {
                                     KotlinCodeEditor(
                                         filePath = activeFilePath,
@@ -1504,26 +1497,28 @@ fun FileTreeView(
     }
 
     // Tampilkan folder root proyek sebagai node paling atas seperti di gambar referensi
-    val visibleItems = remember(root, expandedPaths.toMap(), dirChildrenCache.toMap()) {
-        val items = mutableListOf<FileTreeItem>()
-        val isRootExpanded = expandedPaths[root.absolutePath] ?: true
-        items.add(FileTreeItem(root, 0, true, isRootExpanded))
+    val visibleItems by remember(root) {
+        derivedStateOf {
+            val items = mutableListOf<FileTreeItem>()
+            val isRootExpanded = expandedPaths[root.absolutePath] ?: true
+            items.add(FileTreeItem(root, 0, true, isRootExpanded))
 
-        fun traverse(dir: File, level: Int) {
-            val children = dirChildrenCache[dir.absolutePath] ?: emptyList()
-            for (file in children) {
-                val isDir = file.isDirectory
-                val isExpanded = isDir && (expandedPaths[file.absolutePath] == true)
-                items.add(FileTreeItem(file, level, isDir, isExpanded))
-                if (isExpanded) {
-                    traverse(file, level + 1)
+            fun traverse(dir: File, level: Int) {
+                val children = dirChildrenCache[dir.absolutePath] ?: emptyList()
+                for (file in children) {
+                    val isDir = file.isDirectory
+                    val isExpanded = isDir && (expandedPaths[file.absolutePath] == true)
+                    items.add(FileTreeItem(file, level, isDir, isExpanded))
+                    if (isExpanded) {
+                        traverse(file, level + 1)
+                    }
                 }
             }
+            if (isRootExpanded) {
+                traverse(root, 1)
+            }
+            items
         }
-        if (isRootExpanded) {
-            traverse(root, 1)
-        }
-        items
     }
 
     Column(modifier = Modifier.fillMaxSize()) {

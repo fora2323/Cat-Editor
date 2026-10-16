@@ -25,7 +25,8 @@ fun WelcomeScreen(
     projectPath: String,
     onBrowseClick: () -> Unit
 ) {
-    val projectName = if (projectPath.isNotEmpty()) {
+    val hasProject = projectPath.isNotEmpty()
+    val projectName = if (hasProject) {
         val file = File(projectPath)
         file.name
     } else {
@@ -80,7 +81,7 @@ fun WelcomeScreen(
 
             // Subtitle (Project Path Name)
             Text(
-                text = "Proyek yang dipilih: $projectName",
+                text = if (hasProject) "Proyek yang dipilih: $projectName" else stringResource(id = R.string.no_project_selected),
                 fontSize = 14.sp,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.fillMaxWidth(),
@@ -110,7 +111,7 @@ fun WelcomeScreen(
                         .padding(end = 8.dp)
                 )
                 Text(
-                    text = stringResource(id = R.string.open_file),
+                    text = if (hasProject) stringResource(id = R.string.open_file) else stringResource(id = R.string.select_folder),
                     fontSize = 15.sp,
                     fontWeight = FontWeight.Medium
                 )

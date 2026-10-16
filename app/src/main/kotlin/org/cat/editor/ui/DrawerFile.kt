@@ -633,7 +633,7 @@ fun IdeMainScreen(
                             }
                         },
                         colors = TopAppBarDefaults.topAppBarColors(
-                            containerColor = androidx.compose.ui.graphics.Color(0xFF1E1E1E)
+                            containerColor = MaterialTheme.colorScheme.surface
                         )
                     )
                 }
@@ -661,7 +661,7 @@ fun IdeMainScreen(
                     ScrollableTabRow(
                         selectedTabIndex = activeIndex,
                         edgePadding = 0.dp,
-                        containerColor = androidx.compose.ui.graphics.Color(0xFF1E1E1E),
+                        containerColor = MaterialTheme.colorScheme.surface,
                         divider = { },
                         indicator = { tabPositions ->
                             if (activeIndex in tabPositions.indices) {
@@ -803,11 +803,12 @@ fun IdeMainScreen(
                         }
                     }
                 } else {
-                    PreviewScreen(
-                        activeFilePath = "",
-                        currentRootNode = currentRootNode,
-                        onBackClick = {
-                            viewMode = EditorViewMode.EDIT
+                    WelcomeScreen(
+                        projectPath = projectPath,
+                        onBrowseClick = {
+                            scope.launch {
+                                if (drawerState.isClosed) drawerState.open()
+                            }
                         }
                     )
                 }

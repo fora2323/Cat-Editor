@@ -177,7 +177,7 @@ object QuickSymbolManager {
 
 /**
  * Quick Symbol Input Bar matching Cipher IDE.
- * Formatted with Material 3 Expressive styling: tonal button aesthetics,
+ * Formatted with Material 3 Expressive styling,
  * clean monospace typography, tactile haptics, and responsive horizontal scrolling.
  */
 @Composable
@@ -193,7 +193,7 @@ fun QuickSymbolBar(
     }
 
     Surface(
-        color = MaterialTheme.colorScheme.surfaceContainer,
+        color = MaterialTheme.colorScheme.surface,
         modifier = modifier.fillMaxWidth()
     ) {
         Column(modifier = Modifier.fillMaxWidth()) {
@@ -206,8 +206,8 @@ fun QuickSymbolBar(
                 modifier = Modifier
                     .fillMaxWidth()
                     .horizontalScroll(rememberScrollState())
-                    .padding(horizontal = 4.dp, vertical = 3.dp),
-                horizontalArrangement = Arrangement.spacedBy(4.dp),
+                    .padding(horizontal = 4.dp, vertical = 2.dp),
+                horizontalArrangement = Arrangement.spacedBy(2.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 symbols.forEach { symbol ->
@@ -229,26 +229,21 @@ private fun SymbolButton(
     symbol: QuickSymbol,
     onClick: () -> Unit
 ) {
-    Surface(
-        shape = RoundedCornerShape(8.dp),
-        color = MaterialTheme.colorScheme.surfaceContainerHighest,
+    Box(
         modifier = Modifier
-            .height(32.dp)
-            .defaultMinSize(minWidth = 34.dp)
-            .clip(RoundedCornerShape(8.dp))
+            .height(36.dp)
+            .defaultMinSize(minWidth = 32.dp)
+            .clip(RoundedCornerShape(6.dp))
             .clickable(onClick = onClick)
+            .padding(horizontal = 8.dp),
+        contentAlignment = Alignment.Center
     ) {
-        Box(
-            modifier = Modifier.padding(horizontal = 8.dp),
-            contentAlignment = Alignment.Center
-        ) {
-            Text(
-                text = symbol.label,
-                fontFamily = FontFamily.Monospace,
-                fontWeight = FontWeight.Bold,
-                fontSize = 13.sp,
-                color = MaterialTheme.colorScheme.onSurface
-            )
-        }
+        Text(
+            text = symbol.label,
+            fontFamily = FontFamily.Monospace,
+            fontWeight = FontWeight.Medium,
+            fontSize = 14.sp,
+            color = MaterialTheme.colorScheme.onSurface
+        )
     }
 }

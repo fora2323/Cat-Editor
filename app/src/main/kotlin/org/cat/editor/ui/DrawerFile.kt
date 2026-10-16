@@ -45,6 +45,7 @@ import androidx.compose.material.icons.filled.Description
 import androidx.compose.material.icons.filled.DriveFileRenameOutline
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Folder
+import androidx.compose.material.icons.filled.FolderOpen
 import androidx.compose.material.icons.filled.Fullscreen
 import androidx.compose.material.icons.filled.FullscreenExit
 import androidx.compose.material.icons.filled.KeyboardArrowDown
@@ -52,6 +53,7 @@ import androidx.compose.material.icons.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Save
 import androidx.compose.material.icons.filled.Search
@@ -107,6 +109,7 @@ import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalClipboardManager
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
@@ -207,7 +210,10 @@ fun IdeMainScreen(
     var indexedFilesCache by remember(projectPath) { mutableStateOf<List<File>?>(null) }
 
     if (projectPath.isEmpty()) {
-        WelcomeScreen(onBrowseClick = { onTogglePicker(true) })
+        WelcomeScreen(
+            projectPath = projectPath,
+            onBrowseClick = { onTogglePicker(true) }
+        )
         return
     }
 
@@ -396,91 +402,118 @@ fun IdeMainScreen(
             }
         }
     ) {
-        Scaffold(
-            contentWindowInsets = WindowInsets.systemBars,
-            topBar = {
-                Column {
-                    AnimatedVisibility(visible = isToolbarVisible) {
-                        TopAppBar(
-                            title = { },
-                            navigationIcon = {
-                                IconButton(onClick = { 
-                                    scope.launch { 
-                                        if (drawerState.isClosed) drawerState.open() else drawerState.close() 
-                                    } 
-                                }) {
-                                    Icon(Icons.Default.Menu, contentDescription = stringResource(id = R.string.menu))
-                                }
-                            },
-                            actions = {
-                                if (SettingsManager.isDebugOptionsEnabled(context)) {
-                                    Surface(
-                                        color = MaterialTheme.colorScheme.tertiaryContainer,
-                                        shape = RoundedCornerShape(6.dp),
-                                        modifier = Modifier.padding(end = 4.dp)
-                                    ) {
-                                        Text(
-                                            text = "DEBUG",
-                                            style = MaterialTheme.typography.labelSmall,
-                                            fontWeight = FontWeight.Bold,
-                                            color = MaterialTheme.colorScheme.onTertiaryContainer,
-                                            modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
-                                        )
-                                    }
-                                }
+    val configuration = LocalConfiguration.current
+    val screenWidthDp = configuration.screenWidthDp
+    val isSmallDpi = screenWidthDp < 380
+    val isVerySmallDpi = screenWidthDp < 320
 
-                                if (isSmartToolbar) {
-                                    IconButton(onClick = { isToolbarVisible = false }) {
-                                        Icon(Icons.Default.Fullscreen, contentDescription = "Hide Toolbar")
-                                    }
-                                }
+    val handleUndo = {
+        Toast.makeText(context, context.getString(R.string.undo), Toast.LENGTH_SHORT).show()
+    }
+    val handleRedo = {
+        Toast.makeText(context, context.getString(R.string.redo), Toast.LENGTH_SHORT).show()
+    }
+    val handleSave = {
+        if (activeFilePath.isNotEmpty()) {
+            try {
+                File(activeFilePath).writeText(currentCode)
+                Toast.makeText(context, context.getString(R.string.file_saved), Toast.LENGTH_SHORT).show()
+                onSaveFile?.invoke()
+            } catch (e: Exception) {
+                Toast.makeText(context, context.getString(R.string.failed_to_save, e.message ?: ""), Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+    val handleAdd = {
+        targetCreateFolder = if (activeFilePath.isNotEmpty()) {
+            val active = File(activeFilePath)
+            if (active.isDirectory) active else active.parentFile ?: File(projectPath)
+        } else {
+            File(projectPath)
+        }
+        showCreateDialog = true
+        onAddFile?.invoke()
+    }
+    val canPreviewActiveFile = remember(activeFilePath) {
+        val lower = activeFilePath.lowercase()
+        lower.endsWith(".kt") || lower.endsWith(".kts") || lower.endsWith(".xml")
+    }
 
-                                IconButton(onClick = {
-                                    Toast.makeText(context, context.getString(R.string.undo), Toast.LENGTH_SHORT).show()
-                                }) {
+    val handlePlay = {
+        Toast.makeText(context, "Run Code", Toast.LENGTH_SHORT).show()
+    }
+    val handlePreview = {
+        if (activeFilePath.isNotEmpty() && canPreviewActiveFile) {
+            viewMode = if (viewMode == EditorViewMode.EDIT) EditorViewMode.PREVIEW else EditorViewMode.EDIT
+            if (drawerState.isOpen) {
+                scope.launch { drawerState.close() }
+            }
+        }
+    }
+
+    Scaffold(
+        contentWindowInsets = WindowInsets.systemBars,
+        topBar = {
+            Column {
+                AnimatedVisibility(visible = isToolbarVisible) {
+                    TopAppBar(
+                        title = { },
+                        navigationIcon = {
+                            IconButton(onClick = { 
+                                scope.launch { 
+                                    if (drawerState.isClosed) drawerState.open() else drawerState.close() 
+                                } 
+                            }) {
+                                Icon(Icons.Default.Menu, contentDescription = stringResource(id = R.string.menu))
+                            }
+                        },
+                        actions = {
+                            if (SettingsManager.isDebugOptionsEnabled(context)) {
+                                Surface(
+                                    color = MaterialTheme.colorScheme.tertiaryContainer,
+                                    shape = RoundedCornerShape(6.dp),
+                                    modifier = Modifier.padding(end = 4.dp)
+                                ) {
+                                    Text(
+                                        text = "DEBUG",
+                                        style = MaterialTheme.typography.labelSmall,
+                                        fontWeight = FontWeight.Bold,
+                                        color = MaterialTheme.colorScheme.onTertiaryContainer,
+                                        modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+                                    )
+                                }
+                            }
+
+                            if (isSmartToolbar) {
+                                IconButton(onClick = { isToolbarVisible = false }) {
+                                    Icon(Icons.Default.Fullscreen, contentDescription = "Hide Toolbar")
+                                }
+                            }
+
+                            if (!isVerySmallDpi) {
+                                IconButton(onClick = { handleUndo() }) {
                                     Icon(Icons.AutoMirrored.Filled.Undo, contentDescription = stringResource(id = R.string.undo))
                                 }
 
-                                IconButton(onClick = {
-                                    Toast.makeText(context, context.getString(R.string.redo), Toast.LENGTH_SHORT).show()
-                                }) {
+                                IconButton(onClick = { handleRedo() }) {
                                     Icon(Icons.AutoMirrored.Filled.Redo, contentDescription = stringResource(id = R.string.redo))
                                 }
+                            }
 
-                                IconButton(onClick = {
-                                    if (activeFilePath.isNotEmpty()) {
-                                        try {
-                                            File(activeFilePath).writeText(currentCode)
-                                            Toast.makeText(context, context.getString(R.string.file_saved), Toast.LENGTH_SHORT).show()
-                                            onSaveFile?.invoke()
-                                        } catch (e: Exception) {
-                                            Toast.makeText(context, context.getString(R.string.failed_to_save, e.message ?: ""), Toast.LENGTH_SHORT).show()
-                                        }
-                                    }
-                                }) {
+                            if (!isSmallDpi) {
+                                IconButton(onClick = { handleSave() }) {
                                     Icon(Icons.Default.Save, contentDescription = stringResource(id = R.string.save))
                                 }
 
-                                IconButton(onClick = {
-                                    targetCreateFolder = if (activeFilePath.isNotEmpty()) {
-                                        val active = File(activeFilePath)
-                                        if (active.isDirectory) active else active.parentFile ?: File(projectPath)
-                                    } else {
-                                        File(projectPath)
-                                    }
-                                    showCreateDialog = true
-                                    onAddFile?.invoke()
-                                }) {
-                                    Icon(Icons.Default.Add, contentDescription = stringResource(id = R.string.add))
+                                IconButton(onClick = { handlePlay() }) {
+                                    Icon(
+                                        Icons.Default.PlayArrow,
+                                        contentDescription = "Run"
+                                    )
                                 }
 
-                                if (activeFilePath.isNotEmpty()) {
-                                    IconButton(onClick = {
-                                        viewMode = if (viewMode == EditorViewMode.EDIT) EditorViewMode.PREVIEW else EditorViewMode.EDIT
-                                        if (drawerState.isOpen) {
-                                            scope.launch { drawerState.close() }
-                                        }
-                                    }) {
+                                if (activeFilePath.isNotEmpty() && canPreviewActiveFile) {
+                                    IconButton(onClick = { handlePreview() }) {
                                         Icon(
                                             if (viewMode == EditorViewMode.EDIT) Icons.Default.Visibility else Icons.Default.Edit,
                                             contentDescription = if (viewMode == EditorViewMode.EDIT) "Preview" else "Edit",
@@ -489,79 +522,155 @@ fun IdeMainScreen(
                                     }
                                 }
 
-                                Box {
-                                    IconButton(onClick = {
-                                        showMoreMenu = true
-                                    }) {
-                                        Icon(Icons.Default.MoreVert, contentDescription = stringResource(id = R.string.more_options))
+                                IconButton(onClick = { handleAdd() }) {
+                                    Icon(Icons.Default.Add, contentDescription = stringResource(id = R.string.add))
+                                }
+                            }
+
+                            Box {
+                                IconButton(onClick = {
+                                    showMoreMenu = true
+                                }) {
+                                    Icon(Icons.Default.MoreVert, contentDescription = stringResource(id = R.string.more_options))
+                                }
+
+                                DropdownMenu(
+                                    expanded = showMoreMenu,
+                                    onDismissRequest = { showMoreMenu = false }
+                                ) {
+                                    if (isVerySmallDpi) {
+                                        DropdownMenuItem(
+                                            text = { Text(stringResource(id = R.string.undo)) },
+                                            leadingIcon = {
+                                                Icon(Icons.AutoMirrored.Filled.Undo, contentDescription = null)
+                                            },
+                                            onClick = {
+                                                showMoreMenu = false
+                                                handleUndo()
+                                            }
+                                        )
+                                        DropdownMenuItem(
+                                            text = { Text(stringResource(id = R.string.redo)) },
+                                            leadingIcon = {
+                                                Icon(Icons.AutoMirrored.Filled.Redo, contentDescription = null)
+                                            },
+                                            onClick = {
+                                                showMoreMenu = false
+                                                handleRedo()
+                                            }
+                                        )
                                     }
 
-                                    DropdownMenu(
-                                        expanded = showMoreMenu,
-                                        onDismissRequest = { showMoreMenu = false }
-                                    ) {
+                                    if (isSmallDpi) {
                                         DropdownMenuItem(
-                                            text = { Text(stringResource(id = R.string.open_folder_saf)) },
+                                            text = { Text(stringResource(id = R.string.save)) },
+                                            leadingIcon = {
+                                                Icon(Icons.Default.Save, contentDescription = null)
+                                            },
+                                            onClick = {
+                                                showMoreMenu = false
+                                                handleSave()
+                                            }
+                                        )
+                                        DropdownMenuItem(
+                                            text = { Text("Run Code") },
+                                            leadingIcon = {
+                                                Icon(Icons.Default.PlayArrow, contentDescription = null)
+                                            },
+                                            onClick = {
+                                                showMoreMenu = false
+                                                handlePlay()
+                                            }
+                                        )
+                                        if (activeFilePath.isNotEmpty() && canPreviewActiveFile) {
+                                            DropdownMenuItem(
+                                                text = { Text(if (viewMode == EditorViewMode.EDIT) "Preview" else "Edit Code") },
+                                                leadingIcon = {
+                                                    Icon(
+                                                        if (viewMode == EditorViewMode.EDIT) Icons.Default.Visibility else Icons.Default.Edit,
+                                                        contentDescription = null
+                                                    )
+                                                },
+                                                onClick = {
+                                                    showMoreMenu = false
+                                                    handlePreview()
+                                                }
+                                            )
+                                        }
+                                        DropdownMenuItem(
+                                            text = { Text(stringResource(id = R.string.add)) },
                                             leadingIcon = {
                                                 Icon(Icons.Default.Add, contentDescription = null)
                                             },
                                             onClick = {
                                                 showMoreMenu = false
-                                                onTogglePicker(true)
-                                            }
-                                        )
-                                        DropdownMenuItem(
-                                            text = { Text(stringResource(id = R.string.settings)) },
-                                            leadingIcon = {
-                                                Icon(Icons.Default.Settings, contentDescription = null)
-                                            },
-                                            onClick = {
-                                                showMoreMenu = false
-                                                context.startActivity(Intent(context, SettingsActivity::class.java))
+                                                handleAdd()
                                             }
                                         )
                                     }
-                                }
-                            },
-                            colors = TopAppBarDefaults.topAppBarColors(
-                                containerColor = MaterialTheme.colorScheme.surfaceVariant
-                            )
-                        )
-                    }
 
-                    val validOpenedFiles = remember(openedFiles, projectPath) {
-                        if (projectPath.isBlank()) emptyList()
-                        else {
-                            try {
-                                val projectDir = File(projectPath).canonicalFile
-                                openedFiles.filter { path ->
-                                    val f = File(path)
-                                    f.exists() && f.isFile && f.canonicalFile.startsWith(projectDir)
-                                }
-                            } catch (_: Throwable) {
-                                emptyList()
-                            }
-                        }
-                    }
-
-                    if (validOpenedFiles.isNotEmpty()) {
-                        val activeIndex = validOpenedFiles.indexOf(activeFilePath).let { idx ->
-                            if (idx in validOpenedFiles.indices) idx else 0
-                        }
-
-                        ScrollableTabRow(
-                            selectedTabIndex = activeIndex,
-                            edgePadding = 0.dp,
-                            containerColor = MaterialTheme.colorScheme.surfaceVariant,
-                            divider = { HorizontalDivider() },
-                            indicator = { tabPositions ->
-                                if (activeIndex in tabPositions.indices) {
-                                    TabRowDefaults.SecondaryIndicator(
-                                        modifier = Modifier.tabIndicatorOffset(tabPositions[activeIndex])
+                                    DropdownMenuItem(
+                                        text = { Text(stringResource(id = R.string.open_folder_saf)) },
+                                        leadingIcon = {
+                                            Icon(Icons.Default.FolderOpen, contentDescription = null)
+                                        },
+                                        onClick = {
+                                            showMoreMenu = false
+                                            onTogglePicker(true)
+                                        }
+                                    )
+                                    DropdownMenuItem(
+                                        text = { Text(stringResource(id = R.string.settings)) },
+                                        leadingIcon = {
+                                            Icon(Icons.Default.Settings, contentDescription = null)
+                                        },
+                                        onClick = {
+                                            showMoreMenu = false
+                                            context.startActivity(Intent(context, SettingsActivity::class.java))
+                                        }
                                     )
                                 }
                             }
-                        ) {
+                        },
+                        colors = TopAppBarDefaults.topAppBarColors(
+                            containerColor = androidx.compose.ui.graphics.Color(0xFF1E1E1E)
+                        )
+                    )
+                }
+
+                val validOpenedFiles = remember(openedFiles, projectPath) {
+                    if (projectPath.isBlank()) emptyList()
+                    else {
+                        try {
+                            val projectDir = File(projectPath).canonicalFile
+                            openedFiles.filter { path ->
+                                val f = File(path)
+                                f.exists() && f.isFile && f.canonicalFile.startsWith(projectDir)
+                            }
+                        } catch (_: Throwable) {
+                            emptyList()
+                        }
+                    }
+                }
+
+                if (validOpenedFiles.isNotEmpty()) {
+                    val activeIndex = validOpenedFiles.indexOf(activeFilePath).let { idx ->
+                        if (idx in validOpenedFiles.indices) idx else 0
+                    }
+
+                    ScrollableTabRow(
+                        selectedTabIndex = activeIndex,
+                        edgePadding = 0.dp,
+                        containerColor = androidx.compose.ui.graphics.Color(0xFF1E1E1E),
+                        divider = { },
+                        indicator = { tabPositions ->
+                            if (activeIndex in tabPositions.indices) {
+                                TabRowDefaults.SecondaryIndicator(
+                                    modifier = Modifier.tabIndicatorOffset(tabPositions[activeIndex])
+                                )
+                            }
+                        }
+                    ) {
                             validOpenedFiles.forEachIndexed { index, path ->
                                 val file = File(path)
                                 Tab(
@@ -605,60 +714,24 @@ fun IdeMainScreen(
                             }
                         }
                     }
+
+                    HorizontalDivider(
+                        thickness = 0.5.dp,
+                        color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.35f)
+                    )
                 }
             },
             floatingActionButton = {
                 val density = LocalDensity.current
                 val isImeVisible = WindowInsets.ime.getBottom(density) > 0 || WindowInsets.isImeVisible
                 if (!isImeVisible) {
-                    Row(
-                        horizontalArrangement = Arrangement.spacedBy(8.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        if (isSmartToolbar && !isToolbarVisible) {
-                            SmallFloatingActionButton(
-                                onClick = { isToolbarVisible = true },
-                                containerColor = MaterialTheme.colorScheme.primaryContainer,
-                                contentColor = MaterialTheme.colorScheme.onPrimaryContainer
-                            ) {
-                                Icon(Icons.Default.FullscreenExit, contentDescription = "Show Toolbar")
-                            }
-                        }
-
-                        val isImgOrBin = remember(activeFilePath) {
-                            isImageFile(activeFilePath) || isBinaryFile(activeFilePath)
-                        }
-                        val canPreview = remember(activeFilePath) {
-                            val lower = activeFilePath.lowercase()
-                            lower.endsWith(".kt") || lower.endsWith(".kts") || lower.endsWith(".xml")
-                        }
-
-                        // Only show Scaffold FAB in EDIT mode ("Preview").
-                        // In PREVIEW mode, the preview screens display their own cleanly aligned "Edit" FAB,
-                        // avoiding duplicate FABs and overlap with the inspector bottom card.
-                        if (viewMode == EditorViewMode.EDIT && activeFilePath.isNotEmpty() && !isImgOrBin && canPreview) {
-                            ExtendedFloatingActionButton(
-                                onClick = {
-                                    viewMode = EditorViewMode.PREVIEW
-                                    if (drawerState.isOpen) {
-                                        scope.launch { drawerState.close() }
-                                    }
-                                },
-                                icon = {
-                                    Icon(
-                                        Icons.Default.Visibility,
-                                        contentDescription = null
-                                    )
-                                },
-                                text = {
-                                    Text(
-                                        text = "Preview",
-                                        fontWeight = FontWeight.SemiBold
-                                    )
-                                },
-                                containerColor = MaterialTheme.colorScheme.secondaryContainer,
-                                contentColor = MaterialTheme.colorScheme.onSecondaryContainer
-                            )
+                    if (isSmartToolbar && !isToolbarVisible) {
+                        SmallFloatingActionButton(
+                            onClick = { isToolbarVisible = true },
+                            containerColor = MaterialTheme.colorScheme.primaryContainer,
+                            contentColor = MaterialTheme.colorScheme.onPrimaryContainer
+                        ) {
+                            Icon(Icons.Default.FullscreenExit, contentDescription = "Show Toolbar")
                         }
                     }
                 }

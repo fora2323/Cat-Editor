@@ -1,23 +1,37 @@
 package org.cat.editor.ui
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.FolderOpen
+import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import org.cat.editor.R
+import java.io.File
 
 @Composable
-fun WelcomeScreen(onBrowseClick: () -> Unit) {
+fun WelcomeScreen(
+    projectPath: String,
+    onBrowseClick: () -> Unit
+) {
+    val projectName = if (projectPath.isNotEmpty()) {
+        val file = File(projectPath)
+        file.name
+    } else {
+        stringResource(id = R.string.no_project_selected)
+    }
+
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -26,7 +40,8 @@ fun WelcomeScreen(onBrowseClick: () -> Unit) {
     ) {
         Column(
             modifier = Modifier
-                .fillMaxWidth(0.85f)
+                .fillMaxWidth()
+                .padding(horizontal = 24.dp)
                 .wrapContentHeight(),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
@@ -34,70 +49,70 @@ fun WelcomeScreen(onBrowseClick: () -> Unit) {
             // Icon Circle
             Box(
                 modifier = Modifier
-                    .size(120.dp)
+                    .size(80.dp)
                     .background(
-                        color = MaterialTheme.colorScheme.primaryContainer,
-                        shape = RoundedCornerShape(60.dp)
+                        color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f),
+                        shape = RoundedCornerShape(40.dp)
                     ),
                 contentAlignment = Alignment.Center
             ) {
-                Icon(
-                    imageVector = Icons.Default.FolderOpen,
+                Image(
+                    painter = painterResource(id = R.drawable.ic_cat),
                     contentDescription = stringResource(id = R.string.welcome),
-                    modifier = Modifier.size(60.dp),
-                    tint = MaterialTheme.colorScheme.primary
+                    modifier = Modifier.size(40.dp),
+                    colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onPrimaryContainer)
                 )
             }
 
-            Spacer(modifier = Modifier.height(32.dp))
+            Spacer(modifier = Modifier.height(24.dp))
 
             // Title
             Text(
                 text = stringResource(id = R.string.welcome_title),
-                fontSize = 24.sp,
+                fontSize = 22.sp,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.onBackground,
                 modifier = Modifier.fillMaxWidth(),
-                textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                textAlign = TextAlign.Center
             )
 
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(8.dp))
 
-            // Subtitle
+            // Subtitle (Project Path Name)
             Text(
-                text = stringResource(id = R.string.no_project_selected),
+                text = "Proyek yang dipilih: $projectName",
                 fontSize = 14.sp,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.fillMaxWidth(),
-                textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                textAlign = TextAlign.Center
             )
 
-            Spacer(modifier = Modifier.height(40.dp))
+            Spacer(modifier = Modifier.height(32.dp))
 
             // Button
             Button(
                 onClick = onBrowseClick,
                 modifier = Modifier
-                    .fillMaxWidth()
+                    .wrapContentWidth()
                     .height(48.dp),
-                shape = RoundedCornerShape(12.dp),
+                shape = RoundedCornerShape(24.dp),
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = MaterialTheme.colorScheme.primary
-                )
+                    containerColor = MaterialTheme.colorScheme.primaryContainer,
+                    contentColor = MaterialTheme.colorScheme.onPrimaryContainer
+                ),
+                contentPadding = PaddingValues(horizontal = 24.dp)
             ) {
                 Icon(
-                    imageVector = Icons.Default.FolderOpen,
+                    imageVector = Icons.Default.Menu,
                     contentDescription = null,
                     modifier = Modifier
                         .size(20.dp)
-                        .padding(end = 8.dp),
-                    tint = MaterialTheme.colorScheme.onPrimary
+                        .padding(end = 8.dp)
                 )
                 Text(
                     text = stringResource(id = R.string.open_file),
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.SemiBold,
-                    color = MaterialTheme.colorScheme.onPrimary
+                    fontSize = 15.sp,
+                    fontWeight = FontWeight.Medium
                 )
             }
         }

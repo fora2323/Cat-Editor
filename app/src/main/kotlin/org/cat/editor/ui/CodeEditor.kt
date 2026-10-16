@@ -7,17 +7,13 @@ import android.view.WindowManager
 import android.view.inputmethod.InputMethodManager
 import android.widget.PopupWindow
 import androidx.compose.foundation.background
-import androidx.compose.foundation.gestures.awaitEachGesture
-import androidx.compose.foundation.gestures.awaitFirstDown
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
-import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.ime
 import androidx.compose.foundation.layout.imePadding
-import androidx.compose.foundation.layout.isImeVisible
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -26,10 +22,8 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
@@ -116,6 +110,16 @@ fun applyCompletionWindowTheme(scheme: EditorColorScheme) {
     scheme.setColor(EditorColorScheme.COMPLETION_WND_ITEM_CURRENT, 0xFF0E639C.toInt())
 }
 
+fun applyThemeColors(scheme: EditorColorScheme, surfaceColorInt: Int, dividerColorInt: Int) {
+    scheme.setColor(EditorColorScheme.WHOLE_BACKGROUND, surfaceColorInt)
+    scheme.setColor(EditorColorScheme.LINE_NUMBER_BACKGROUND, surfaceColorInt)
+    scheme.setColor(EditorColorScheme.LINE_NUMBER, 0xFF858585.toInt())
+    scheme.setColor(EditorColorScheme.CURRENT_LINE, 0xFF2A2A2A.toInt())
+    try { scheme.setColor(EditorColorScheme.LINE_DIVIDER, dividerColorInt) } catch (_: Throwable) {}
+    try { scheme.setColor(EditorColorScheme.BLOCK_LINE, dividerColorInt) } catch (_: Throwable) {}
+    applyCompletionWindowTheme(scheme)
+}
+
 private fun createEditorColorScheme(): EditorColorScheme {
     return try {
         val scheme = TextMateColorScheme.create(ThemeRegistry.getInstance())
@@ -127,24 +131,34 @@ private fun createEditorColorScheme(): EditorColorScheme {
     }
 }
 
-private fun applyLanguageAndTheme(editor: CodeEditor, filePath: String, autoCloseTag: Boolean) {
+private fun applyLanguageAndTheme(
+    editor: CodeEditor,
+    filePath: String,
+    autoCloseTag: Boolean,
+    surfaceColorInt: Int,
+    dividerColorInt: Int
+) {
     val file = File(filePath)
     if (!file.exists() || file.isDirectory) {
-        editor.colorScheme = KotlinDarkColorScheme()
+        val scheme = KotlinDarkColorScheme(surfaceColorInt, dividerColorInt)
+        editor.colorScheme = scheme
         try { editor.setEditorLanguage(EmptyLanguage()) } catch (_: Throwable) {}
         return
     }
 
     val lang = createEditorLanguage(filePath, autoCloseTag)
-    if (lang is TextMateLanguage) {
+    val scheme = if (lang is TextMateLanguage) {
         try {
-            editor.colorScheme = createEditorColorScheme()
+            createEditorColorScheme()
         } catch (_: Throwable) {
-            editor.colorScheme = KotlinDarkColorScheme()
+            KotlinDarkColorScheme(surfaceColorInt, dividerColorInt)
         }
     } else {
-        editor.colorScheme = KotlinDarkColorScheme()
+        KotlinDarkColorScheme(surfaceColorInt, dividerColorInt)
     }
+    applyThemeColors(scheme, surfaceColorInt, dividerColorInt)
+    editor.colorScheme = scheme
+
     try {
         editor.setEditorLanguage(lang)
     } catch (_: Throwable) {
@@ -206,6 +220,11 @@ fun KotlinCodeEditor(
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
 
+    val surfaceColor = MaterialTheme.colorScheme.surface
+    val surfaceColorInt = surfaceColor.toArgb()
+    val outlineVariant = MaterialTheme.colorScheme.outlineVariant
+    val dividerColorInt = if (outlineVariant.toArgb() != 0) outlineVariant.toArgb() else 0xFF444444.toInt()
+
     LaunchedEffect(Unit) {
         ensureTextMateInitialized(context)
     }
@@ -245,7 +264,7 @@ fun KotlinCodeEditor(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFF1E1E1E))
+            .background(surfaceColor)
             .imePadding()
     ) {
         Box(
@@ -263,7 +282,7 @@ fun KotlinCodeEditor(
                         currentLoadedPath = filePath
                         isHorizontalScrollBarEnabled = true
 
-                        applyLanguageAndTheme(this, filePath, autoCloseTag)
+                        applyLanguageAndTheme(this, filePath, autoCloseTag, surfaceColorInt, dividerColorInt)
                         isProgrammaticTextUpdate = true
                         try {
                             setText(initialContent)
@@ -338,48 +357,47 @@ fun KotlinCodeEditor(
                             isProgrammaticTextUpdate = false
                         }
 
-                        applyLanguageAndTheme(editor, filePath, autoCloseTag)
+                        applyLanguageAndTheme(editor, filePath, autoCloseTag, surfaceColorInt, dividerColorInt)
                     }
                 },
                 modifier = Modifier.fillMaxSize()
             )
         }
 
-        val density = LocalDensity.current
-        val isIme = WindowInsets.ime.getBottom(density) > 0 || WindowInsets.isImeVisible
-        if (isIme) {
-            QuickSymbolBar(
-                filePath = filePath,
-                onSymbolClick = { symbol ->
-                    editorInstance?.let { editor ->
-                        try {
-                            val cursor = editor.cursor
-                            val leftLine = cursor.leftLine
-                            val leftColumn = cursor.leftColumn
-                            editor.text.insert(leftLine, leftColumn, symbol.insertText)
-                            if (symbol.cursorOffset != symbol.insertText.length) {
-                                val newCol = leftColumn + symbol.cursorOffset
-                                editor.setSelection(leftLine, newCol)
-                            }
-                        } catch (e: Throwable) {
-                            Log.e(TAG, "Error inserting quick symbol", e)
+        QuickSymbolBar(
+            filePath = filePath,
+            onSymbolClick = { symbol ->
+                editorInstance?.let { editor ->
+                    try {
+                        val cursor = editor.cursor
+                        val leftLine = cursor.leftLine
+                        val leftColumn = cursor.leftColumn
+                        editor.text.insert(leftLine, leftColumn, symbol.insertText)
+                        if (symbol.cursorOffset != symbol.insertText.length) {
+                            val newCol = leftColumn + symbol.cursorOffset
+                            editor.setSelection(leftLine, newCol)
                         }
+                    } catch (e: Throwable) {
+                        Log.e(TAG, "Error inserting quick symbol", e)
                     }
                 }
-            )
-        }
+            }
+        )
     }
 }
 
-class KotlinDarkColorScheme : EditorColorScheme() {
+class KotlinDarkColorScheme(
+    surfaceColorInt: Int = 0xFF121212.toInt(),
+    dividerColorInt: Int = 0xFF3C3C3C.toInt()
+) : EditorColorScheme() {
     init {
-        setColor(WHOLE_BACKGROUND, 0xFF1E1E1E.toInt())
+        setColor(WHOLE_BACKGROUND, surfaceColorInt)
         setColor(TEXT_NORMAL, 0xFFE0E0E0.toInt())
         setColor(SELECTED_TEXT_BACKGROUND, 0xFF0E639C.toInt())
         setColor(SELECTION_HANDLE, 0xFFAEAFAD.toInt())
-        setColor(LINE_NUMBER_BACKGROUND, 0xFF1E1E1E.toInt())
-        setColor(LINE_NUMBER, 0xFF6A6A6A.toInt())
-        setColor(CURRENT_LINE, 0xFF2D2D2D.toInt())
+        setColor(LINE_NUMBER_BACKGROUND, surfaceColorInt)
+        setColor(LINE_NUMBER, 0xFF858585.toInt())
+        setColor(CURRENT_LINE, 0xFF2A2A2A.toInt())
         setColor(KEYWORD, 0xFF569CD6.toInt())
         setColor(LITERAL, 0xFFC77E70.toInt())
         setColor(COMMENT, 0xFF6A9955.toInt())
@@ -387,6 +405,8 @@ class KotlinDarkColorScheme : EditorColorScheme() {
         setColor(FUNCTION_NAME, 0xFF9CDCFE.toInt())
         setColor(IDENTIFIER_NAME, 0xFF9CDCFE.toInt())
         setColor(ANNOTATION, 0xFFDCDCAA.toInt())
+        try { setColor(LINE_DIVIDER, dividerColorInt) } catch (_: Throwable) {}
+        try { setColor(BLOCK_LINE, dividerColorInt) } catch (_: Throwable) {}
         applyCompletionWindowTheme(this)
     }
 }

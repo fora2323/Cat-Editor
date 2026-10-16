@@ -17,6 +17,13 @@ object LocaleHelper {
     const val LANG_ID = "in"
     const val LANG_AR = "ar"
     const val LANG_RU = "ru"
+    const val LANG_ZH_CN = "zh-CN"
+    const val LANG_ZH_TW = "zh-TW"
+    const val LANG_JA = "ja"
+    const val LANG_HI = "hi"
+    const val LANG_TH = "th"
+    const val LANG_UR = "ur"
+    const val LANG_KO = "ko"
 
     data class LanguageOption(
         val code: String,
@@ -28,17 +35,16 @@ object LocaleHelper {
     val supportedLanguages = listOf(
         LanguageOption(LANG_SYSTEM, "Default Sistem", "System Default", "🌐"),
         LanguageOption(LANG_AR, "العربية (ar)", "Arabic", "🇸🇦"),
-        LanguageOption("arq", "Arab Aljazair (arq)", "Algerian Arabic", "🇩🇿"),
-        LanguageOption("az", "azərbaycan (az)", "Azerbaijani", "🇦🇿"),
-        LanguageOption("bg", "български (bg)", "Bulgarian", "🇧🇬"),
-        LanguageOption("bn", "বাংলা (bn)", "Bengali", "🇧🇩"),
-        LanguageOption("bn-IN", "বাংলা (bn-IN)", "Bengali (India)", "🇮🇳"),
-        LanguageOption("cs", "čeština (cs)", "Czech", "🇨🇿"),
-        LanguageOption("de", "Deutsch (de)", "German", "🇩🇪"),
-        LanguageOption("el", "Ελληνικά (el)", "Greek", "🇬🇷"),
         LanguageOption(LANG_EN, "English (en)", "English", "🇺🇸"),
         LanguageOption(LANG_ID, "Bahasa Indonesia (id)", "Indonesian", "🇮🇩"),
-        LanguageOption(LANG_RU, "Русский (ru)", "Russian", "🇷🇺")
+        LanguageOption(LANG_HI, "हिन्दी (hi)", "Hindi", "🇮🇳"),
+        LanguageOption(LANG_JA, "日本語 (ja)", "Japanese", "🇯🇵"),
+        LanguageOption(LANG_KO, "한국어 (ko)", "Korean", "🇰🇷"),
+        LanguageOption(LANG_RU, "Русский (ru)", "Russian", "🇷🇺"),
+        LanguageOption(LANG_TH, "ไทย (th)", "Thai", "🇹🇭"),
+        LanguageOption(LANG_UR, "اردو (ur)", "Urdu", "🇵🇰"),
+        LanguageOption(LANG_ZH_CN, "简体中文 (zh-CN)", "Chinese Simplified", "🇨🇳"),
+        LanguageOption(LANG_ZH_TW, "繁體中文 (zh-TW)", "Chinese Traditional", "🇹🇼")
     )
 
     fun getPersistedLanguage(context: Context): String {
@@ -66,7 +72,10 @@ object LocaleHelper {
                 if (languageCode == LANG_SYSTEM) {
                     localeManager?.applicationLocales = LocaleList.getEmptyLocaleList()
                 } else {
-                    val tag = if (languageCode == LANG_ID) "id" else languageCode
+                    val tag = when (languageCode) {
+                        LANG_ID -> "id"
+                        else -> languageCode
+                    }
                     localeManager?.applicationLocales = LocaleList.forLanguageTags(tag)
                 }
             } catch (e: Exception) {
@@ -102,10 +111,21 @@ object LocaleHelper {
             LANG_ID, "id" -> Locale("in", "ID")
             LANG_AR -> Locale("ar")
             LANG_RU -> Locale("ru")
+            LANG_ZH_CN, "zh" -> Locale.SIMPLIFIED_CHINESE
+            LANG_ZH_TW -> Locale.TRADITIONAL_CHINESE
+            LANG_JA -> Locale.JAPANESE
+            LANG_HI -> Locale("hi", "IN")
+            LANG_TH -> Locale("th", "TH")
+            LANG_UR -> Locale("ur")
+            LANG_KO -> Locale.KOREAN
             else -> {
-                val adjusted = LocaleListCompat.getAdjustedDefault()
-                if (!adjusted.isEmpty) adjusted[0] ?: Locale.getDefault()
-                else Locale.getDefault()
+                if (languageCode != LANG_SYSTEM && languageCode.isNotBlank()) {
+                    Locale.forLanguageTag(languageCode)
+                } else {
+                    val adjusted = LocaleListCompat.getAdjustedDefault()
+                    if (!adjusted.isEmpty) adjusted[0] ?: Locale.getDefault()
+                    else Locale.getDefault()
+                }
             }
         }
     }

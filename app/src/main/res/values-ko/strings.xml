@@ -1,0 +1,288 @@
+<resources>
+    <string name="app_name" translatable="false">Cat Editor</string>
+
+    <!-- General Navigation & Actions -->
+    <string name="settings">설정</string>
+    <string name="back">뒤로</string>
+    <string name="close">닫기</string>
+    <string name="cancel">취소</string>
+    <string name="apply">적용</string>
+    <string name="menu">메뉴</string>
+    <string name="undo">실행 취소</string>
+    <string name="redo">다시 실행</string>
+    <string name="save">저장</string>
+    <string name="add">추가</string>
+    <string name="refresh">새로고침</string>
+    <string name="clear">지우기</string>
+    <string name="more_options">추가 옵션</string>
+    <string name="cancel_clone_title">복제 취소</string>
+    <string name="cancel_clone_msg">복제 프로세스를 취소하시겠습니까?</string>
+    <string name="yes">예</string>
+    <string name="no">아니요</string>
+
+    <!-- Settings & Language -->
+    <string name="language">언어</string>
+    <string name="language_desc">앱 표시 언어 선택</string>
+    <string name="choose_language">언어 선택</string>
+    <string name="lang_system_default">시스템 기본값</string>
+    <string name="lang_english">English</string>
+    <string name="lang_indonesian">Bahasa Indonesia</string>
+    <string name="lang_arabic">العربية</string>
+    <string name="lang_russian">Русский</string>
+    <string name="about">정보</string>
+    <string name="version">버전 %1$s</string>
+
+    <!-- Project Menu Screen -->
+    <string name="git_clone">Git 복제</string>
+    <string name="feature_git_clone">Git 복제 기능</string>
+    <string name="open_folder_saf">폴더 열기 (SAF)</string>
+    <string name="select_folder">폴더 선택</string>
+    <string name="new_empty_project">프로젝트 생성</string>
+    <string name="feature_new_empty_project">새 프로젝트 기능은 아직 사용할 수 없습니다</string>
+    <string name="folder_selected">선택한 폴더: %1$s</string>
+    <string name="storage_permission_denied">저장소 권한이 거부되었습니다</string>
+    <string name="new_project">새 프로젝트</string>
+    <string name="waiting_storage_permission">저장소 권한 대기 중...</string>
+    <string name="no_projects_found">프로젝트를 찾을 수 없습니다</string>
+    <string name="storage_access_required">저장소 액세스 필요</string>
+    <string name="storage_access_desc">폴더 %1$s의 프로젝트 및 런처 아이콘을 스캔하려면 외부 저장소 권한이 필요합니다.</string>
+    <string name="grant_permission">권한 허용</string>
+
+    <!-- Git Clone Activity -->
+    <string name="git_clone_title">GitClone</string>
+    <string name="git_clone_subtitle">GitHub에서 프로젝트 복제</string>
+    <string name="git_clone_link_label">링크</string>
+    <string name="git_clone_branch_label">브랜치</string>
+    <string name="git_clone_pat_label">개인 액세스 토큰 (PAT)</string>
+    <string name="git_clone_pat_hint">비공개 저장소에 필요합니다</string>
+    <string name="git_clone_fast_label">빠른 복제 (얕은 깊이 = 1)</string>
+    <string name="git_clone_fast_subtitle">빠른 속도를 위해 최신 커밋만 다운로드합니다</string>
+    <string name="git_clone_button">복제</string>
+
+    <!-- MainActivity & Editor -->
+    <string name="cannot_access_folder">폴더에 액세스할 수 없습니다</string>
+    <string name="add_file_coming_soon">파일 추가 기능이 곧 출시됩니다</string>
+    <string name="file_updated">파일이 업데이트되었습니다</string>
+    <string name="file_preview_deleted">미리보기 파일이 삭제되었습니다</string>
+    <string name="file_saved">파일이 저장되었습니다</string>
+    <string name="failed_to_save">저장 실패: %1$s</string>
+    <string name="copy">복사</string>
+    <string name="restart">재시작</string>
+    <string name="create_file">파일 생성</string>
+    <string name="create_folder">폴더 생성</string>
+    <string name="create_java_class">Java 클래스 생성</string>
+    <string name="create_kotlin_class">Kotlin 클래스 생성</string>
+    <string name="toolbar_name">이런, 충돌이 발생했습니다!!</string>
+    <string name="copy_log">로그 복사</string>
+
+    <!-- Welcome Screen -->
+    <string name="welcome">환영합니다</string>
+    <string name="welcome_title">Cat Editor에 오신 것을 환영합니다</string>
+    <string name="no_project_selected">선택된 프로젝트 없음</string>
+    <string name="open_file">파일 열기</string>
+
+    <!-- Drawer & Preview -->
+    <string name="project_files">프로젝트 파일</string>
+    <string name="search_files">파일 검색...</string>
+    <string name="not_found">찾을 수 없음</string>
+    <string name="preview_hint">서랍(왼쪽)을 열고 @Preview가 있는 .kt 파일을 선택하세요</string>
+
+    <!-- File Types Content Description -->
+    <string name="manifest">매니페스트</string>
+    <string name="file_kotlin">Kotlin</string>
+    <string name="file_gradle">Gradle</string>
+    <string name="file_java">Java</string>
+    <string name="file_xml">XML</string>
+    <string name="file_cpp">C++</string>
+    <string name="file_c">C</string>
+    <string name="file_cmake">CMake</string>
+    <string name="file_python">Python</string>
+    <string name="file_markdown">Markdown</string>
+    <string name="file_json">JSON</string>
+    <string name="file_keystore">키스토어</string>
+    <string name="file_git">Git</string>
+    <string name="file_proguard">Proguard</string>
+    <string name="file_generic">파일</string>
+
+    <!-- Settings Redesign -->
+    <string name="settings_app_title">애플리케이션</string>
+    <string name="settings_app_desc">일반 애플리케이션 설정</string>
+    <string name="settings_editor_title">편집기</string>
+    <string name="settings_editor_desc">일반 편집기 설정</string>
+    <string name="settings_git_title">Git</string>
+    <string name="settings_git_desc">버전 관리 시스템 구성</string>
+    <string name="settings_about_desc">%1$s 정보</string>
+
+    <!-- App Settings Screen -->
+    <string name="setting_check_updates_title">업데이트 확인</string>
+    <string name="setting_check_updates_desc">정기적으로 업데이트 확인</string>
+    <string name="setting_fullscreen_title">전체 화면</string>
+    <string name="setting_fullscreen_desc">전체 화면 모드로 앱 시작</string>
+    <string name="setting_smart_toolbar_title">스마트 툴바</string>
+    <string name="setting_smart_toolbar_desc">편집 시 툴바를 숨겨 화면 공간 확보</string>
+    <string name="setting_exit_dialog_title">종료 확인 대화상자</string>
+    <string name="setting_exit_dialog_desc">앱을 닫기 전에 확인 대화상자 표시</string>
+    <string name="setting_manage_storage_title">저장소 관리</string>
+    <string name="setting_manage_storage_desc">저장소 권한 관리</string>
+    <string name="setting_manage_fonts_title">앱 글꼴 관리</string>
+    <string name="setting_manage_fonts_desc">애플리케이션 글꼴 관리</string>
+    <string name="section_feature_toggles">기능 토글</string>
+    <string name="setting_debug_options_title">디버그 옵션</string>
+
+    <!-- Editor Settings Screen -->
+    <string name="editor_cat_smart_features">스마트 기능</string>
+    <string name="editor_auto_compile_title">자동 컴파일</string>
+    <string name="editor_auto_compile_desc">코드 변경 시 자동으로 컴파일하고 미리보기 업데이트</string>
+    <string name="editor_auto_close_tag_title">태그 자동 닫기</string>
+    <string name="editor_auto_close_tag_desc">HTML 및 XML 태그 자동으로 닫기</string>
+    <string name="editor_color_preview_title">색상 미리보기</string>
+    <string name="editor_color_preview_desc">언어 서버가 연결되지 않았을 때 편집기에 색상 미리보기 표시</string>
+
+    <string name="editor_cat_content">콘텐츠</string>
+    <string name="editor_word_wrap_title">자동 줄 바꿈</string>
+    <string name="editor_word_wrap_desc">모든 편집기에서 자동 줄 바꿈 활성화</string>
+    <string name="editor_wrap_txt_title">TXT 파일 줄 바꿈</string>
+    <string name="editor_wrap_txt_desc">TXT 파일 자동 줄 바꿈</string>
+    <string name="editor_read_only_title">읽기 전용 모드</string>
+    <string name="editor_read_only_desc">기본적으로 읽기 전용 모드 활성화</string>
+
+    <string name="editor_cat_editor">편집기</string>
+    <string name="editor_line_numbers_title">줄 번호</string>
+    <string name="editor_line_numbers_desc">편집기 옆에 줄 번호 표시</string>
+    <string name="editor_disable_virtual_kbd_title">가상 키보드 비활성화</string>
+    <string name="editor_disable_virtual_kbd_desc">실물 키보드가 있을 때 가상 키보드 비활성화</string>
+    <string name="editor_cursor_anim_title">커서 애니메이션</string>
+    <string name="editor_cursor_anim_desc">부드러운 커서 애니메이션 활성화</string>
+
+    <!-- Language Screen -->
+    <string name="language_warning_notice">언어를 변경하면 새 언어를 적용하기 위해 이 화면이 즉시 재시작됩니다. 잠시 빈 화면이 표시될 수 있습니다.</string>
+    <string name="btn_translate">번역</string>
+
+    <!-- About Screen -->
+    <string name="section_build_info">빌드 정보</string>
+    <string name="build_version">버전</string>
+    <string name="build_version_code">버전 코드</string>
+    <string name="build_git_hash">Git 커밋 해시</string>
+    <string name="section_community">커뮤니티</string>
+    <string name="community_github_stars">GitHub 스타</string>
+    <string name="community_github">GitHub</string>
+    <string name="community_github_sub">GitHub에서 스타 주기 😍</string>
+    <string name="community_telegram">Telegram 그룹</string>
+    <string name="community_telegram_sub">버그 제보, 기능 요청 등</string>
+
+    <!-- Support Screen -->
+    <string name="support">지원</string>
+    <string name="support_github_sponsors">GitHub 스폰서</string>
+    <string name="support_buy_me_coffee">Buy Me a Coffee</string>
+    <string name="support_saweria">Saweria</string>
+    <string name="support_saweria_desc">인도네시아, 태국, 말레이시아 사용자를 위한 Saweria 지원</string>
+
+    <!-- Placeholder -->
+    <string name="coming_soon">출시 예정</string>
+    <string name="feature_under_development">이 설정 화면은 곧 사용할 수 있게 됩니다.</string>
+
+    <!-- Git Settings Screen -->
+    <string name="git_section_general">일반</string>
+    <string name="git_color_filenames_title">파일 이름 색상 지정</string>
+    <string name="git_color_filenames_desc">Git 상태에 따라 파일 이름 색상 지정</string>
+    <string name="git_gutter_indicators_title">여백 표시기</string>
+    <string name="git_gutter_indicators_desc">추가, 수정, 삭제된 줄에 대한 변경 표시기 표시</string>
+    <string name="git_conflict_detection_title">충돌 감지</string>
+    <string name="git_conflict_detection_desc">편집기에 충돌 마커 및 해결 옵션 표시</string>
+    <string name="git_section_account">계정</string>
+    <string name="git_credentials_title">자격 증명</string>
+    <string name="git_credentials_desc">원격 저장소에 액세스하기 위한 자격 증명</string>
+    <string name="git_user_data_title">사용자 데이터</string>
+    <string name="git_user_data_desc">Git 커밋에 표시될 사용자 데이터</string>
+    <string name="git_section_repositories">저장소</string>
+    <string name="git_submodules_title">서브모듈</string>
+    <string name="git_submodules_desc">저장소 복제 시 서브모듈 포함</string>
+    <string name="git_recursive_submodules_title">재귀 서브모듈</string>
+    <string name="git_recursive_submodules_desc">서브모듈 및 종속성 재귀적 가져오기</string>
+    <string name="git_pat_warning_desc">GitHub에 연결하려면 계정 비밀번호가 아닌 PAT 토큰을 입력해야 합니다.</string>
+    <string name="git_username_label">사용자 이름</string>
+    <string name="git_password_label">비밀번호</string>
+    <string name="git_author_name_label">이름</string>
+    <string name="git_author_email_label">이메일</string>
+
+    <!-- Settings functionality and GitHub sync -->
+    <string name="exit_dialog_title">Cat Editor 종료</string>
+    <string name="exit_dialog_msg">애플리케이션을 종료하시겠습니까?</string>
+    <string name="exit_dialog_confirm">종료</string>
+    <string name="select_font_title">편집기 글꼴 선택</string>
+    <string name="font_monospace">고정폭 (기본값)</string>
+    <string name="font_sans">산세리프</string>
+    <string name="font_serif">세리프</string>
+    <string name="checking_updates">업데이트 확인 중…</string>
+    <string name="up_to_date">최신 버전을 사용 중입니다 (%1$s)</string>
+    <string name="update_available">GitHub에 새 업데이트가 있습니다 (%1$s)</string>
+    <string name="sync_github">GitHub 정보 동기화</string>
+    <string name="syncing_github">GitHub와 동기화 중…</string>
+    <string name="synced_github_success">GitHub와 동기화되었습니다</string>
+    <string name="sync_failed">GitHub 동기화 실패</string>
+    <string name="build_latest_remote_commit">최신 GitHub 커밋</string>
+
+    <!-- Project Option Sheet -->
+    <string name="project_pin">고정</string>
+    <string name="project_pin_desc">이 프로젝트를 상단에 고정</string>
+    <string name="project_clone">복제</string>
+    <string name="project_clone_desc">이 프로젝트의 복사본 생성</string>
+    <string name="project_backup">백업</string>
+    <string name="project_backup_desc">외부 저장소에 프로젝트 백업</string>
+    <string name="project_remove">삭제</string>
+    <string name="project_remove_desc">프로젝트 디렉토리 영구 삭제</string>
+
+    <!-- Drawer File Actions & New Dialog -->
+    <string name="create_new">새로 만들기</string>
+    <string name="type_file">파일</string>
+    <string name="type_folder">폴더</string>
+    <string name="name_hint">이름</string>
+    <string name="file_name_empty">이름은 비워둘 수 없습니다</string>
+    <string name="file_created">성공적으로 생성되었습니다</string>
+    <string name="file_create_failed">생성 실패: %1$s</string>
+    <string name="file_actions">파일 작업</string>
+    <string name="rename">이름 변경</string>
+    <string name="rename_desc">파일 이름 변경</string>
+    <string name="delete">삭제</string>
+    <string name="delete_desc">이 항목 영구 삭제</string>
+    <string name="delete_confirm_title">%1$s 삭제하시겠습니까?</string>
+    <string name="delete_confirm_msg">이 %1$s을(를) 삭제하시겠습니까? 이 작업은 취소할 수 없습니다.</string>
+    <string name="copy_path">경로 복사</string>
+    <string name="copy_path_desc">클립보드에 절대 경로 복사</string>
+    <string name="copy_relative_path">상대 경로 복사</string>
+    <string name="copy_relative_path_desc">프로젝트 상대 경로 복사</string>
+    <string name="path_copied">경로가 클립보드에 복사되었습니다</string>
+    <string name="new_item_here">이 내부에 생성</string>
+    <string name="new_item_here_desc">이 디렉토리 내에 파일 또는 폴더 생성</string>
+    <string name="file_renamed">성공적으로 이름이 변경되었습니다</string>
+    <string name="file_deleted">성공적으로 삭제되었습니다</string>
+    <string name="file_delete_failed">삭제 실패</string>
+    <string name="enter_new_name">새 이름 입력</string>
+    <string name="action_cancel">취소</string>
+    <string name="action_create">생성</string>
+    <string name="file_already_exists">같은 이름의 항목이 이미 존재합니다</string>
+    <string name="file_rename_failed">이름 변경 실패</string>
+
+    <!-- Drawer More Menu & Search -->
+    <string name="drawer_show_hidden_files">숨김 파일 표시</string>
+    <string name="drawer_compact_folders">압축 폴더</string>
+    <string name="drawer_sort_by_name">이름순 정렬</string>
+    <string name="drawer_sort_by_size">크기순 정렬</string>
+    <string name="drawer_sort_by_date">날짜순 정렬</string>
+
+    <string name="search_index_project_title">프로젝트 색인 생성</string>
+    <string name="search_index_project_desc">색인을 생성하면 대규모 프로젝트의 검색 속도가 향상됩니다</string>
+    <string name="search_files_in_project">프로젝트에서 파일 검색</string>
+    <string name="search_code_in_project">프로젝트에서 코드 검색</string>
+    <string name="search_enter_name_hint">이름 입력</string>
+    <string name="search_hint">검색</string>
+    <string name="searching_in_project">검색 중: %1$s</string>
+    <string name="search_no_results">결과 없음</string>
+    <string name="search_results_count">%1$d개 결과 찾음</string>
+    <string name="search_ignore_case">대소문자 구분 안 함</string>
+    <string name="search_filter_files">파일 필터링</string>
+    <string name="search_filter_ext_hint">확장자 필터링 (예: kt, xml, java)</string>
+    <string name="search_code_empty_prompt">파일 내에서 검색할\n키워드를 입력하세요</string>
+    <string name="search_code_searching">코드 검색 중…</string>
+    <string name="search_code_scanning">프로젝트 코드 스캔 중…</string>
+</resources>

@@ -15,6 +15,10 @@
     <string name="refresh">Обновить</string>
     <string name="clear">Очистить</string>
     <string name="more_options">Дополнительные параметры</string>
+    <string name="cancel_clone_title">Отмена клонирования</string>
+    <string name="cancel_clone_msg">Вы уверены, что хотите отменить процесс клонирования?</string>
+    <string name="yes">Да</string>
+    <string name="no">Нет</string>
 
     <!-- Settings & Language -->
     <string name="language">Язык</string>
@@ -33,6 +37,8 @@
     <string name="feature_git_clone">Функция Git Clone</string>
     <string name="open_folder_saf">Открыть папку (SAF)</string>
     <string name="select_folder">Выбрать папку</string>
+    <string name="new_empty_project">Создать проект</string>
+    <string name="feature_new_empty_project">Функция создания проекта пока недоступна</string>
     <string name="folder_selected">Выбранная папка: %1$s</string>
     <string name="storage_permission_denied">В доступе к хранилищу отказано</string>
     <string name="new_project">Новый проект</string>
@@ -41,10 +47,17 @@
     <string name="storage_access_required">Требуется доступ к хранилищу</string>
     <string name="storage_access_desc">Приложению требуется разрешение на чтение внешних файлов для сканирования проектов и значков в папке %1$s.</string>
     <string name="grant_permission">Предоставить разрешение</string>
+
+    <!-- Git Clone Activity -->
+    <string name="git_clone_title">GitClone</string>
+    <string name="git_clone_subtitle">Клонировать проект с GitHub</string>
+    <string name="git_clone_link_label">Ссылка</string>
+    <string name="git_clone_branch_label">Ветки</string>
     <string name="git_clone_pat_label">Личный токен доступа (PAT)</string>
     <string name="git_clone_pat_hint">Требуется для приватных репозиториев</string>
     <string name="git_clone_fast_label">Быстрое клонирование (глубина = 1)</string>
     <string name="git_clone_fast_subtitle">Загружать только последний коммит для ускорения</string>
+    <string name="git_clone_button">Клонировать</string>
 
     <!-- MainActivity & Editor -->
     <string name="cannot_access_folder">Не удается получить доступ к папке</string>
@@ -116,6 +129,31 @@
     <string name="section_feature_toggles">Переключатели функций</string>
     <string name="setting_debug_options_title">Параметры отладки</string>
 
+    <!-- Editor Settings Screen -->
+    <string name="editor_cat_smart_features">Умные функции</string>
+    <string name="editor_auto_compile_title">Автокомпиляция</string>
+    <string name="editor_auto_compile_desc">Автоматически компилировать и обновлять предпросмотр при изменении кода</string>
+    <string name="editor_auto_close_tag_title">Автозакрытие тегов</string>
+    <string name="editor_auto_close_tag_desc">Автоматически закрывать теги HTML и XML</string>
+    <string name="editor_color_preview_title">Предпросмотр цвета</string>
+    <string name="editor_color_preview_desc">Показывать предпросмотр цвета в редакторе, если языковой сервер не подключен</string>
+
+    <string name="editor_cat_content">Содержимое</string>
+    <string name="editor_word_wrap_title">Перенос строк</string>
+    <string name="editor_word_wrap_desc">Включить перенос строк во всех редакторах</string>
+    <string name="editor_wrap_txt_title">Перенос в TXT</string>
+    <string name="editor_wrap_txt_desc">Автоматически переносить строки в TXT-файлах</string>
+    <string name="editor_read_only_title">Режим «только чтение»</string>
+    <string name="editor_read_only_desc">Включить режим «только чтение» по умолчанию</string>
+
+    <string name="editor_cat_editor">Редактор</string>
+    <string name="editor_line_numbers_title">Номера строк</string>
+    <string name="editor_line_numbers_desc">Показывать номера строк рядом с редактором</string>
+    <string name="editor_disable_virtual_kbd_title">Отключить вирт. клавиатуру</string>
+    <string name="editor_disable_virtual_kbd_desc">Отключать виртуальную клавиатуру при наличии физической</string>
+    <string name="editor_cursor_anim_title">Анимация курсора</string>
+    <string name="editor_cursor_anim_desc">Включить плавную анимацию курсора</string>
+
     <!-- Language Screen -->
     <string name="language_warning_notice">Изменение языка перезапустит этот экран для немедленного применения. Это может кратковременно вызвать пустой экран, что потенциально небезопасно для людей со светочувствительной эпилепсией.</string>
     <string name="btn_translate">Перевести</string>
@@ -182,4 +220,68 @@
     <string name="synced_github_success">Успешно синхронизировано с GitHub</string>
     <string name="sync_failed">Не удалось синхронизировать с GitHub</string>
     <string name="build_latest_remote_commit">Последний коммит на GitHub</string>
+
+    <!-- Project Option Sheet -->
+    <string name="project_pin">Закрепить</string>
+    <string name="project_pin_desc">Закрепить этот проект вверху</string>
+    <string name="project_clone">Клонировать</string>
+    <string name="project_clone_desc">Создать дубликат этого проекта</string>
+    <string name="project_backup">Резервная копия</string>
+    <string name="project_backup_desc">Создать резервную копию проекта во внешнее хранилище</string>
+    <string name="project_remove">Удалить</string>
+    <string name="project_remove_desc">Навсегда удалить каталог проекта</string>
+
+    <!-- Drawer File Actions & New Dialog -->
+    <string name="create_new">Создать новое</string>
+    <string name="type_file">Файл</string>
+    <string name="type_folder">Папка</string>
+    <string name="name_hint">Имя</string>
+    <string name="file_name_empty">Имя не может быть пустым</string>
+    <string name="file_created">Успешно создано</string>
+    <string name="file_create_failed">Не удалось создать: %1$s</string>
+    <string name="file_actions">Действия с файлом</string>
+    <string name="rename">Переименовать</string>
+    <string name="rename_desc">Изменить имя файла</string>
+    <string name="delete">Удалить</string>
+    <string name="delete_desc">Навсегда удалить этот элемент</string>
+    <string name="delete_confirm_title">Удалить %1$s?</string>
+    <string name="delete_confirm_msg">Вы уверены, что хотите удалить %1$s? Это действие нельзя отменить.</string>
+    <string name="copy_path">Копировать путь</string>
+    <string name="copy_path_desc">Копировать абсолютный путь в буфер обмена</string>
+    <string name="copy_relative_path">Копировать относительный путь</string>
+    <string name="copy_relative_path_desc">Копировать путь относительно проекта</string>
+    <string name="path_copied">Путь скопирован в буфер обмена</string>
+    <string name="new_item_here">Создать внутри</string>
+    <string name="new_item_here_desc">Создать файл или папку внутри этого каталога</string>
+    <string name="file_renamed">Успешно переименовано</string>
+    <string name="file_deleted">Успешно удалено</string>
+    <string name="file_delete_failed">Не удалось удалить</string>
+    <string name="enter_new_name">Введите новое имя</string>
+    <string name="action_cancel">Отмена</string>
+    <string name="action_create">Создать</string>
+    <string name="file_already_exists">Элемент с таким именем уже существует</string>
+    <string name="file_rename_failed">Не удалось переименовать</string>
+
+    <!-- Drawer More Menu & Search -->
+    <string name="drawer_show_hidden_files">Показывать скрытые файлы</string>
+    <string name="drawer_compact_folders">Компактные папки</string>
+    <string name="drawer_sort_by_name">Сортировка по имени</string>
+    <string name="drawer_sort_by_size">Сортировка по размеру</string>
+    <string name="drawer_sort_by_date">Сортировка по дате</string>
+
+    <string name="search_index_project_title">Индексация проекта</string>
+    <string name="search_index_project_desc">Индексация ускоряет поиск в крупных проектах</string>
+    <string name="search_files_in_project">Поиск файлов в проекте</string>
+    <string name="search_code_in_project">Поиск кода в проекте</string>
+    <string name="search_enter_name_hint">Введите имя</string>
+    <string name="search_hint">Поиск</string>
+    <string name="searching_in_project">Поиск в: %1$s</string>
+    <string name="search_no_results">Ничего не найдено</string>
+    <string name="search_results_count">Найдено результатов: %1$d</string>
+    <string name="search_ignore_case">Без учета регистра</string>
+    <string name="search_filter_files">Фильтр файлов</string>
+    <string name="search_filter_ext_hint">Фильтр расширений (напр. kt, xml, java)</string>
+    <string name="search_code_empty_prompt">Введите ключевое слово для\nпоиска в файлах</string>
+    <string name="search_code_searching">Поиск кода…</string>
+    <string name="search_code_scanning">Сканирование кода проекта…</string>
 </resources>

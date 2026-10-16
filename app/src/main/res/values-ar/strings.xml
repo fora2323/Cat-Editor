@@ -15,6 +15,10 @@
     <string name="refresh">تحديث</string>
     <string name="clear">مسح</string>
     <string name="more_options">خيارات إضافية</string>
+    <string name="cancel_clone_title">إلغاء الاستنساخ</string>
+    <string name="cancel_clone_msg">هل أنت تأكد من أنك تريد إلغاء عملية الاستنساخ؟</string>
+    <string name="yes">نعم</string>
+    <string name="no">لا</string>
 
     <!-- Settings & Language -->
     <string name="language">اللغة</string>
@@ -33,6 +37,8 @@
     <string name="feature_git_clone">ميزة استنساخ Git</string>
     <string name="open_folder_saf">فتح مجلد (SAF)</string>
     <string name="select_folder">تحديد مجلد</string>
+    <string name="new_empty_project">إنشاء مشروع</string>
+    <string name="feature_new_empty_project">ميزات المشروع الجديد غير متوفرة بعد</string>
     <string name="folder_selected">المجلد المحدد: %1$s</string>
     <string name="storage_permission_denied">تم رفض إذن الوصول للتخزين</string>
     <string name="new_project">مشروع جديد</string>
@@ -41,10 +47,17 @@
     <string name="storage_access_required">مطلوب إذن الوصول للتخزين</string>
     <string name="storage_access_desc">يتطلب التطبيق إذن قراءة الملفات الخارجية لفحص المشاريع وأيقونات التشغيل في المجلد %1$s.</string>
     <string name="grant_permission">منح الإذن</string>
+
+    <!-- Git Clone Activity -->
+    <string name="git_clone_title">استنساخ Git</string>
+    <string name="git_clone_subtitle">استنساخ المشروع من GitHub</string>
+    <string name="git_clone_link_label">الرابط</string>
+    <string name="git_clone_branch_label">الفروع</string>
     <string name="git_clone_pat_label">رمز الوصول الشخصي (PAT)</string>
     <string name="git_clone_pat_hint">مطلوب للمستودعات الخاصة</string>
     <string name="git_clone_fast_label">استنساخ سريع (عمق = 1)</string>
     <string name="git_clone_fast_subtitle">تنزيل أحدث التزامات فقط لسرعة أكبر</string>
+    <string name="git_clone_button">استنساخ</string>
 
     <!-- MainActivity & Editor -->
     <string name="cannot_access_folder">تعذر الوصول إلى المجلد</string>
@@ -116,6 +129,31 @@
     <string name="section_feature_toggles">مفاتيح الميزات</string>
     <string name="setting_debug_options_title">خيارات التصحيح</string>
 
+    <!-- Editor Settings Screen -->
+    <string name="editor_cat_smart_features">الميزات الذكية</string>
+    <string name="editor_auto_compile_title">التجميع التلقائي</string>
+    <string name="editor_auto_compile_desc">تجميع وتحديث المعاينة تلقائيًا عند تغيير الكود</string>
+    <string name="editor_auto_close_tag_title">إغلاق العلامات تلقائيًا</string>
+    <string name="editor_auto_close_tag_desc">إغلاق علامات HTML و XML تلقائيًا</string>
+    <string name="editor_color_preview_title">معاينة الألوان</string>
+    <string name="editor_color_preview_desc">إظهار معاينة الألوان في المحرر عند عدم الاتصال بخادم اللغة</string>
+
+    <string name="editor_cat_content">المحتوى</string>
+    <string name="editor_word_wrap_title">التفاف النص</string>
+    <string name="editor_word_wrap_desc">تمكين التفاف النص في جميع المحررات</string>
+    <string name="editor_wrap_txt_title">التفاف ملفات TXT</string>
+    <string name="editor_wrap_txt_desc">التفاف ملفات TXT تلقائيًا</string>
+    <string name="editor_read_only_title">وضع القراءة فقط</string>
+    <string name="editor_read_only_desc">تمكين وضع القراءة فقط افتراضيًا</string>
+
+    <string name="editor_cat_editor">المحرر</string>
+    <string name="editor_line_numbers_title">أرقام الأسطر</string>
+    <string name="editor_line_numbers_desc">إظهار أرقام الأسطر بجانب المحرر</string>
+    <string name="editor_disable_virtual_kbd_title">تعطيل لوحة المفاتيح الافتراضية</string>
+    <string name="editor_disable_virtual_kbd_desc">تعطيل لوحة المفاتيح الافتراضية عند توفر لوحة مفاتيح حقيقية</string>
+    <string name="editor_cursor_anim_title">حركة المؤشر</string>
+    <string name="editor_cursor_anim_desc">تمكين حركة المؤشر السلسة</string>
+
     <!-- Language Screen -->
     <string name="language_warning_notice">سيؤدي تغيير اللغة إلى إعادة تشغيل هذه الشاشة لتطبيق اللغة الجديدة فورًا. قد يعرض هذا شاشة فارغة لفترة وجيزة، مما قد يسبب عدم الراحة لمن يعانون من صرع حساسية الضوء.</string>
     <string name="btn_translate">ترجمة</string>
@@ -182,4 +220,68 @@
     <string name="synced_github_success">تمت المزامنة مع GitHub بنجاح</string>
     <string name="sync_failed">فشلت المزامنة مع GitHub</string>
     <string name="build_latest_remote_commit">أحدث إيداع على GitHub</string>
+
+    <!-- Project Option Sheet -->
+    <string name="project_pin">تثبيت</string>
+    <string name="project_pin_desc">تثبيت هذا المشروع في الأعلى</string>
+    <string name="project_clone">استنساخ</string>
+    <string name="project_clone_desc">إنشاء نسخة مكررة من هذا المشروع</string>
+    <string name="project_backup">نسخ احتياطي</string>
+    <string name="project_backup_desc">نسخ احتياطي للمشروع إلى التخزين الخارجي</string>
+    <string name="project_remove">إزالة</string>
+    <string name="project_remove_desc">حذف مجلد المشروع نهائيًا</string>
+
+    <!-- Drawer File Actions & New Dialog -->
+    <string name="create_new">إنشاء جديد</string>
+    <string name="type_file">ملف</string>
+    <string name="type_folder">مجلد</string>
+    <string name="name_hint">الاسم</string>
+    <string name="file_name_empty">لا يمكن أن يكون الاسم فارغًا</string>
+    <string name="file_created">تم الإنشاء بنجاح</string>
+    <string name="file_create_failed">فشل الإنشاء: %1$s</string>
+    <string name="file_actions">إجراءات الملف</string>
+    <string name="rename">إعادة تسمية</string>
+    <string name="rename_desc">تغيير اسم الملف</string>
+    <string name="delete">حذف</string>
+    <string name="delete_desc">حذف هذا العنصر نهائيًا</string>
+    <string name="delete_confirm_title">حذف %1$s؟</string>
+    <string name="delete_confirm_msg">هل أنت تأكد من أنك تريد حذف %1$s؟ لا يمكن التراجع عن هذا الإجراء.</string>
+    <string name="copy_path">نسخ المسار</string>
+    <string name="copy_path_desc">نسخ المسار المطلق إلى الحافظة</string>
+    <string name="copy_relative_path">نسخ المسار النسبي</string>
+    <string name="copy_relative_path_desc">نسخ المسار النسبي للمشروع</string>
+    <string name="path_copied">تم نسخ المسار إلى الحافظة</string>
+    <string name="new_item_here">جديد بالداخل</string>
+    <string name="new_item_here_desc">إنشاء ملف أو مجلد داخل هذا الدليل</string>
+    <string name="file_renamed">تمت إعادة التسمية بنجاح</string>
+    <string name="file_deleted">تم الحذف بنجاح</string>
+    <string name="file_delete_failed">فشل الحذف</string>
+    <string name="enter_new_name">أدخل الاسم الجديد</string>
+    <string name="action_cancel">إلغاء</string>
+    <string name="action_create">إنشاء</string>
+    <string name="file_already_exists">يوجد عنصر بهذا الاسم بالفعل</string>
+    <string name="file_rename_failed">فشلت إعادة التسمية</string>
+
+    <!-- Drawer More Menu & Search -->
+    <string name="drawer_show_hidden_files">إظهار الملفات المخفية</string>
+    <string name="drawer_compact_folders">ضغط المجلدات</string>
+    <string name="drawer_sort_by_name">الترتيب حسب الاسم</string>
+    <string name="drawer_sort_by_size">الترتيب حسب الحجم</string>
+    <string name="drawer_sort_by_date">الترتيب حسب التاريخ</string>
+
+    <string name="search_index_project_title">فهرسة المشروع</string>
+    <string name="search_index_project_desc">يمكن أن تؤدي الفهرسة إلى تحسين سرعة البحث للمشاريع الكبيرة</string>
+    <string name="search_files_in_project">البحث عن الملفات في المشروع</string>
+    <string name="search_code_in_project">البحث عن الكود في المشروع</string>
+    <string name="search_enter_name_hint">أدخل الاسم</string>
+    <string name="search_hint">بحث</string>
+    <string name="searching_in_project">جارٍ البحث في: %1$s</string>
+    <string name="search_no_results">لم يتم العثور على نتائج</string>
+    <string name="search_results_count">تم العثور على %1$d نتيجة</string>
+    <string name="search_ignore_case">تجاهل حالة الأحرف</string>
+    <string name="search_filter_files">تصفية الملفات</string>
+    <string name="search_filter_ext_hint">تصفية الامتدادات (مثل kt, xml, java)</string>
+    <string name="search_code_empty_prompt">أدخل كلمة رئيسية للبحث\nفي الملفات</string>
+    <string name="search_code_searching">جارٍ البحث في الكود…</string>
+    <string name="search_code_scanning">جارٍ فحص كود المشروع…</string>
 </resources>

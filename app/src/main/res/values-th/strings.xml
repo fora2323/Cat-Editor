@@ -1,0 +1,288 @@
+<resources>
+    <string name="app_name" translatable="false">Cat Editor</string>
+
+    <!-- General Navigation & Actions -->
+    <string name="settings">การตั้งค่า</string>
+    <string name="back">ย้อนกลับ</string>
+    <string name="close">ปิด</string>
+    <string name="cancel">ยกเลิก</string>
+    <string name="apply">นำไปใช้</string>
+    <string name="menu">เมนู</string>
+    <string name="undo">เลิกทำ</string>
+    <string name="redo">ทำซ้ำ</string>
+    <string name="save">บันทึก</string>
+    <string name="add">เพิ่ม</string>
+    <string name="refresh">รีเฟรช</string>
+    <string name="clear">ล้าง</string>
+    <string name="more_options">ตัวเลือกเพิ่มเติม</string>
+    <string name="cancel_clone_title">ยกเลิกการโคลน</string>
+    <string name="cancel_clone_msg">คุณแน่ใจหรือไม่ว่าต้องการยกเลิกกระบวนการโคลน?</string>
+    <string name="yes">ใช่</string>
+    <string name="no">ไม่</string>
+
+    <!-- Settings & Language -->
+    <string name="language">ภาษา</string>
+    <string name="language_desc">เลือกภาษาสำหรับแสดงผลในแอป</string>
+    <string name="choose_language">เลือกภาษา</string>
+    <string name="lang_system_default">ค่าเริ่มต้นของระบบ</string>
+    <string name="lang_english">English</string>
+    <string name="lang_indonesian">Bahasa Indonesia</string>
+    <string name="lang_arabic">العربية</string>
+    <string name="lang_russian">Русский</string>
+    <string name="about">เกี่ยวกับ</string>
+    <string name="version">เวอร์ชัน %1$s</string>
+
+    <!-- Project Menu Screen -->
+    <string name="git_clone">Git โคลน</string>
+    <string name="feature_git_clone">ฟีเจอร์ Git โคลน</string>
+    <string name="open_folder_saf">เปิดโฟลเดอร์ (SAF)</string>
+    <string name="select_folder">เลือกโฟลเดอร์</string>
+    <string name="new_empty_project">สร้างโปรเจกต์</string>
+    <string name="feature_new_empty_project">ฟีเจอร์โปรเจกต์ใหม่ยังไม่พร้อมใช้งาน</string>
+    <string name="folder_selected">โฟลเดอร์ที่เลือก: %1$s</string>
+    <string name="storage_permission_denied">การปฏิเสธสิทธิ์การจัดเก็บข้อมูล</string>
+    <string name="new_project">โปรเจกต์ใหม่</string>
+    <string name="waiting_storage_permission">กำลังรอสิทธิ์การจัดเก็บข้อมูล...</string>
+    <string name="no_projects_found">ไม่พบโปรเจกต์</string>
+    <string name="storage_access_required">จำเป็นต้องมีสิทธิ์เข้าถึงพื้นที่จัดเก็บข้อมูล</string>
+    <string name="storage_access_desc">แอปพลิเคชันต้องการสิทธิ์พื้นที่จัดเก็บข้อมูลภายนอกเพื่อสแกนโปรเจกต์และไอคอนในโฟลเดอร์ %1$s</string>
+    <string name="grant_permission">ให้สิทธิ์</string>
+
+    <!-- Git Clone Activity -->
+    <string name="git_clone_title">GitClone</string>
+    <string name="git_clone_subtitle">โคลนโปรเจกต์จาก GitHub</string>
+    <string name="git_clone_link_label">ลิงก์</string>
+    <string name="git_clone_branch_label">สาขา (Branch)</string>
+    <string name="git_clone_pat_label">โทเคนการเข้าถึงส่วนบุคคล (PAT)</string>
+    <string name="git_clone_pat_hint">จำเป็นสำหรับคลังส่วนตัว</string>
+    <string name="git_clone_fast_label">โคลนอย่างรวดเร็ว (ความลึก = 1)</string>
+    <string name="git_clone_fast_subtitle">ดาวน์โหลดเฉพาะคอมมิตล่าสุดเพื่อความรวดเร็ว</string>
+    <string name="git_clone_button">โคลน</string>
+
+    <!-- MainActivity & Editor -->
+    <string name="cannot_access_folder">ไม่สามารถเข้าถึงโฟลเดอร์ได้</string>
+    <string name="add_file_coming_soon">ฟีเจอร์เพิ่มไฟล์จะมาเร็ว ๆ นี้</string>
+    <string name="file_updated">อัปเดตไฟล์แล้ว</string>
+    <string name="file_preview_deleted">ลบไฟล์ตัวอย่างแล้ว</string>
+    <string name="file_saved">บันทึกไฟล์แล้ว</string>
+    <string name="failed_to_save">บันทึกไม่สำเร็จ: %1$s</string>
+    <string name="copy">คัดลอก</string>
+    <string name="restart">เริ่มใหม่</string>
+    <string name="create_file">สร้างไฟล์</string>
+    <string name="create_folder">สร้างโฟลเดอร์</string>
+    <string name="create_java_class">สร้างคลาส Java</string>
+    <string name="create_kotlin_class">สร้างคลาส Kotlin</string>
+    <string name="toolbar_name">เกิดข้อผิดพลาดค้าง!!</string>
+    <string name="copy_log">คัดลอกบันทึก</string>
+
+    <!-- Welcome Screen -->
+    <string name="welcome">ยินดีต้อนรับ</string>
+    <string name="welcome_title">ยินดีต้อนรับสู่ Cat Editor</string>
+    <string name="no_project_selected">ไม่ได้เลือกโปรเจกต์</string>
+    <string name="open_file">เปิดไฟล์</string>
+
+    <!-- Drawer & Preview -->
+    <string name="project_files">ไฟล์โปรเจกต์</string>
+    <string name="search_files">ค้นหาไฟล์...</string>
+    <string name="not_found">ไม่พบ</string>
+    <string name="preview_hint">เปิดแถบข้าง (ซ้าย) แล้วเลือกไฟล์ .kt ที่มี @Preview</string>
+
+    <!-- File Types Content Description -->
+    <string name="manifest">แมนิเฟสต์</string>
+    <string name="file_kotlin">Kotlin</string>
+    <string name="file_gradle">Gradle</string>
+    <string name="file_java">Java</string>
+    <string name="file_xml">XML</string>
+    <string name="file_cpp">C++</string>
+    <string name="file_c">C</string>
+    <string name="file_cmake">CMake</string>
+    <string name="file_python">Python</string>
+    <string name="file_markdown">Markdown</string>
+    <string name="file_json">JSON</string>
+    <string name="file_keystore">คีย์สโตร์</string>
+    <string name="file_git">Git</string>
+    <string name="file_proguard">Proguard</string>
+    <string name="file_generic">ไฟล์</string>
+
+    <!-- Settings Redesign -->
+    <string name="settings_app_title">แอปพลิเคชัน</string>
+    <string name="settings_app_desc">การตั้งค่าแอปพลิเคชันทั่วไป</string>
+    <string name="settings_editor_title">ตัวแก้ไข</string>
+    <string name="settings_editor_desc">การตั้งค่าตัวแก้ไขทั่วไป</string>
+    <string name="settings_git_title">Git</string>
+    <string name="settings_git_desc">การกำหนดค่าระบบควบคุมเวอร์ชัน</string>
+    <string name="settings_about_desc">เกี่ยวกับ %1$s</string>
+
+    <!-- App Settings Screen -->
+    <string name="setting_check_updates_title">ตรวจสอบการอัปเดต</string>
+    <string name="setting_check_updates_desc">ตรวจสอบการอัปเดตเป็นประจำ</string>
+    <string name="setting_fullscreen_title">เต็มหน้าจอ</string>
+    <string name="setting_fullscreen_desc">เริ่มแอปในโหมดเต็มหน้าจอ</string>
+    <string name="setting_smart_toolbar_title">ถบเครื่องมืออัจฉริยะ</string>
+    <string name="setting_smart_toolbar_desc">ซ่อนถบเครื่องมือขณะแก้ไขเพื่อเพิ่มพื้นที่หน้าจอ</string>
+    <string name="setting_exit_dialog_title">ไดอะล็อกยืนยันการออก</string>
+    <string name="setting_exit_dialog_desc">แสดงไดอะล็อกยืนยันก่อนปิดแอป</string>
+    <string name="setting_manage_storage_title">จัดการพื้นที่จัดเก็บข้อมูล</string>
+    <string name="setting_manage_storage_desc">จัดการสิทธิ์การจัดเก็บข้อมูล</string>
+    <string name="setting_manage_fonts_title">จัดการแบบอักษรของแอป</string>
+    <string name="setting_manage_fonts_desc">จัดการแบบอักษรของแอปพลิเคชัน</string>
+    <string name="section_feature_toggles">สวิตช์เปิดปิดฟีเจอร์</string>
+    <string name="setting_debug_options_title">ตัวเลือกการดีบัก</string>
+
+    <!-- Editor Settings Screen -->
+    <string name="editor_cat_smart_features">ฟีเจอร์อัจฉริยะ</string>
+    <string name="editor_auto_compile_title">คอมไพล์ให้อัตโนมัติ</string>
+    <string name="editor_auto_compile_desc">คอมไพล์และอัปเดตตัวอย่างโดยอัตโนมัติเมื่อโค้ดเปลี่ยน</string>
+    <string name="editor_auto_close_tag_title">ปิดแท็กให้อัตโนมัติ</string>
+    <string name="editor_auto_close_tag_desc">ปิดแท็ก HTML และ XML โดยอัตโนมัติ</string>
+    <string name="editor_color_preview_title">แสดงตัวอย่างสี</string>
+    <string name="editor_color_preview_desc">แสดงตัวอย่างสีในตัวแก้ไขเมื่อไม่ได้เชื่อมต่อ Language Server</string>
+
+    <string name="editor_cat_content">เนื้อหา</string>
+    <string name="editor_word_wrap_title"> ตัดคำอัตโนมัติ</string>
+    <string name="editor_word_wrap_desc">เปิดใช้งานการตัดคำในตัวแก้ไขทั้งหมด</string>
+    <string name="editor_wrap_txt_title">ตัดคำไฟล์ TXT</string>
+    <string name="editor_wrap_txt_desc">ตัดคำไฟล์ TXT โดยอัตโนมัติ</string>
+    <string name="editor_read_only_title">โหมดอ่านอย่างเดียว</string>
+    <string name="editor_read_only_desc">เปิดใช้งานโหมดอ่านอย่างเดียวเป็นค่าเริ่มต้น</string>
+
+    <string name="editor_cat_editor">ตัวแก้ไข</string>
+    <string name="editor_line_numbers_title">หมายเลขบรรทัด</string>
+    <string name="editor_line_numbers_desc">แสดงหมายเลขบรรทัดข้างตัวแก้ไข</string>
+    <string name="editor_disable_virtual_kbd_title">ปิดใช้งานคีย์บอร์ดเสมือน</string>
+    <string name="editor_disable_virtual_kbd_desc">ปิดใช้งานคีย์บอร์ดเสมือนเมื่อมีคีย์บอร์ดจริง</string>
+    <string name="editor_cursor_anim_title">แอนิเมชันเคอร์เซอร์</string>
+    <string name="editor_cursor_anim_desc">เปิดใช้งานแอนิเมชันเคอร์เซอร์ที่ราบรื่น</string>
+
+    <!-- Language Screen -->
+    <string name="language_warning_notice">การเปลี่ยนภาษาจะรีสตาร์ทหน้าจอนี้ทันทีเพื่อนำภาษาใหม่ไปใช้ ซึ่งอาจแสดงหน้าจอว่างเปล่าเป็นเวลาสั้น ๆ</string>
+    <string name="btn_translate">แปลภาษา</string>
+
+    <!-- About Screen -->
+    <string name="section_build_info">ข้อมูลการบิลด์</string>
+    <string name="build_version">เวอร์ชัน</string>
+    <string name="build_version_code">รหัสเวอร์ชัน</string>
+    <string name="build_git_hash">แฮชคอมมิต Git</string>
+    <string name="section_community">ชุมชน</string>
+    <string name="community_github_stars">ดาว GitHub</string>
+    <string name="community_github">GitHub</string>
+    <string name="community_github_sub">ให้ดาวบน GitHub 😍</string>
+    <string name="community_telegram">กลุ่ม Telegram</string>
+    <string name="community_telegram_sub">รายงานปัญหา ขอฟีเจอร์ ฯลฯ</string>
+
+    <!-- Support Screen -->
+    <string name="support">การสนับสนุน</string>
+    <string name="support_github_sponsors">GitHub Sponsors</string>
+    <string name="support_buy_me_coffee">Buy Me a Coffee</string>
+    <string name="support_saweria">Saweria</string>
+    <string name="support_saweria_desc">สนับสนุนผ่าน Saweria สำหรับผู้ใช้ในอินโดนีเซีย ไทย และมาเลเซีย</string>
+
+    <!-- Placeholder -->
+    <string name="coming_soon">เร็ว ๆ นี้</string>
+    <string name="feature_under_development">หน้าจอการตั้งค่านี้จะพร้อมใช้งานเร็ว ๆ นี้</string>
+
+    <!-- Git Settings Screen -->
+    <string name="git_section_general">ทั่วไป</string>
+    <string name="git_color_filenames_title">ระบายสีชื่อไฟล์</string>
+    <string name="git_color_filenames_desc">ระบายสีชื่อไฟล์ตามสถานะ Git</string>
+    <string name="git_gutter_indicators_title">ตัวบ่งชี้ขอบหน้ากระดาษ</string>
+    <string name="git_gutter_indicators_desc">แสดงตัวบ่งชี้การเปลี่ยนแปลงบรรทัดสำหรับการเพิ่ม แก้ไข และลบ</string>
+    <string name="git_conflict_detection_title">การตรวจจับข้อขัดแย้ง</string>
+    <string name="git_conflict_detection_desc">แสดงตัวทำเครื่องหมายข้อขัดแย้งและตัวเลือกการแก้ไขในตัวแก้ไข</string>
+    <string name="git_section_account">บัญชี</string>
+    <string name="git_credentials_title">ข้อมูลประจำตัว</string>
+    <string name="git_credentials_desc">ข้อมูลประจำตัวสำหรับเข้าถึงคลังระยะไกล</string>
+    <string name="git_user_data_title">ข้อมูลผู้ใช้</string>
+    <string name="git_user_data_desc">ข้อมูลผู้ใช้ที่จะปรากฏในคอมมิต Git ของคุณ</string>
+    <string name="git_section_repositories">คลังจัดเก็บ (Repositories)</string>
+    <string name="git_submodules_title">ซับโมดูล</string>
+    <string name="git_submodules_desc">รวมซับโมดูลเมื่อโคลนคลัง</string>
+    <string name="git_recursive_submodules_title">ซับโมดูลแบบเกิดซ้ำ</string>
+    <string name="git_recursive_submodules_desc">ดึงซับโมดูลและการขึ้นต่อกันโดยอัตโนมัติ</string>
+    <string name="git_pat_warning_desc">หากต้องการเชื่อมต่อกับ GitHub คุณต้องป้อนโทเคน PAT ไม่ใช่รหัสผ่านบัญชี GitHub</string>
+    <string name="git_username_label">ชื่อผู้ใช้</string>
+    <string name="git_password_label">รหัสผ่าน</string>
+    <string name="git_author_name_label">ชื่อ</string>
+    <string name="git_author_email_label">อีเมล</string>
+
+    <!-- Settings functionality and GitHub sync -->
+    <string name="exit_dialog_title">ออกจาก Cat Editor</string>
+    <string name="exit_dialog_msg">คุณแน่ใจหรือไม่ว่าต้องการออกจากแอปพลิเคชัน?</string>
+    <string name="exit_dialog_confirm">ออก</string>
+    <string name="select_font_title">เลือกแบบอักษรของตัวแก้ไข</string>
+    <string name="font_monospace">Monospace (ค่าเริ่มต้น)</string>
+    <string name="font_sans">Sans-Serif</string>
+    <string name="font_serif">Serif</string>
+    <string name="checking_updates">กำลังตรวจสอบการอัปเดต…</string>
+    <string name="up_to_date">คุณกำลังใช้เวอร์ชันล่าสุด (%1$s)</string>
+    <string name="update_available">มีการอัปเดตใหม่บน GitHub (%1$s)</string>
+    <string name="sync_github">ซิงค์ข้อมูล GitHub</string>
+    <string name="syncing_github">กำลังซิงค์กับ GitHub…</string>
+    <string name="synced_github_success">ซิงค์กับ GitHub สำเร็จแล้ว</string>
+    <string name="sync_failed">ซิงค์กับ GitHub ไม่สำเร็จ</string>
+    <string name="build_latest_remote_commit">คอมมิต GitHub ล่าสุด</string>
+
+    <!-- Project Option Sheet -->
+    <string name="project_pin">ปักหมุด</string>
+    <string name="project_pin_desc">ปักหมุดโปรเจกต์นี้ไว้ด้านบน</string>
+    <string name="project_clone">โคลน</string>
+    <string name="project_clone_desc">สร้างสำเนาของโปรเจกต์นี้</string>
+    <string name="project_backup">สำรองข้อมูล</string>
+    <string name="project_backup_desc">สำรองข้อมูลโปรเจกต์ไปยังพื้นที่จัดเก็บภายนอก</string>
+    <string name="project_remove">ลบ</string>
+    <string name="project_remove_desc">ลบไดเรกทอรีโปรเจกต์อย่างถาวร</string>
+
+    <!-- Drawer File Actions & New Dialog -->
+    <string name="create_new">สร้างใหม่</string>
+    <string name="type_file">ไฟล์</string>
+    <string name="type_folder">โฟลเดอร์</string>
+    <string name="name_hint">ชื่อ</string>
+    <string name="file_name_empty">ชื่อต้องไม่ว่างเปล่า</string>
+    <string name="file_created">สร้างสำเร็จแล้ว</string>
+    <string name="file_create_failed">สร้างไม่สำเร็จ: %1$s</string>
+    <string name="file_actions">การดำเนินการกับไฟล์</string>
+    <string name="rename">เปลี่ยนชื่อ</string>
+    <string name="rename_desc">เปลี่ยนชื่อไฟล์</string>
+    <string name="delete">ลบ</string>
+    <string name="delete_desc">ลบรายการนี้อย่างถาวร</string>
+    <string name="delete_confirm_title">ลบ %1$s หรือไม่?</string>
+    <string name="delete_confirm_msg">คุณแน่ใจหรือไม่ว่าต้องการลบ %1$s นี้? การดำเนินการนี้ไม่สามารถย้อนกลับได้</string>
+    <string name="copy_path">คัดลอกเส้นทาง</string>
+    <string name="copy_path_desc">คัดลอกเส้นทางแบบเต็มไปยังคลิปบอร์ด</string>
+    <string name="copy_relative_path">คัดลอกเส้นทางสัมพัทธ์</string>
+    <string name="copy_relative_path_desc">คัดลอกเส้นทางสัมพัทธ์กับโปรเจกต์</string>
+    <string name="path_copied">คัดลอกเส้นทางไปยังคลิปบอร์ดแล้ว</string>
+    <string name="new_item_here">สร้างใหม่ข้างในนี้</string>
+    <string name="new_item_here_desc">สร้างไฟล์หรือโฟลเดอร์ภายในไดเรกทอรีนี้</string>
+    <string name="file_renamed">เปลี่ยนชื่อสำเร็จแล้ว</string>
+    <string name="file_deleted">ลบสำเร็จแล้ว</string>
+    <string name="file_delete_failed">ลบไม่สำเร็จ</string>
+    <string name="enter_new_name">ป้อนชื่อใหม่</string>
+    <string name="action_cancel">ยกเลิก</string>
+    <string name="action_create">สร้าง</string>
+    <string name="file_already_exists">มีรายการชื่อนี้อยู่แล้ว</string>
+    <string name="file_rename_failed">เปลี่ยนชื่อไม่สำเร็จ</string>
+
+    <!-- Drawer More Menu & Search -->
+    <string name="drawer_show_hidden_files">แสดงไฟล์ที่ซ่อนอยู่</string>
+    <string name="drawer_compact_folders">บีบอัดโฟลเดอร์</string>
+    <string name="drawer_sort_by_name">เรียงตามชื่อ</string>
+    <string name="drawer_sort_by_size">เรียงตามขนาด</string>
+    <string name="drawer_sort_by_date">เรียงตามวันที่</string>
+
+    <string name="search_index_project_title">ทำดัชนีโปรเจกต์</string>
+    <string name="search_index_project_desc">การทำดัชนีสามารถเพิ่มความเร็วในการค้นหาสำหรับโปรเจกต์ขนาดใหญ่</string>
+    <string name="search_files_in_project">ค้นหาไฟล์ในโปรเจกต์</string>
+    <string name="search_code_in_project">ค้นหาโค้ดในโปรเจกต์</string>
+    <string name="search_enter_name_hint">ป้อนชื่อ</string>
+    <string name="search_hint">ค้นหา</string>
+    <string name="searching_in_project">กำลังค้นหาใน: %1$s</string>
+    <string name="search_no_results">ไม่พบผลลัพธ์</string>
+    <string name="search_results_count">พบ %1$d ผลลัพธ์</string>
+    <string name="search_ignore_case">ไม่สนใจตัวพิมพ์เล็กใหญ่</string>
+    <string name="search_filter_files">กรองไฟล์</string>
+    <string name="search_filter_ext_hint">กรองนามสกุล (เช่น kt, xml, java)</string>
+    <string name="search_code_empty_prompt">ป้อนคำค้นหาเพื่อ\nค้นหาในไฟล์</string>
+    <string name="search_code_searching">กำลังค้นหาโค้ด…</string>
+    <string name="search_code_scanning">กำลังสแกนโค้ดโปรเจกต์…</string>
+</resources>

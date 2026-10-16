@@ -15,6 +15,10 @@
     <string name="refresh">Segarkan</string>
     <string name="clear">Hapus</string>
     <string name="more_options">Opsi Lainnya</string>
+    <string name="cancel_clone_title">Batalkan Klon</string>
+    <string name="cancel_clone_msg">Apakah Anda yakin ingin membatalkan proses klon?</string>
+    <string name="yes">Ya</string>
+    <string name="no">Tidak</string>
 
     <!-- Settings & Language -->
     <string name="language">Bahasa</string>
@@ -33,6 +37,8 @@
     <string name="feature_git_clone">Fitur Git Clone</string>
     <string name="open_folder_saf">Buka Folder (SAF)</string>
     <string name="select_folder">Pilih Folder</string>
+    <string name="new_empty_project">Buat Proyek</string>
+    <string name="feature_new_empty_project">Fitur proyek baru belum tersedia</string>
     <string name="folder_selected">Folder terpilih: %1$s</string>
     <string name="storage_permission_denied">Izin penyimpanan ditolak</string>
     <string name="new_project">Proyek Baru</string>
@@ -41,10 +47,17 @@
     <string name="storage_access_required">Akses Penyimpanan Diperlukan</string>
     <string name="storage_access_desc">Aplikasi membutuhkan izin membaca file eksternal untuk memindai proyek dan ikon launcher pada folder %1$s.</string>
     <string name="grant_permission">Berikan Izin</string>
+
+    <!-- Git Clone Activity -->
+    <string name="git_clone_title">GitClone</string>
+    <string name="git_clone_subtitle">Klon proyek dari GitHub</string>
+    <string name="git_clone_link_label">Tautan</string>
+    <string name="git_clone_branch_label">Cabang</string>
     <string name="git_clone_pat_label">Personal Access Token (PAT)</string>
     <string name="git_clone_pat_hint">Diperlukan untuk repositori privat</string>
     <string name="git_clone_fast_label">Klon Cepat (Kedalaman = 1)</string>
     <string name="git_clone_fast_subtitle">Unduh komit terbaru saja agar lebih cepat</string>
+    <string name="git_clone_button">Klon</string>
 
     <!-- MainActivity & Editor -->
     <string name="cannot_access_folder">Tidak bisa akses folder</string>
@@ -116,6 +129,31 @@
     <string name="section_feature_toggles">Pengalih fitur</string>
     <string name="setting_debug_options_title">Opsi debug</string>
 
+    <!-- Editor Settings Screen -->
+    <string name="editor_cat_smart_features">Fitur cerdas</string>
+    <string name="editor_auto_compile_title">Kompilasi otomatis</string>
+    <string name="editor_auto_compile_desc">Otomatis mengompilasi dan memperbarui pratinjau saat kode berubah</string>
+    <string name="editor_auto_close_tag_title">Tutup tag otomatis</string>
+    <string name="editor_auto_close_tag_desc">Otomatis menutup tag HTML dan XML</string>
+    <string name="editor_color_preview_title">Pratinjau warna</string>
+    <string name="editor_color_preview_desc">Tampilkan pratinjau warna di editor saat tidak ada server bahasa yang terhubung</string>
+
+    <string name="editor_cat_content">Konten</string>
+    <string name="editor_word_wrap_title">Bungkus kata</string>
+    <string name="editor_word_wrap_desc">Aktifkan bungkus kata di semua editor</string>
+    <string name="editor_wrap_txt_title">Bungkus file TXT</string>
+    <string name="editor_wrap_txt_desc">Otomatis membungkus file TXT</string>
+    <string name="editor_read_only_title">Mode baca saja</string>
+    <string name="editor_read_only_desc">Aktifkan mode baca saja secara default</string>
+
+    <string name="editor_cat_editor">Editor</string>
+    <string name="editor_line_numbers_title">Nomor baris</string>
+    <string name="editor_line_numbers_desc">Tampilkan nomor baris di samping editor</string>
+    <string name="editor_disable_virtual_kbd_title">Nonaktifkan papan ketik virtual</string>
+    <string name="editor_disable_virtual_kbd_desc">Nonaktifkan papan ketik virtual saat papan ketik fisik tersedia</string>
+    <string name="editor_cursor_anim_title">Animasi kursor</string>
+    <string name="editor_cursor_anim_desc">Aktifkan animasi kursor yang halus</string>
+
     <!-- Language Screen -->
     <string name="language_warning_notice">Mengubah bahasa akan memulai ulang layar ini untuk menerapkan bahasa baru dengan segera. Ini mungkin menampilkan layar kosong secara singkat, yang berpotensi memicu ketidaknyamanan pada penderita epilepsi fotosensitif.</string>
     <string name="btn_translate">Terjemahkan</string>
@@ -142,7 +180,6 @@
     <!-- Placeholder -->
     <string name="coming_soon">Segera hadir</string>
     <string name="feature_under_development">Layar pengaturan ini akan segera tersedia.</string>
-
     <!-- Git Settings Screen -->
     <string name="git_section_general">Umum</string>
     <string name="git_color_filenames_title">Warnai nama file</string>
@@ -181,6 +218,7 @@
     <string name="sync_github">Sinkronkan Info GitHub</string>
     <string name="syncing_github">Menyinkronkan dengan GitHub…</string>
     <string name="synced_github_success">Berhasil disinkronkan dengan GitHub</string>
+    <string name="sync_failed">Gagal menyinkronkan dengan GitHub</string>
     <string name="build_latest_remote_commit">Commit GitHub terbaru</string>
 
     <!-- Project Option Sheet -->
@@ -223,4 +261,27 @@
     <string name="action_create">Buat</string>
     <string name="file_already_exists">Item dengan nama ini sudah ada</string>
     <string name="file_rename_failed">Gagal mengganti nama</string>
+
+    <!-- Drawer More Menu & Search -->
+    <string name="drawer_show_hidden_files">Tampilkan file tersembunyi</string>
+    <string name="drawer_compact_folders">Mampatkan folder</string>
+    <string name="drawer_sort_by_name">Urutkan berdasarkan nama</string>
+    <string name="drawer_sort_by_size">Urutkan berdasarkan ukuran</string>
+    <string name="drawer_sort_by_date">Urutkan berdasarkan tanggal</string>
+
+    <string name="search_index_project_title">Indeks proyek</string>
+    <string name="search_index_project_desc">Pengindeksan dapat meningkatkan kecepatan pencarian untuk proyek besar</string>
+    <string name="search_files_in_project">Cari file dalam proyek</string>
+    <string name="search_code_in_project">Cari kode dalam proyek</string>
+    <string name="search_enter_name_hint">Masukkan nama</string>
+    <string name="search_hint">Cari</string>
+    <string name="searching_in_project">Mencari di: %1$s</string>
+    <string name="search_no_results">Tidak ada hasil yang ditemukan</string>
+    <string name="search_results_count">%1$d hasil ditemukan</string>
+    <string name="search_ignore_case">Abaikan kapitalisasi</string>
+    <string name="search_filter_files">Filter file</string>
+    <string name="search_filter_ext_hint">Filter ekstensi (mis. kt, xml, java)</string>
+    <string name="search_code_empty_prompt">Masukkan kata kunci pencarian untuk\nmenemukan di dalam file</string>
+    <string name="search_code_searching">Mencari kode…</string>
+    <string name="search_code_scanning">Memindai kode proyek…</string>
 </resources>

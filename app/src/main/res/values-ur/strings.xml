@@ -1,0 +1,288 @@
+<resources>
+    <string name="app_name" translatable="false">Cat Editor</string>
+
+    <!-- General Navigation & Actions -->
+    <string name="settings">ترتیبات</string>
+    <string name="back">واپس</string>
+    <string name="close">بند کریں</string>
+    <string name="cancel">منسوخ کریں</string>
+    <string name="apply">لاگو کریں</string>
+    <string name="menu">مینو</string>
+    <string name="undo">کالعدم کریں</string>
+    <string name="redo">دوبارہ کریں</string>
+    <string name="save">محفوظ کریں</string>
+    <string name="add">شامل کریں</string>
+    <string name="refresh">تازہ کریں</string>
+    <string name="clear">صاف کریں</string>
+    <string name="more_options">مزید اختیارات</string>
+    <string name="cancel_clone_title">کلون منسوخ کریں</string>
+    <string name="cancel_clone_msg">کیا آپ واقعی کلون کا عمل منسوخ کرنا چاہتے ہیں؟</string>
+    <string name="yes">ہاں</string>
+    <string name="no">نہیں</string>
+
+    <!-- Settings & Language -->
+    <string name="language">زبان</string>
+    <string name="language_desc">ایپ ڈسپلے زبان منتخب کریں</string>
+    <string name="choose_language">زبان کا انتخاب کریں</string>
+    <string name="lang_system_default">سسٹم ڈیفالٹ</string>
+    <string name="lang_english">English</string>
+    <string name="lang_indonesian">Bahasa Indonesia</string>
+    <string name="lang_arabic">العربية</string>
+    <string name="lang_russian">Русский</string>
+    <string name="about">متعلق</string>
+    <string name="version">ورژن %1$s</string>
+
+    <!-- Project Menu Screen -->
+    <string name="git_clone">Git کلون</string>
+    <string name="feature_git_clone">Git کلون فیچر</string>
+    <string name="open_folder_saf">فولڈر کھولیں (SAF)</string>
+    <string name="select_folder">فولڈر منتخب کریں</string>
+    <string name="new_empty_project">پراجیکٹ بنائیں</string>
+    <string name="feature_new_empty_project">نئے پراجیکٹ کے فیچرز ابھی دستیاب نہیں ہیں</string>
+    <string name="folder_selected">منتخب فولڈر: %1$s</string>
+    <string name="storage_permission_denied">اسٹوریج کی اجازت مسترد کر دی گئی</string>
+    <string name="new_project">نیا پراجیکٹ</string>
+    <string name="waiting_storage_permission">اسٹوریج کی اجازت کا انتظار ہے...</string>
+    <string name="no_projects_found">کوئی پراجیکٹ نہیں ملا</string>
+    <string name="storage_access_required">اسٹوریج تک رسائی درکار ہے</string>
+    <string name="storage_access_desc">فولڈر %1$s میں پراجیکٹس اور لانچر آئیکنز اسکین کرنے کے لیے ایپلی کیشن کو بیرونی اسٹوریج کی اجازت کی ضرورت ہے۔</string>
+    <string name="grant_permission">اجازت دیں</string>
+
+    <!-- Git Clone Activity -->
+    <string name="git_clone_title">GitClone</string>
+    <string name="git_clone_subtitle">GitHub سے پراجیکٹ کلون کریں</string>
+    <string name="git_clone_link_label">لنک</string>
+    <string name="git_clone_branch_label">برانچز</string>
+    <string name="git_clone_pat_label">پرسنل ایکسس ٹوکن (PAT)</string>
+    <string name="git_clone_pat_hint">نجی ریپوزٹریز کے لیے ضروری ہے</string>
+    <string name="git_clone_fast_label">تیز رفتار کلون (گہرائی = 1)</string>
+    <string name="git_clone_fast_subtitle">تیز رفتار کے لیے صرف تازہ ترین کمٹ ڈاؤن لوڈ کریں</string>
+    <string name="git_clone_button">کلون</string>
+
+    <!-- MainActivity & Editor -->
+    <string name="cannot_access_folder">فولڈر تک رسائی ممکن نہیں</string>
+    <string name="add_file_coming_soon">فائل شامل کرنے کا فیچر جلد آ رہا ہے</string>
+    <string name="file_updated">فائل اپ ڈیٹ ہو گئی</string>
+    <string name="file_preview_deleted">پیش نظارہ فائل حذف کر دی گئی</string>
+    <string name="file_saved">فائل محفوظ ہو گئی</string>
+    <string name="failed_to_save">محفوظ کرنے میں ناکامی: %1$s</string>
+    <string name="copy">کپی کریں</string>
+    <string name="restart">دوبارہ شروع کریں</string>
+    <string name="create_file">فائل بنائیں</string>
+    <string name="create_folder">فولڈر بنائیں</string>
+    <string name="create_java_class">Java کلاس بنائیں</string>
+    <string name="create_kotlin_class">Kotlin کلاس بنائیں</string>
+    <string name="toolbar_name">اوہ کریش ہو گیا!!</string>
+    <string name="copy_log">لاگز کاپی کریں</string>
+
+    <!-- Welcome Screen -->
+    <string name="welcome">خوش آمدید</string>
+    <string name="welcome_title">Cat Editor میں خوش آمدید</string>
+    <string name="no_project_selected">کوئی پراجیکٹ منتخب نہیں ہے</string>
+    <string name="open_file">فائل کھولیں</string>
+
+    <!-- Drawer & Preview -->
+    <string name="project_files">پراجیکٹ فائلیں</string>
+    <string name="search_files">فائلیں تلاش کریں...</string>
+    <string name="not_found">نہیں ملا</string>
+    <string name="preview_hint">ڈراور (بائیں) کھولیں اور @Preview والی .kt فائل منتخب کریں</string>
+
+    <!-- File Types Content Description -->
+    <string name="manifest">مینی فیسٹ</string>
+    <string name="file_kotlin">Kotlin</string>
+    <string name="file_gradle">Gradle</string>
+    <string name="file_java">Java</string>
+    <string name="file_xml">XML</string>
+    <string name="file_cpp">C++</string>
+    <string name="file_c">C</string>
+    <string name="file_cmake">CMake</string>
+    <string name="file_python">Python</string>
+    <string name="file_markdown">Markdown</string>
+    <string name="file_json">JSON</string>
+    <string name="file_keystore">کی اسٹور</string>
+    <string name="file_git">Git</string>
+    <string name="file_proguard">Proguard</string>
+    <string name="file_generic">فائل</string>
+
+    <!-- Settings Redesign -->
+    <string name="settings_app_title">ایپلی کیشن</string>
+    <string name="settings_app_desc">عام ایپلی کیشن ترتیبات</string>
+    <string name="settings_editor_title">ایڈیٹر</string>
+    <string name="settings_editor_desc">عام ایڈیٹر ترتیبات</string>
+    <string name="settings_git_title">Git</string>
+    <string name="settings_git_desc">ورژن کنٹرول سسٹم کی ترتیب</string>
+    <string name="settings_about_desc">%1$s کے بارے میں</string>
+
+    <!-- App Settings Screen -->
+    <string name="setting_check_updates_title">اپ ڈیٹس چیک کریں</string>
+    <string name="setting_check_updates_desc">باقاعدگی سے اپ ڈیٹس چیک کریں</string>
+    <string name="setting_fullscreen_title">فل اسکرین</string>
+    <string name="setting_fullscreen_desc">ایپ کو فل اسکرین موڈ میں شروع کریں</string>
+    <string name="setting_smart_toolbar_title">سمارٹ ٹول بار</string>
+    <string name="setting_smart_toolbar_desc">اسکرین جگہ خالی کرنے کے لیے ترمیم کرتے وقت ٹول بار چھپائیں</string>
+    <string name="setting_exit_dialog_title">باہر نکلنے کا تصدیقی ڈائیلاگ</string>
+    <string name="setting_exit_dialog_desc">ایپ بند کرنے سے پہلے تصدیقی ڈائیلاگ دکھائیں</string>
+    <string name="setting_manage_storage_title">اسٹوریج کا انتظام کریں</string>
+    <string name="setting_manage_storage_desc">اسٹوریج کی اجازتوں کا انتظام کریں</string>
+    <string name="setting_manage_fonts_title">ایپ فونٹس کا انتظام کریں</string>
+    <string name="setting_manage_fonts_desc">ایپلی کیشن فونٹس کا انتظام کریں</string>
+    <string name="section_feature_toggles">فیچر ٹوگلز</string>
+    <string name="setting_debug_options_title">ڈیبگ کے اختیارات</string>
+
+    <!-- Editor Settings Screen -->
+    <string name="editor_cat_smart_features">سمارٹ فیچرز</string>
+    <string name="editor_auto_compile_title">خودکار کمپائل</string>
+    <string name="editor_auto_compile_desc">کوڈ تبدیل ہونے پر خود بخود کمپائل اور پیش نظارہ اپ ڈیٹ کریں</string>
+    <string name="editor_auto_close_tag_title">ٹیگز خودکار بند کریں</string>
+    <string name="editor_auto_close_tag_desc">HTML اور XML ٹیگز خود بخود بند کریں</string>
+    <string name="editor_color_preview_title">رنگ کا پیش نظارہ</string>
+    <string name="editor_color_preview_desc">جب کوئی زبان کا سرور منسلک نہ ہو تو ایڈیٹر میں رنگ کا پیش نظارہ دکھائیں</string>
+
+    <string name="editor_cat_content">مواد</string>
+    <string name="editor_word_wrap_title">ورڈ ریپ</string>
+    <string name="editor_word_wrap_desc">تمام ایڈیٹرز میں ورڈ ریپ فعال کریں</string>
+    <string name="editor_wrap_txt_title">TXT فائلوں کو ریپ کریں</string>
+    <string name="editor_wrap_txt_desc">TXT فائلوں کو خود بخود ریپ کریں</string>
+    <string name="editor_read_only_title">صرف پڑھنے کا موڈ</string>
+    <string name="editor_read_only_desc">ڈیفالٹ کے طور پر صرف پڑھنے کا موڈ فعال کریں</string>
+
+    <string name="editor_cat_editor">ایڈیٹر</string>
+    <string name="editor_line_numbers_title">لائن کے نمبر</string>
+    <string name="editor_line_numbers_desc">ایڈیٹر کے ساتھ لائن کے نمبر دکھائیں</string>
+    <string name="editor_disable_virtual_kbd_title">ورچوئل کی بورڈ غیر فعال کریں</string>
+    <string name="editor_disable_virtual_kbd_desc">جسمانی کی بورڈ دستیاب ہونے پر ورچوئل کی بورڈ غیر فعال کریں</string>
+    <string name="editor_cursor_anim_title">کرسر اینیمیشن</string>
+    <string name="editor_cursor_anim_desc">ہموار کرسر اینیمیشن فعال کریں</string>
+
+    <!-- Language Screen -->
+    <string name="language_warning_notice">زبان تبدیل کرنے سے نئی زبان لاگو کرنے کے لیے یہ اسکرین فوری دوبارہ شروع ہو جائے گی۔ اس سے تھوڑی دیر کے لیے خالی اسکرین نظر آ سکتی ہے۔</string>
+    <string name="btn_translate">ترجمہ کریں</string>
+
+    <!-- About Screen -->
+    <string name="section_build_info">بلڈ معلومات</string>
+    <string name="build_version">ورژن</string>
+    <string name="build_version_code">ورژن کوڈ</string>
+    <string name="build_git_hash">Git کمٹ ہیش</string>
+    <string name="section_community">کمیونٹی</string>
+    <string name="community_github_stars">GitHub اسٹارز</string>
+    <string name="community_github">GitHub</string>
+    <string name="community_github_sub">GitHub پر اسٹار دیں 😍</string>
+    <string name="community_telegram">Telegram گروپ</string>
+    <string name="community_telegram_sub">مسائل کی رپورٹ، فیچر کی درخواستیں وغیرہ</string>
+
+    <!-- Support Screen -->
+    <string name="support">سپورٹ</string>
+    <string name="support_github_sponsors">GitHub اسپانسرز</string>
+    <string name="support_buy_me_coffee">Buy Me a Coffee</string>
+    <string name="support_saweria">Saweria</string>
+    <string name="support_saweria_desc">انڈونیشین، تھائی اور ملائیشین صارفین کے لیے Saweria کے ذریعے سپورٹ</string>
+
+    <!-- Placeholder -->
+    <string name="coming_soon">جلد آ رہا ہے</string>
+    <string name="feature_under_development">یہ ترتیبات کی اسکرین جلد دستیاب ہو گی۔</string>
+
+    <!-- Git Settings Screen -->
+    <string name="git_section_general">عام</string>
+    <string name="git_color_filenames_title">فائل کے نام رنگین کریں</string>
+    <string name="git_color_filenames_desc">Git کی حیثیت کی بنیاد پر فائل کے نام رنگین کریں</string>
+    <string name="git_gutter_indicators_title">گٹر کے اشارے</string>
+    <string name="git_gutter_indicators_desc">شامل، ترمیم اور حذف شدہ لائنوں کے لیے لائن کی تبدیلی کے اشارے دکھائیں</string>
+    <string name="git_conflict_detection_title">تنازعات کی شناخت</string>
+    <string name="git_conflict_detection_desc">ایڈیٹر میں تنازعہ کے نشانات اور حل کے اختیارات دکھائیں</string>
+    <string name="git_section_account">اکاؤنٹ</string>
+    <string name="git_credentials_title">کریڈنشلز</string>
+    <string name="git_credentials_desc">ریموٹ ریپوزٹریز تک رسائی کے لیے کریڈنشلز</string>
+    <string name="git_user_data_title">صارف کا ڈیٹا</string>
+    <string name="git_user_data_desc">صارف کا ڈیٹا جو آپ کی Git کمٹس میں ظاہر ہو گا</string>
+    <string name="git_section_repositories">ریپوزٹریز</string>
+    <string name="git_submodules_title">سب ماڈیولز</string>
+    <string name="git_submodules_desc">ریپوزٹریز کلون کرتے وقت سب ماڈیولز شامل کریں</string>
+    <string name="git_recursive_submodules_title">تکراری سب ماڈیولز</string>
+    <string name="git_recursive_submodules_desc">سب ماڈیولز اور ان کے انحصار کو تکراری طور پر حاصل کریں</string>
+    <string name="git_pat_warning_desc">GitHub سے منسلک ہونے کے لیے، آپ کو اپنا PAT ٹوکن درج کرنا ہو گا، اپنے GitHub اکاؤنٹ کا پاس ورڈ نہیں۔</string>
+    <string name="git_username_label">صارف کا نام</string>
+    <string name="git_password_label">پاس ورڈ</string>
+    <string name="git_author_name_label">نام</string>
+    <string name="git_author_email_label">ای میل</string>
+
+    <!-- Settings functionality and GitHub sync -->
+    <string name="exit_dialog_title">Cat Editor سے باہر نکلیں</string>
+    <string name="exit_dialog_msg">کیا آپ واقعی ایپلی کیشن سے باہر نکلنا چاہتے ہیں؟</string>
+    <string name="exit_dialog_confirm">باہر نکلیں</string>
+    <string name="select_font_title">ایڈیٹر کا فونٹس منتخب کریں</string>
+    <string name="font_monospace">مونو اسپیس (ڈیفالٹ)</string>
+    <string name="font_sans">سینز سیریف</string>
+    <string name="font_serif">سیریف</string>
+    <string name="checking_updates">اپ ڈیٹس چیک کی جا رہی ہیں…</string>
+    <string name="up_to_date">آپ تازہ ترین ورژن (%1$s) پر ہیں</string>
+    <string name="update_available">GitHub پر نئی اپ ڈیٹ دستیاب ہے (%1$s)</string>
+    <string name="sync_github">GitHub معلومات سنک کریں</string>
+    <string name="syncing_github">GitHub کے ساتھ سنک ہو رہا ہے…</string>
+    <string name="synced_github_success">GitHub کے ساتھ کامیابی سے سنک ہو گیا</string>
+    <string name="sync_failed">GitHub کے ساتھ سنک کرنے میں ناکامی</string>
+    <string name="build_latest_remote_commit">تازہ ترین GitHub کمٹ</string>
+
+    <!-- Project Option Sheet -->
+    <string name="project_pin">پن کریں</string>
+    <string name="project_pin_desc">اس پراجیکٹ کو اوپر پن کریں</string>
+    <string name="project_clone">کلون</string>
+    <string name="project_clone_desc">اس پراجیکٹ کی ایک نقل بنائیں</string>
+    <string name="project_backup">بیک اپ</string>
+    <string name="project_backup_desc">بیرونی اسٹوریج میں پراجیکٹ کا بیک اپ لیں</string>
+    <string name="project_remove">ہٹائیں</string>
+    <string name="project_remove_desc">پراجیکٹ ڈائرکٹری کو مستقل طور پر حذف کریں</string>
+
+    <!-- Drawer File Actions & New Dialog -->
+    <string name="create_new">نیا بنائیں</string>
+    <string name="type_file">فائل</string>
+    <string name="type_folder">فولڈر</string>
+    <string name="name_hint">نام</string>
+    <string name="file_name_empty">نام خالی نہیں ہو سکتا</string>
+    <string name="file_created">کامیابی سے بن گیا</string>
+    <string name="file_create_failed">بنانے میں ناکامی: %1$s</string>
+    <string name="file_actions">فائل کے اقدامات</string>
+    <string name="rename">نام تبدیل کریں</string>
+    <string name="rename_desc">فائل کا نام تبدیل کریں</string>
+    <string name="delete">حذف کریں</string>
+    <string name="delete_desc">اس آئٹم کو مستقل طور پر حذف کریں</string>
+    <string name="delete_confirm_title">%1$s حذف کریں؟</string>
+    <string name="delete_confirm_msg">کیا آپ واقعی اس %1$s کو حذف کرنا چاہتے ہیں؟ اس عمل کو کالعدم نہیں کیا جا سکتا۔</string>
+    <string name="copy_path">پاتھ کاپی کریں</string>
+    <string name="copy_path_desc">کلپ بورڈ پر مطلق پاتھ کاپی کریں</string>
+    <string name="copy_relative_path">نسبتی پاتھ کاپی کریں</string>
+    <string name="copy_relative_path_desc">پراجیکٹ کے نسبتی پاتھ کاپی کریں</string>
+    <string name="path_copied">پاتھ کلپ بورڈ پر کاپی ہو گیا</string>
+    <string name="new_item_here">اس کے اندر نیا</string>
+    <string name="new_item_here_desc">اس ڈائریکٹری کے اندر فائل یا فولڈر بنائیں</string>
+    <string name="file_renamed">کامیابی سے نام تبدیل ہو گیا</string>
+    <string name="file_deleted">کامیابی سے حذف ہو گیا</string>
+    <string name="file_delete_failed">حذف کرنے میں ناکامی</string>
+    <string name="enter_new_name">نیا نام درج کریں</string>
+    <string name="action_cancel">منسوخ کریں</string>
+    <string name="action_create">بنائیں</string>
+    <string name="file_already_exists">اس نام کی آئٹم پہلے سے موجود ہے</string>
+    <string name="file_rename_failed">نام تبدیل کرنے میں ناکامی</string>
+
+    <!-- Drawer More Menu & Search -->
+    <string name="drawer_show_hidden_files">پوشیدہ فائلیں دکھائیں</string>
+    <string name="drawer_compact_folders">کومپیکٹ فولڈرز</string>
+    <string name="drawer_sort_by_name">نام کے لحاظ سے ترتیب دیں</string>
+    <string name="drawer_sort_by_size">سائز کے لحاظ سے ترتیب دیں</string>
+    <string name="drawer_sort_by_date">تاریخ کے لحاظ سے ترتیب دیں</string>
+
+    <string name="search_index_project_title">پراجیکٹ انڈیکس کریں</string>
+    <string name="search_index_project_desc">انڈیکسنگ سے بڑے پراجیکٹس کے لیے تلاش کی رفتار بہتر ہو سکتی ہے</string>
+    <string name="search_files_in_project">پراجیکٹ میں فائلیں تلاش کریں</string>
+    <string name="search_code_in_project">پراجیکٹ میں کوڈ تلاش کریں</string>
+    <string name="search_enter_name_hint">نام درج کریں</string>
+    <string name="search_hint">تلاش کریں</string>
+    <string name="searching_in_project">میں تلاش جاری ہے: %1$s</string>
+    <string name="search_no_results">کوئی نتائج نہیں ملے۔</string>
+    <string name="search_results_count">%1$d نتائج ملے۔</string>
+    <string name="search_ignore_case">کیس کو نظر انداز کریں</string>
+    <string name="search_filter_files">فائلیں فلٹر کریں</string>
+    <string name="search_filter_ext_hint">ایکسٹینشنز فلٹر کریں (مثلاً kt, xml, java)</string>
+    <string name="search_code_empty_prompt">فائلوں میں تلاش کرنے کے لیے\nتلاش کا کلیدی لفظ درج کریں</string>
+    <string name="search_code_searching">کوڈ تلاش کیا جا رہا ہے…</string>
+    <string name="search_code_scanning">پراجیکٹ کوڈ اسکین کیا جا رہا ہے…</string>
+</resources>

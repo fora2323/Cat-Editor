@@ -1,0 +1,288 @@
+<resources>
+    <string name="app_name" translatable="false">Cat Editor</string>
+
+    <!-- General Navigation & Actions -->
+    <string name="settings">設定</string>
+    <string name="back">返回</string>
+    <string name="close">關閉</string>
+    <string name="cancel">取消</string>
+    <string name="apply">套用</string>
+    <string name="menu">選單</string>
+    <string name="undo">復原</string>
+    <string name="redo">重做</string>
+    <string name="save">儲存</string>
+    <string name="add">新增</string>
+    <string name="refresh">重新整理</string>
+    <string name="clear">清除</string>
+    <string name="more_options">更多選項</string>
+    <string name="cancel_clone_title">取消複製</string>
+    <string name="cancel_clone_msg">您確定要取消複製流程嗎？</string>
+    <string name="yes">是</string>
+    <string name="no">否</string>
+
+    <!-- Settings & Language -->
+    <string name="language">語言</string>
+    <string name="language_desc">選擇應用程式顯示語言</string>
+    <string name="choose_language">選擇語言</string>
+    <string name="lang_system_default">系統預設</string>
+    <string name="lang_english">English</string>
+    <string name="lang_indonesian">Bahasa Indonesia</string>
+    <string name="lang_arabic">العربية</string>
+    <string name="lang_russian">Русский</string>
+    <string name="about">關於</string>
+    <string name="version">版本 %1$s</string>
+
+    <!-- Project Menu Screen -->
+    <string name="git_clone">Git 複製</string>
+    <string name="feature_git_clone">Git 複製功能</string>
+    <string name="open_folder_saf">開啟資料夾 (SAF)</string>
+    <string name="select_folder">選擇資料夾</string>
+    <string name="new_empty_project">建立專案</string>
+    <string name="feature_new_empty_project">新建專案功能尚未開放</string>
+    <string name="folder_selected">已選擇資料夾: %1$s</string>
+    <string name="storage_permission_denied">儲存權限被拒絕</string>
+    <string name="new_project">新建專案</string>
+    <string name="waiting_storage_permission">正在等待儲存權限...</string>
+    <string name="no_projects_found">未找到專案</string>
+    <string name="storage_access_required">需要儲存權限</string>
+    <string name="storage_access_desc">應用程式需要外部儲存權限以掃描資料夾 %1$s 中的專案與啟動圖示。</string>
+    <string name="grant_permission">授予權限</string>
+
+    <!-- Git Clone Activity -->
+    <string name="git_clone_title">GitClone</string>
+    <string name="git_clone_subtitle">從 GitHub 複製專案</string>
+    <string name="git_clone_link_label">連結</string>
+    <string name="git_clone_branch_label">分支</string>
+    <string name="git_clone_pat_label">個人存取權牌 (PAT)</string>
+    <string name="git_clone_pat_hint">私人儲存庫需要權牌</string>
+    <string name="git_clone_fast_label">快速複製 (淺複製 depth = 1)</string>
+    <string name="git_clone_fast_subtitle">僅下載最新提交以加快速度</string>
+    <string name="git_clone_button">複製</string>
+
+    <!-- MainActivity & Editor -->
+    <string name="cannot_access_folder">無法存取資料夾</string>
+    <string name="add_file_coming_soon">新增檔案功能即將推出</string>
+    <string name="file_updated">檔案已更新</string>
+    <string name="file_preview_deleted">預覽檔案已刪除</string>
+    <string name="file_saved">檔案已儲存</string>
+    <string name="failed_to_save">儲存失敗: %1$s</string>
+    <string name="copy">複製</string>
+    <string name="restart">重新啟動</string>
+    <string name="create_file">新建檔案</string>
+    <string name="create_folder">新建資料夾</string>
+    <string name="create_java_class">新建 Java 類別</string>
+    <string name="create_kotlin_class">新建 Kotlin 類別</string>
+    <string name="toolbar_name">天哪，當機了！！</string>
+    <string name="copy_log">複製日誌</string>
+
+    <!-- Welcome Screen -->
+    <string name="welcome">歡迎</string>
+    <string name="welcome_title">歡迎使用 Cat Editor</string>
+    <string name="no_project_selected">未選擇專案</string>
+    <string name="open_file">開啟檔案</string>
+
+    <!-- Drawer & Preview -->
+    <string name="project_files">專案檔案</string>
+    <string name="search_files">搜尋檔案...</string>
+    <string name="not_found">未找到</string>
+    <string name="preview_hint">開啟左側抽屜並選擇帶有 @Preview 的 .kt 檔案</string>
+
+    <!-- File Types Content Description -->
+    <string name="manifest">清單</string>
+    <string name="file_kotlin">Kotlin</string>
+    <string name="file_gradle">Gradle</string>
+    <string name="file_java">Java</string>
+    <string name="file_xml">XML</string>
+    <string name="file_cpp">C++</string>
+    <string name="file_c">C</string>
+    <string name="file_cmake">CMake</string>
+    <string name="file_python">Python</string>
+    <string name="file_markdown">Markdown</string>
+    <string name="file_json">JSON</string>
+    <string name="file_keystore">金鑰庫</string>
+    <string name="file_git">Git</string>
+    <string name="file_proguard">Proguard</string>
+    <string name="file_generic">檔案</string>
+
+    <!-- Settings Redesign -->
+    <string name="settings_app_title">應用程式</string>
+    <string name="settings_app_desc">一般應用程式設定</string>
+    <string name="settings_editor_title">編輯器</string>
+    <string name="settings_editor_desc">一般編輯器設定</string>
+    <string name="settings_git_title">Git</string>
+    <string name="settings_git_desc">版本控制系統設定</string>
+    <string name="settings_about_desc">關於 %1$s</string>
+
+    <!-- App Settings Screen -->
+    <string name="setting_check_updates_title">檢查更新</string>
+    <string name="setting_check_updates_desc">定期檢查更新</string>
+    <string name="setting_fullscreen_title">全螢幕模式</string>
+    <string name="setting_fullscreen_desc">以全螢幕模式啟動應用程式</string>
+    <string name="setting_smart_toolbar_title">智慧工具列</string>
+    <string name="setting_smart_toolbar_desc">編輯時隱藏工具列以釋放螢幕空間</string>
+    <string name="setting_exit_dialog_title">退出確認對話框</string>
+    <string name="setting_exit_dialog_desc">關閉應用程式前顯示確認對話框</string>
+    <string name="setting_manage_storage_title">管理儲存空間</string>
+    <string name="setting_manage_storage_desc">管理儲存權限</string>
+    <string name="setting_manage_fonts_title">管理應用程式字型</string>
+    <string name="setting_manage_fonts_desc">管理應用程式字型</string>
+    <string name="section_feature_toggles">功能開關</string>
+    <string name="setting_debug_options_title">除錯選項</string>
+
+    <!-- Editor Settings Screen -->
+    <string name="editor_cat_smart_features">智慧功能</string>
+    <string name="editor_auto_compile_title">自動編譯</string>
+    <string name="editor_auto_compile_desc">程式碼變更時自動編譯並更新預覽</string>
+    <string name="editor_auto_close_tag_title">自動關閉標籤</string>
+    <string name="editor_auto_close_tag_desc">自動關閉 HTML 和 XML 標籤</string>
+    <string name="editor_color_preview_title">色彩預覽</string>
+    <string name="editor_color_preview_desc">未連接語言伺服器時在編輯器中顯示色彩預覽</string>
+
+    <string name="editor_cat_content">內容</string>
+    <string name="editor_word_wrap_title">自動換行</string>
+    <string name="editor_word_wrap_desc">在所有編輯器中啟用自動換行</string>
+    <string name="editor_wrap_txt_title">換行 TXT 檔案</string>
+    <string name="editor_wrap_txt_desc">自動換行 TXT 檔案</string>
+    <string name="editor_read_only_title">唯讀模式</string>
+    <string name="editor_read_only_desc">預設啟用唯讀模式</string>
+
+    <string name="editor_cat_editor">編輯器</string>
+    <string name="editor_line_numbers_title">行號</string>
+    <string name="editor_line_numbers_desc">在編輯器旁顯示行號</string>
+    <string name="editor_disable_virtual_kbd_title">停用虛擬鍵盤</string>
+    <string name="editor_disable_virtual_kbd_desc">有實體鍵盤時停用虛擬鍵盤</string>
+    <string name="editor_cursor_anim_title">游標動畫</string>
+    <string name="editor_cursor_anim_desc">啟用平滑游標動畫</string>
+
+    <!-- Language Screen -->
+    <string name="language_warning_notice">變更語言將立即重啟此頁面以套用新語言。這可能會短暫顯示白屏，光敏性癲癇患者請注意。</string>
+    <string name="btn_translate">翻譯</string>
+
+    <!-- About Screen -->
+    <string name="section_build_info">建置資訊</string>
+    <string name="build_version">版本</string>
+    <string name="build_version_code">版本號</string>
+    <string name="build_git_hash">Git 提交 Hash</string>
+    <string name="section_community">社群</string>
+    <string name="community_github_stars">GitHub Stars</string>
+    <string name="community_github">GitHub</string>
+    <string name="community_github_sub">在 GitHub 上點讚 😍</string>
+    <string name="community_telegram">Telegram 群組</string>
+    <string name="community_telegram_sub">回報問題、功能建議等</string>
+
+    <!-- Support Screen -->
+    <string name="support">支援</string>
+    <string name="support_github_sponsors">GitHub Sponsors</string>
+    <string name="support_buy_me_coffee">Buy Me a Coffee</string>
+    <string name="support_saweria">Saweria</string>
+    <string name="support_saweria_desc">透過 Saweria 支援，適用於印尼、泰國和馬來西亞使用者</string>
+
+    <!-- Placeholder -->
+    <string name="coming_soon">敬請期待</string>
+    <string name="feature_under_development">此設定介面即將推出。</string>
+
+    <!-- Git Settings Screen -->
+    <string name="git_section_general">一般</string>
+    <string name="git_color_filenames_title">檔名著色</string>
+    <string name="git_color_filenames_desc">根據 Git 狀態為檔名著色</string>
+    <string name="git_gutter_indicators_title">邊欄指示器</string>
+    <string name="git_gutter_indicators_desc">顯示新增、修改和刪除行的變更指示器</string>
+    <string name="git_conflict_detection_title">衝突偵測</string>
+    <string name="git_conflict_detection_desc">在編輯器中顯示衝突標記和解決選項</string>
+    <string name="git_section_account">帳戶</string>
+    <string name="git_credentials_title">憑證</string>
+    <string name="git_credentials_desc">存取遠端儲存庫的憑證</string>
+    <string name="git_user_data_title">使用者資料</string>
+    <string name="git_user_data_desc">將顯示在您的 Git 提交中的使用者資料</string>
+    <string name="git_section_repositories">儲存庫</string>
+    <string name="git_submodules_title">子模組</string>
+    <string name="git_submodules_desc">複製儲存庫時包含子模組</string>
+    <string name="git_recursive_submodules_title">遞迴子模組</string>
+    <string name="git_recursive_submodules_desc">遞迴取得子模組及其相依性</string>
+    <string name="git_pat_warning_desc">要連接到 GitHub，您必須輸入 PAT 權牌，而不是 GitHub 帳戶密碼。</string>
+    <string name="git_username_label">使用者名稱</string>
+    <string name="git_password_label">密碼</string>
+    <string name="git_author_name_label">姓名</string>
+    <string name="git_author_email_label">電子郵件</string>
+
+    <!-- Settings functionality and GitHub sync -->
+    <string name="exit_dialog_title">退出 Cat Editor</string>
+    <string name="exit_dialog_msg">您確定要退出應用程式嗎？</string>
+    <string name="exit_dialog_confirm">退出</string>
+    <string name="select_font_title">選擇編輯器字型</string>
+    <string name="font_monospace">等寬字型 (預設)</string>
+    <string name="font_sans">無襯線字型 (Sans-Serif)</string>
+    <string name="font_serif">襯線字型 (Serif)</string>
+    <string name="checking_updates">正在檢查更新…</string>
+    <string name="up_to_date">您使用的是最新版本 (%1$s)</string>
+    <string name="update_available">GitHub 上有新版本 (%1$s)</string>
+    <string name="sync_github">同步 GitHub 資訊</string>
+    <string name="syncing_github">正在與 GitHub 同步…</string>
+    <string name="synced_github_success">已與 GitHub 同步</string>
+    <string name="sync_failed">與 GitHub 同步失敗</string>
+    <string name="build_latest_remote_commit">最新 GitHub 提交</string>
+
+    <!-- Project Option Sheet -->
+    <string name="project_pin">置頂</string>
+    <string name="project_pin_desc">將此專案置頂</string>
+    <string name="project_clone">複製</string>
+    <string name="project_clone_desc">建立此專案的複本</string>
+    <string name="project_backup">備份</string>
+    <string name="project_backup_desc">將專案備份至外部儲存空間</string>
+    <string name="project_remove">刪除</string>
+    <string name="project_remove_desc">永久刪除專案目錄</string>
+
+    <!-- Drawer File Actions & New Dialog -->
+    <string name="create_new">新建</string>
+    <string name="type_file">檔案</string>
+    <string name="type_folder">資料夾</string>
+    <string name="name_hint">名稱</string>
+    <string name="file_name_empty">名稱不能為空</string>
+    <string name="file_created">建立成功</string>
+    <string name="file_create_failed">建立失敗: %1$s</string>
+    <string name="file_actions">檔案操作</string>
+    <string name="rename">重新命名</string>
+    <string name="rename_desc">變更檔案名稱</string>
+    <string name="delete">刪除</string>
+    <string name="delete_desc">永久刪除此項</string>
+    <string name="delete_confirm_title">刪除 %1$s？</string>
+    <string name="delete_confirm_msg">您確定要刪除此 %1$s 嗎？此操作無法復原。</string>
+    <string name="copy_path">複製路徑</string>
+    <string name="copy_path_desc">複製絕對路徑至剪貼簿</string>
+    <string name="copy_relative_path">複製相對路徑</string>
+    <string name="copy_relative_path_desc">複製相對於專案的路徑</string>
+    <string name="path_copied">路徑已複製至剪貼簿</string>
+    <string name="new_item_here">新建於此</string>
+    <string name="new_item_here_desc">在此目錄內建立檔案或資料夾</string>
+    <string name="file_renamed">重新命名成功</string>
+    <string name="file_deleted">刪除成功</string>
+    <string name="file_delete_failed">刪除失敗</string>
+    <string name="enter_new_name">輸入新名稱</string>
+    <string name="action_cancel">取消</string>
+    <string name="action_create">建立</string>
+    <string name="file_already_exists">已存在同名項</string>
+    <string name="file_rename_failed">重新命名失敗</string>
+
+    <!-- Drawer More Menu & Search -->
+    <string name="drawer_show_hidden_files">顯示隱藏檔案</string>
+    <string name="drawer_compact_folders">緊湊資料夾</string>
+    <string name="drawer_sort_by_name">依名稱排序</string>
+    <string name="drawer_sort_by_size">依大小排序</string>
+    <string name="drawer_sort_by_date">依日期排序</string>
+
+    <string name="search_index_project_title">索引專案</string>
+    <string name="search_index_project_desc">索引可以提高大型專案的搜尋速度</string>
+    <string name="search_files_in_project">在專案中搜尋檔案</string>
+    <string name="search_code_in_project">在專案中搜尋程式碼</string>
+    <string name="search_enter_name_hint">輸入名稱</string>
+    <string name="search_hint">搜尋</string>
+    <string name="searching_in_project">正在搜尋: %1$s</string>
+    <string name="search_no_results">未找到結果</string>
+    <string name="search_results_count">找到 %1$d 個結果</string>
+    <string name="search_ignore_case">忽略大小寫</string>
+    <string name="search_filter_files">過濾檔案</string>
+    <string name="search_filter_ext_hint">過濾副檔名 (如 kt, xml, java)</string>
+    <string name="search_code_empty_prompt">輸入搜尋關鍵字以\n在檔案中尋找</string>
+    <string name="search_code_searching">正在搜尋程式碼…</string>
+    <string name="search_code_scanning">正在掃描專案程式碼…</string>
+</resources>

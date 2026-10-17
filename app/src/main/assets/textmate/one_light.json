@@ -1,0 +1,81 @@
+{
+  "name": "One Light",
+  "settings": [
+    {
+      "settings": {
+        "background": "#FAFAFA",
+        "foreground": "#383A42",
+        "caret": "#526FFF",
+        "selection": "#E5E5E6",
+        "lineHighlight": "#F2F2F3"
+      }
+    },
+    {
+      "name": "Comments",
+      "scope": "comment, comment.line, comment.block",
+      "settings": {
+        "foreground": "#A0A1A7",
+        "fontStyle": "italic"
+      }
+    },
+    {
+      "name": "Keywords",
+      "scope": "keyword, keyword.control, keyword.other, keyword.other.import, storage.modifier",
+      "settings": {
+        "foreground": "#A626A4",
+        "fontStyle": "bold"
+      }
+    },
+    {
+      "name": "Strings",
+      "scope": "string, string.quoted",
+      "settings": {
+        "foreground": "#50A14F"
+      }
+    },
+    {
+      "name": "Numbers",
+      "scope": "constant.numeric, constant.language",
+      "settings": {
+        "foreground": "#986801"
+      }
+    },
+    {
+      "name": "Functions",
+      "scope": "entity.name.function, support.function",
+      "settings": {
+        "foreground": "#4078F2"
+      }
+    },
+    {
+      "name": "Types",
+      "scope": "storage.type, support.type, entity.name.type, entity.name.class",
+      "settings": {
+        "foreground": "#C18401"
+      }
+    },
+    {
+      "name": "Annotations",
+      "scope": "entity.name.annotation, meta.decorator",
+      "settings": {
+        "foreground": "#C18401",
+        "fontStyle": "bold"
+      }
+    },
+    {
+      "name": "Tags",
+      "scope": "entity.name.tag",
+      "settings": {
+        "foreground": "#E45649",
+        "fontStyle": "bold"
+      }
+    },
+    {
+      "name": "Attributes",
+      "scope": "entity.other.attribute-name",
+      "settings": {
+        "foreground": "#986801"
+      }
+    }
+  ]
+}

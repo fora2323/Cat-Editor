@@ -286,4 +286,14 @@
     <string name="search_code_empty_prompt">فائلوں میں تلاش کرنے کے لیے\nتلاش کا کلیدی لفظ درج کریں</string>
     <string name="search_code_searching">کوڈ تلاش کیا جا رہا ہے…</string>
     <string name="search_code_scanning">پراجیکٹ کوڈ اسکین کیا جا رہا ہے…</string>
+
+    <!-- Editor Appearance & Theme Presets -->
+    <string name="editor_cat_appearance">تھیم اور ظاہری شکل</string>
+    <string name="editor_sticky_scroll_title">پیرنٹ کوڈ ہیڈر (اسٹکی اسکرول)</string>
+    <string name="editor_sticky_scroll_desc">اسکرول کرتے وقت پیرنٹ فنکشنز، ٹیگز اور کلاسز کو سب سے اوپر پن کریں</string>
+    <string name="editor_custom_presets_title">کوڈ تھیم پری سیٹس</string>
+    <string name="editor_custom_presets_desc">لائٹ اور ڈارک پیش منظر کے ساتھ نحو کی جھلکیاں منتخب کریں</string>
+    <string name="editor_preview_title">تھیم کا پیش منظر</string>
+    <string name="editor_preview_light">لائٹ</string>
+    <string name="editor_preview_dark">ڈارک</string>
 </resources>

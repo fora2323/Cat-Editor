@@ -152,12 +152,15 @@ private const val KEY_PINNED_PATHS = "pinned_paths_ordered"
 
 class ProjectMenuActivity : ComponentActivity() {
 
+    private var appliedThemeMode = -1
+
     override fun attachBaseContext(newBase: Context) {
         super.attachBaseContext(LocaleHelper.wrap(newBase))
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        appliedThemeMode = org.cat.editor.utils.SettingsManager.getThemeMode(this)
         enableEdgeToEdge()
         WindowCompat.setDecorFitsSystemWindows(window, false)
         window.navigationBarColor = android.graphics.Color.TRANSPARENT
@@ -179,6 +182,11 @@ class ProjectMenuActivity : ComponentActivity() {
 
     override fun onResume() {
         super.onResume()
+        if (appliedThemeMode != -1 && appliedThemeMode != org.cat.editor.utils.SettingsManager.getThemeMode(this)) {
+            appliedThemeMode = org.cat.editor.utils.SettingsManager.getThemeMode(this)
+            recreate()
+            return
+        }
         org.cat.editor.utils.SettingsManager.applyFullscreen(this)
     }
 }

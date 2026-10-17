@@ -1,0 +1,111 @@
+{
+  "name": "Material3 Light",
+  "settings": [
+    {
+      "settings": {
+        "background": "#FEF7FF",
+        "foreground": "#1D1B20",
+        "caret": "#6750A4",
+        "selection": "#EADDFF",
+        "lineHighlight": "#F3EDF7"
+      }
+    },
+    {
+      "name": "Comments",
+      "scope": "comment, comment.line, comment.block, punctuation.definition.comment",
+      "settings": {
+        "foreground": "#79747E",
+        "fontStyle": "italic"
+      }
+    },
+    {
+      "name": "Keywords and Modifiers",
+      "scope": "keyword, keyword.control, keyword.other, keyword.other.import, keyword.operator.word, keyword.operator.logical, storage.modifier, storage.type.modifier",
+      "settings": {
+        "foreground": "#005FB0",
+        "fontStyle": "bold"
+      }
+    },
+    {
+      "name": "Strings",
+      "scope": "string, string.quoted, string.quoted.double, string.quoted.single, string.quoted.docstring, string.quoted.triple, string.unquoted.cdata",
+      "settings": {
+        "foreground": "#006E1C"
+      }
+    },
+    {
+      "name": "Numbers and Booleans",
+      "scope": "constant.numeric, constant.language.boolean, constant.language.null, constant.language.python, constant.language",
+      "settings": {
+        "foreground": "#9A4F00"
+      }
+    },
+    {
+      "name": "Functions and Methods",
+      "scope": "entity.name.function, support.function, meta.function-call",
+      "settings": {
+        "foreground": "#5E35B1"
+      }
+    },
+    {
+      "name": "Types and Classes",
+      "scope": "storage.type, support.type, entity.name.type, entity.name.type.class, entity.name.class",
+      "settings": {
+        "foreground": "#006874",
+        "fontStyle": "bold"
+      }
+    },
+    {
+      "name": "Annotations and Decorators",
+      "scope": "entity.name.annotation, meta.decorator, entity.name.function.decorator",
+      "settings": {
+        "foreground": "#785900",
+        "fontStyle": "bold"
+      }
+    },
+    {
+      "name": "XML and HTML Tag Names",
+      "scope": "entity.name.tag, entity.name.tag.xml, entity.name.tag.localname.xml",
+      "settings": {
+        "foreground": "#9C4146",
+        "fontStyle": "bold"
+      }
+    },
+    {
+      "name": "XML Tag Delimiters",
+      "scope": "punctuation.definition.tag, punctuation.definition.tag.xml",
+      "settings": {
+        "foreground": "#79747E"
+      }
+    },
+    {
+      "name": "XML Attribute Names",
+      "scope": "entity.other.attribute-name, entity.other.attribute-name.xml, entity.other.attribute-name.localname.xml",
+      "settings": {
+        "foreground": "#6750A4"
+      }
+    },
+    {
+      "name": "XML Attribute Namespaces",
+      "scope": "entity.other.attribute-name.namespace.xml",
+      "settings": {
+        "foreground": "#006874"
+      }
+    },
+    {
+      "name": "Variables and Special Identifiers",
+      "scope": "variable.language, variable.language.special.self, variable.parameter",
+      "settings": {
+        "foreground": "#00677D",
+        "fontStyle": "italic"
+      }
+    },
+    {
+      "name": "Operators",
+      "scope": "keyword.operator, punctuation.separator, punctuation.terminator",
+      "settings": {
+        "foreground": "#49454F"
+      }
+    }
+  ]
+}

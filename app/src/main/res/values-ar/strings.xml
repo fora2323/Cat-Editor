@@ -285,4 +285,14 @@
     <string name="search_code_empty_prompt">أدخل كلمة رئيسية للبحث\nفي الملفات</string>
     <string name="search_code_searching">جارٍ البحث في الكود…</string>
     <string name="search_code_scanning">جارٍ فحص كود المشروع…</string>
+
+    <!-- Editor Appearance & Theme Presets -->
+    <string name="editor_cat_appearance">المظهر والسمة</string>
+    <string name="editor_sticky_scroll_title">رأس الكود الأصلي (التمرير الثابت)</string>
+    <string name="editor_sticky_scroll_desc">تثبيت الدوال والعلامات والفئات الأصلية في الأعلى أثناء التمرير</string>
+    <string name="editor_custom_presets_title">الإعدادات المسبقة لسمة الكود</string>
+    <string name="editor_custom_presets_desc">تحديد لوحات تمييز بناء الجملة مع معاينة للوضع الفاتح والداكن</string>
+    <string name="editor_preview_title">معاينة السمة</string>
+    <string name="editor_preview_light">فاتح</string>
+    <string name="editor_preview_dark">داكن</string>
 </resources>

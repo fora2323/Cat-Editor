@@ -11,41 +11,72 @@
       }
     },
     {
-      "scope": "comment",
+      "scope": "comment, comment.line, comment.block, punctuation.definition.comment",
       "settings": {
         "foreground": "#808080",
         "fontStyle": "italic"
       }
     },
     {
-      "scope": "keyword, storage.type",
+      "scope": "keyword, keyword.control, keyword.operator.word, storage.modifier",
       "settings": {
         "foreground": "#CC7832",
         "fontStyle": "bold"
       }
     },
     {
-      "scope": "string",
+      "scope": "string, string.quoted, string.quoted.double, string.quoted.single, string.quoted.docstring, string.quoted.triple, string.unquoted.cdata",
       "settings": {
         "foreground": "#6A8759"
       }
     },
     {
-      "scope": "constant.numeric",
+      "scope": "constant.numeric, constant.language.boolean, constant.language.null, constant.language.python",
       "settings": {
         "foreground": "#6897BB"
       }
     },
     {
-      "scope": "entity.name.function",
+      "scope": "entity.name.function, support.function, meta.function-call",
       "settings": {
         "foreground": "#FFC66D"
       }
     },
     {
-      "scope": "entity.name.class",
+      "scope": "entity.name.class, entity.name.type, entity.name.type.class, storage.type, support.type",
       "settings": {
         "foreground": "#A9B7C6"
+      }
+    },
+    {
+      "scope": "entity.name.annotation, meta.decorator, entity.name.function.decorator",
+      "settings": {
+        "foreground": "#BBB529"
+      }
+    },
+    {
+      "scope": "entity.name.tag, entity.name.tag.xml, entity.name.tag.localname.xml",
+      "settings": {
+        "foreground": "#E8C88C"
+      }
+    },
+    {
+      "scope": "entity.other.attribute-name, entity.other.attribute-name.xml, entity.other.attribute-name.localname.xml",
+      "settings": {
+        "foreground": "#BABABA"
+      }
+    },
+    {
+      "scope": "entity.other.attribute-name.namespace.xml",
+      "settings": {
+        "foreground": "#9876AA"
+      }
+    },
+    {
+      "scope": "variable.language.special.self",
+      "settings": {
+        "foreground": "#94558D",
+        "fontStyle": "italic"
       }
     }
   ]

@@ -290,4 +290,14 @@
     <string name="search_code_empty_prompt">Enter a search keyword to\nfind in files</string>
     <string name="search_code_searching">Searching code…</string>
     <string name="search_code_scanning">Scanning project code…</string>
+
+    <!-- Editor Appearance & Theme Presets -->
+    <string name="editor_cat_appearance">Theme &amp; Appearance</string>
+    <string name="editor_sticky_scroll_title">Parent Code Header (Sticky Scroll)</string>
+    <string name="editor_sticky_scroll_desc">Pin parent functions, tags, and classes at the top while scrolling</string>
+    <string name="editor_custom_presets_title">Code Theme Presets</string>
+    <string name="editor_custom_presets_desc">Select syntax highlight palettes with light &amp; dark preview</string>
+    <string name="editor_preview_title">Theme Preview</string>
+    <string name="editor_preview_light">Light</string>
+    <string name="editor_preview_dark">Dark</string>
 </resources>

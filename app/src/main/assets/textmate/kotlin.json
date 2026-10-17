@@ -13,6 +13,25 @@
       "end": "\\*/"
     },
     {
+      "name": "entity.name.annotation.kotlin",
+      "match": "@[a-zA-Z_][a-zA-Z0-9_.]*"
+    },
+    {
+      "name": "string.quoted.triple.kotlin",
+      "begin": "\"\"\"",
+      "end": "\"\"\"",
+      "patterns": [
+        {
+          "name": "constant.character.escape.kotlin",
+          "match": "\\\\."
+        },
+        {
+          "name": "punctuation.definition.template-expression.kotlin",
+          "match": "\\$([a-zA-Z_][a-zA-Z0-9_]*|\\{[^}]*\\})"
+        }
+      ]
+    },
+    {
       "name": "string.quoted.double.kotlin",
       "begin": "\"",
       "end": "\"",
@@ -20,6 +39,10 @@
         {
           "name": "constant.character.escape.kotlin",
           "match": "\\\\."
+        },
+        {
+          "name": "punctuation.definition.template-expression.kotlin",
+          "match": "\\$([a-zA-Z_][a-zA-Z0-9_]*|\\{[^}]*\\})"
         }
       ]
     },
@@ -36,27 +59,35 @@
     },
     {
       "name": "keyword.control.kotlin",
-      "match": "\\b(if|else|when|while|for|do|break|continue|return|try|catch|finally|throw|fun|class|interface|object|val|var|const|private|public|protected|internal|abstract|sealed|open|data|companion|by|delegate)\\b"
+      "match": "\\b(if|else|when|while|for|do|break|continue|return|try|catch|finally|throw|fun|class|interface|object|enum|val|var|typealias|constructor|init|this|super)\\b"
+    },
+    {
+      "name": "storage.modifier.kotlin",
+      "match": "\\b(override|open|final|abstract|private|protected|public|internal|lateinit|lazy|const|suspend|inline|tailrec|operator|infix|vararg|crossinline|noinline|reified|actual|expect|external|data|sealed|companion|annotation|value|inner)\\b"
     },
     {
       "name": "keyword.other.kotlin",
-      "match": "\\b(as|is|in|null|true|false|get|set|import|package|where)\\b"
+      "match": "\\b(as|is|in|by|get|set|import|package|where|out)\\b"
+    },
+    {
+      "name": "constant.language.boolean.kotlin",
+      "match": "\\b(true|false|null)\\b"
     },
     {
       "name": "storage.type.kotlin",
-      "match": "\\b(Int|String|Double|Float|Boolean|Long|Byte|Short|Char|Unit|Any|Nothing|List|Map|Set|Array)\\b"
+      "match": "\\b(Int|String|Double|Float|Boolean|Long|Byte|Short|Char|Unit|Any|Nothing|List|MutableList|Set|MutableSet|Map|MutableMap|Array|Sequence|Pair|Triple|Result|Modifier|State|MutableState|Flow|SharedFlow|StateFlow|ComposeNode)\\b"
     },
     {
       "name": "constant.numeric.kotlin",
-      "match": "\\b(\\d+|0x[0-9a-fA-F]+|0b[01]+|\\d+\\.\\d+)\\b"
+      "match": "\\b(0[xX][0-9a-fA-F]+[uU]?[lL]?|0[bB][01]+[uU]?[lL]?|\\d+\\.\\d+([eE][+-]?\\d+)?[fFdD]?|\\d+[uU]?[lLfFdD]?)\\b"
     },
     {
       "name": "entity.name.function.kotlin",
       "match": "\\b([a-zA-Z_][a-zA-Z0-9_]*)\\s*(?=\\()"
     },
     {
-      "name": "entity.name.class.kotlin",
-      "match": "\\b(class|interface|object)\\s+([a-zA-Z_][a-zA-Z0-9_]*)"
+      "name": "keyword.operator.kotlin",
+      "match": "(\\?\\.|\\?:|!!|->|::|\\+=|-=|\\*=|/=|%=|==|!=|===|!==|<=|>=|<|>|&&|\\|\\||!|\\.\\.|\\.\\.<)"
     }
   ]
 }

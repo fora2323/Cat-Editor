@@ -1,0 +1,81 @@
+{
+  "name": "GitHub Light",
+  "settings": [
+    {
+      "settings": {
+        "background": "#FFFFFF",
+        "foreground": "#24292F",
+        "caret": "#0969DA",
+        "selection": "#B6E3FF",
+        "lineHighlight": "#F6F8FA"
+      }
+    },
+    {
+      "name": "Comments",
+      "scope": "comment, comment.line, comment.block, punctuation.definition.comment",
+      "settings": {
+        "foreground": "#6E7781",
+        "fontStyle": "italic"
+      }
+    },
+    {
+      "name": "Keywords and Modifiers",
+      "scope": "keyword, keyword.control, keyword.other, keyword.other.import, keyword.operator.word, storage.modifier, storage.type.modifier",
+      "settings": {
+        "foreground": "#CF222E",
+        "fontStyle": "bold"
+      }
+    },
+    {
+      "name": "Strings",
+      "scope": "string, string.quoted, string.quoted.double, string.quoted.single",
+      "settings": {
+        "foreground": "#0A3069"
+      }
+    },
+    {
+      "name": "Numbers and Constants",
+      "scope": "constant.numeric, constant.language",
+      "settings": {
+        "foreground": "#0550AE"
+      }
+    },
+    {
+      "name": "Functions",
+      "scope": "entity.name.function, support.function",
+      "settings": {
+        "foreground": "#8250DF"
+      }
+    },
+    {
+      "name": "Types and Classes",
+      "scope": "storage.type, support.type, entity.name.type, entity.name.class",
+      "settings": {
+        "foreground": "#953800"
+      }
+    },
+    {
+      "name": "Annotations",
+      "scope": "entity.name.annotation, meta.decorator",
+      "settings": {
+        "foreground": "#8250DF",
+        "fontStyle": "bold"
+      }
+    },
+    {
+      "name": "XML Tag Names",
+      "scope": "entity.name.tag",
+      "settings": {
+        "foreground": "#116329",
+        "fontStyle": "bold"
+      }
+    },
+    {
+      "name": "XML Attributes",
+      "scope": "entity.other.attribute-name",
+      "settings": {
+        "foreground": "#0550AE"
+      }
+    }
+  ]
+}

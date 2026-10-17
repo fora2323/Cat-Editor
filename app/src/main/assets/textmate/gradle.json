@@ -20,6 +20,10 @@
         {
           "name": "constant.character.escape.groovy",
           "match": "\\\\."
+        },
+        {
+          "name": "punctuation.definition.template-expression.groovy",
+          "match": "\\$([a-zA-Z_][a-zA-Z0-9_]*|\\{[^}]*\\})"
         }
       ]
     },
@@ -36,15 +40,23 @@
     },
     {
       "name": "keyword.control.groovy",
-      "match": "\\b(plugins|android|dependencies|implementation|api|compileOnly|testImplementation|androidTestImplementation|buildTypes|defaultConfig|task|def|apply|from|allprojects|subprojects|repositories|google|mavenCentral)\\b"
+      "match": "\\b(plugins|android|dependencies|defaultConfig|buildTypes|compileOptions|kotlinOptions|composeOptions|packaging|signingConfigs|sourceSets|publishing|repositories|allprojects|subprojects|buildscript|tasks|artifacts)\\b"
+    },
+    {
+      "name": "entity.name.function.groovy",
+      "match": "\\b(implementation|api|compileOnly|runtimeOnly|testImplementation|androidTestImplementation|coreLibraryDesugaring|kapt|ksp|annotationProcessor|classpath|id|alias|version|apply|from|project|file|files|fileTree|platform|enforcedPlatform|register|named)\\b"
     },
     {
       "name": "keyword.other.groovy",
-      "match": "\\b(if|else|for|while|return|new|true|false|null|import)\\b"
+      "match": "\\b(applicationId|namespace|minSdk|targetSdk|compileSdk|versionCode|versionName|testInstrumentationRunner|isMinifyEnabled|proguardFiles|getDefaultProguardFile|jvmTarget|kotlinCompilerExtensionVersion|buildFeatures|compose|buildConfig|resValue|manifestPlaceholders|google|mavenCentral|mavenLocal|maven|gradlePluginPortal|def|val|var|task|if|else|for|while|return|new|true|false|null|import|group)\\b"
     },
     {
       "name": "constant.numeric.groovy",
-      "match": "\\b(\\d+|\\d+\\.\\d+)\\b"
+      "match": "\\b(\\d+|\\d+\\.\\d+(\\.\\d+)?)\\b"
+    },
+    {
+      "name": "constant.language.boolean.groovy",
+      "match": "\\b(true|false|null)\\b"
     }
   ]
 }

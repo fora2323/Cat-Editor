@@ -285,4 +285,14 @@
     <string name="search_code_empty_prompt">Masukkan kata kunci pencarian untuk\nmenemukan di dalam file</string>
     <string name="search_code_searching">Mencari kode…</string>
     <string name="search_code_scanning">Memindai kode proyek…</string>
+
+    <!-- Editor Appearance & Theme Presets -->
+    <string name="editor_cat_appearance">Tema &amp; Tampilan</string>
+    <string name="editor_sticky_scroll_title">Header Kode Induk (Sticky Scroll)</string>
+    <string name="editor_sticky_scroll_desc">Sematkan fungsi, tag, dan kelas induk di bagian atas saat menggulir</string>
+    <string name="editor_custom_presets_title">Preset Tema Kode</string>
+    <string name="editor_custom_presets_desc">Pilih palet penyorotan sintaks dengan pratinjau terang &amp; gelap</string>
+    <string name="editor_preview_title">Pratinjau Tema</string>
+    <string name="editor_preview_light">Terang</string>
+    <string name="editor_preview_dark">Gelap</string>
 </resources>

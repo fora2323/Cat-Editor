@@ -1,0 +1,112 @@
+{
+  "name": "Python",
+  "scopeName": "source.python",
+  "fileTypes": ["py", "pyw"],
+  "patterns": [
+    {
+      "name": "comment.line.number-sign.python",
+      "match": "#.*$"
+    },
+    {
+      "name": "string.quoted.docstring.multi.double.python",
+      "begin": "\"\"\"",
+      "end": "\"\"\"",
+      "patterns": [
+        {
+          "name": "constant.character.escape.python",
+          "match": "\\\\."
+        }
+      ]
+    },
+    {
+      "name": "string.quoted.docstring.multi.single.python",
+      "begin": "'''",
+      "end": "'''",
+      "patterns": [
+        {
+          "name": "constant.character.escape.python",
+          "match": "\\\\."
+        }
+      ]
+    },
+    {
+      "name": "string.quoted.double.python",
+      "begin": "([frbFRB]{1,2})?\"",
+      "end": "\"",
+      "patterns": [
+        {
+          "name": "constant.character.escape.python",
+          "match": "\\\\."
+        }
+      ]
+    },
+    {
+      "name": "string.quoted.single.python",
+      "begin": "([frbFRB]{1,2})?'",
+      "end": "'",
+      "patterns": [
+        {
+          "name": "constant.character.escape.python",
+          "match": "\\\\."
+        }
+      ]
+    },
+    {
+      "name": "meta.decorator.python",
+      "match": "(@[a-zA-Z_][a-zA-Z0-9_.]*)",
+      "captures": {
+        "1": { "name": "entity.name.function.decorator.python" }
+      }
+    },
+    {
+      "match": "\\b(def)\\s+([a-zA-Z_][a-zA-Z0-9_]*)",
+      "captures": {
+        "1": { "name": "keyword.control.python" },
+        "2": { "name": "entity.name.function.python" }
+      }
+    },
+    {
+      "match": "\\b(class)\\s+([a-zA-Z_][a-zA-Z0-9_]*)",
+      "captures": {
+        "1": { "name": "keyword.control.python" },
+        "2": { "name": "entity.name.type.class.python" }
+      }
+    },
+    {
+      "name": "keyword.control.python",
+      "match": "\\b(if|elif|else|for|while|try|except|finally|with|as|return|yield|raise|break|continue|pass|lambda|assert|del|global|nonlocal|async|await|match|case)\\b"
+    },
+    {
+      "name": "keyword.operator.logical.python",
+      "match": "\\b(and|or|not|is|in)\\b"
+    },
+    {
+      "name": "constant.language.python",
+      "match": "\\b(True|False|None)\\b"
+    },
+    {
+      "name": "variable.language.special.self.python",
+      "match": "\\b(self|cls)\\b"
+    },
+    {
+      "name": "support.function.builtin.python",
+      "match": "\\b(print|len|range|str|int|float|bool|list|dict|set|tuple|open|type|isinstance|issubclass|enumerate|zip|map|filter|sorted|reversed|min|max|sum|any|all|abs|round|super|id|repr|input|iter|next|dir|hasattr|getattr|setattr|delattr|callable)\\b"
+    },
+    {
+      "name": "support.type.exception.python",
+      "match": "\\b(Exception|ValueError|TypeError|KeyError|IndexError|AttributeError|IOError|FileNotFoundError|RuntimeError|StopIteration|ZeroDivisionError|KeyboardInterrupt|ImportError|ModuleNotFoundError)\\b"
+    },
+    {
+      "name": "entity.name.function.call.python",
+      "match": "\\b([a-zA-Z_][a-zA-Z0-9_]*)\\s*(?=\\()"
+    },
+    {
+      "name": "constant.numeric.python",
+      "match": "\\b(0[xX][0-9a-fA-F]+|0[bB][01]+|0[oO][0-7]+|\\d+\\.\\d+([eE][+-]?\\d+)?|\\d+([eE][+-]?\\d+)?|\\d+j)\\b"
+    },
+    {
+      "name": "keyword.operator.python",
+      "match": "(\\+|\\-|\\*|\\/|\\/\\/|%|\\*\\*|==|!=|<=|>=|<|>|=|\\+=|\\-=|\\*=|\\/=|\\/\\/=|%=|\\*\\*=|&=|\\|=|\\^=|>>=|<<=|~|\\^|&|\\||>>|<<)"
+    }
+  ]
+}

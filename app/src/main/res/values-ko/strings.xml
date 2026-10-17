@@ -286,4 +286,14 @@
     <string name="search_code_empty_prompt">파일 내에서 검색할\n키워드를 입력하세요</string>
     <string name="search_code_searching">코드 검색 중…</string>
     <string name="search_code_scanning">프로젝트 코드 스캔 중…</string>
+
+    <!-- Editor Appearance & Theme Presets -->
+    <string name="editor_cat_appearance">테마 및 모양</string>
+    <string name="editor_sticky_scroll_title">상위 코드 헤더 (스티키 스크롤)</string>
+    <string name="editor_sticky_scroll_desc">스크롤할 때 상위 함수, 태그 및 클래스를 상단에 고정합니다</string>
+    <string name="editor_custom_presets_title">코드 테마 프리셋</string>
+    <string name="editor_custom_presets_desc">라이트 및 다크 미리보기가 포함된 구문 강조 팔레트를 선택합니다</string>
+    <string name="editor_preview_title">테마 미리보기</string>
+    <string name="editor_preview_light">라이트</string>
+    <string name="editor_preview_dark">다크</string>
 </resources>

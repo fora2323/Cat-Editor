@@ -286,4 +286,14 @@
     <string name="search_code_empty_prompt">फ़ाइलों में खोजने के लिए\nखोज कीवर्ड दर्ज करें</string>
     <string name="search_code_searching">कोड खोजा जा रहा है…</string>
     <string name="search_code_scanning">परियोजना कोड स्कैन किया जा रहा है…</string>
+
+    <!-- Editor Appearance & Theme Presets -->
+    <string name="editor_cat_appearance">थीम और रूप-रंग</string>
+    <string name="editor_sticky_scroll_title">पैरेंट कोड हेडर (स्टिकी स्क्रॉल)</string>
+    <string name="editor_sticky_scroll_desc">स्क्रॉल करते समय पैरेंट फ़ंक्शन, टैग और क्लास को सबसे ऊपर पिन करें</string>
+    <string name="editor_custom_presets_title">कोड थीम प्रीसेट</string>
+    <string name="editor_custom_presets_desc">लाइट और डार्क पूर्वावलोकन के साथ सिंटैक्स हाइलाइट पैलेट चुनें</string>
+    <string name="editor_preview_title">थीम पूर्वावलोकन</string>
+    <string name="editor_preview_light">लाइट</string>
+    <string name="editor_preview_dark">डार्क</string>
 </resources>

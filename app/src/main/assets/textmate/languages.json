@@ -7,6 +7,12 @@
       "languageConfiguration": "textmate/language-configuration.json"
     },
     {
+      "name": "Python",
+      "scopeName": "source.python",
+      "grammar": "textmate/python.json",
+      "languageConfiguration": "textmate/language-configuration.json"
+    },
+    {
       "name": "Java",
       "scopeName": "source.java",
       "grammar": "textmate/java.json",

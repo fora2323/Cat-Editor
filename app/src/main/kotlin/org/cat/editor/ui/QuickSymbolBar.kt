@@ -123,6 +123,8 @@ object QuickSymbolManager {
         return when {
             lower.endsWith(".kt") || lower.endsWith(".kts") -> "kotlin"
             lower.endsWith(".java") -> "java"
+            lower.endsWith(".py") || lower.endsWith(".pyw") -> "python"
+            lower.endsWith(".gradle") -> "gradle"
             lower.endsWith(".xml") -> "xml"
             lower.endsWith(".json") -> "json"
             lower.endsWith(".cpp") || lower.endsWith(".c") || lower.endsWith(".h") || lower.endsWith(".hpp") -> "cpp"

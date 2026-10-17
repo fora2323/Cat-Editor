@@ -286,4 +286,14 @@
     <string name="search_code_empty_prompt">ป้อนคำค้นหาเพื่อ\nค้นหาในไฟล์</string>
     <string name="search_code_searching">กำลังค้นหาโค้ด…</string>
     <string name="search_code_scanning">กำลังสแกนโค้ดโปรเจกต์…</string>
+
+    <!-- Editor Appearance & Theme Presets -->
+    <string name="editor_cat_appearance">ธีมและรูปลักษณ์</string>
+    <string name="editor_sticky_scroll_title">ส่วนหัวโค้ดหลัก (Sticky Scroll)</string>
+    <string name="editor_sticky_scroll_desc">ตรึงฟังก์ชัน แท็ก และคลาสหลักไว้ด้านบนขณะเลื่อน</string>
+    <string name="editor_custom_presets_title">พรีเซ็ตธีมโค้ด</string>
+    <string name="editor_custom_presets_desc">เลือกชุดสีเน้นไวยากรณ์พร้อมตัวอย่างแบบสว่างและมืด</string>
+    <string name="editor_preview_title">ตัวอย่างธีม</string>
+    <string name="editor_preview_light">สว่าง</string>
+    <string name="editor_preview_dark">มืด</string>
 </resources>

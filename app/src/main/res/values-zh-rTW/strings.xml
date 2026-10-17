@@ -286,4 +286,14 @@
     <string name="search_code_empty_prompt">輸入搜尋關鍵字以\n在檔案中尋找</string>
     <string name="search_code_searching">正在搜尋程式碼…</string>
     <string name="search_code_scanning">正在掃描專案程式碼…</string>
+
+    <!-- Editor Appearance & Theme Presets -->
+    <string name="editor_cat_appearance">主題與外觀</string>
+    <string name="editor_sticky_scroll_title">父級程式碼標題 (粘性捲動)</string>
+    <string name="editor_sticky_scroll_desc">捲動時將父級函式、標記和類別固定在頂部</string>
+    <string name="editor_custom_presets_title">程式碼主題預設</string>
+    <string name="editor_custom_presets_desc">選擇支援淺色與深色預覽的語法醒目提示調色盤</string>
+    <string name="editor_preview_title">主題預覽</string>
+    <string name="editor_preview_light">淺色</string>
+    <string name="editor_preview_dark">深色</string>
 </resources>

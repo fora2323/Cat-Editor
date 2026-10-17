@@ -35,6 +35,10 @@
       ]
     },
     {
+      "name": "keyword.other.import.java",
+      "match": "\\b(import|package)\\b"
+    },
+    {
       "name": "keyword.control.java",
       "match": "\\b(if|else|for|while|do|return|break|continue|switch|case|default|try|catch|finally|throw|throws)\\b"
     },
@@ -48,7 +52,7 @@
     },
     {
       "name": "constant.language.java",
-      "match": "\\b(true|false|null|this|super|new|instanceof|import|package)\\b"
+      "match": "\\b(true|false|null|this|super|new|instanceof)\\b"
     },
     {
       "name": "constant.numeric.java",

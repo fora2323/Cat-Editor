@@ -286,4 +286,14 @@
     <string name="search_code_empty_prompt">検索キーワードを入力して\nファイル内を検索します</string>
     <string name="search_code_searching">コードを検索中…</string>
     <string name="search_code_scanning">プロジェクトコードをスキャン中…</string>
+
+    <!-- Editor Appearance & Theme Presets -->
+    <string name="editor_cat_appearance">テーマと外観</string>
+    <string name="editor_sticky_scroll_title">親コードヘッダー (スティッキースクロール)</string>
+    <string name="editor_sticky_scroll_desc">スクロール時に親関数、タグ、クラスを上部に固定します</string>
+    <string name="editor_custom_presets_title">コードテーマプリセット</string>
+    <string name="editor_custom_presets_desc">ライト/ダークのプレビュー付きで構文強調パレットを選択します</string>
+    <string name="editor_preview_title">テーマプレビュー</string>
+    <string name="editor_preview_light">ライト</string>
+    <string name="editor_preview_dark">ダーク</string>
 </resources>

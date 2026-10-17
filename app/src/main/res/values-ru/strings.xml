@@ -285,4 +285,14 @@
     <string name="search_code_empty_prompt">Введите ключевое слово для\nпоиска в файлах</string>
     <string name="search_code_searching">Поиск кода…</string>
     <string name="search_code_scanning">Сканирование кода проекта…</string>
+
+    <!-- Editor Appearance & Theme Presets -->
+    <string name="editor_cat_appearance">Тема и оформление</string>
+    <string name="editor_sticky_scroll_title">Заголовок родительского кода (Sticky Scroll)</string>
+    <string name="editor_sticky_scroll_desc">Закреплять родительские функции, теги и классы вверху при прокрутке</string>
+    <string name="editor_custom_presets_title">Пресеты темы кода</string>
+    <string name="editor_custom_presets_desc">Выбор палитры подсветки синтаксиса с предпросмотром для светлой и темной тем</string>
+    <string name="editor_preview_title">Предпросмотр темы</string>
+    <string name="editor_preview_light">Светлая</string>
+    <string name="editor_preview_dark">Темная</string>
 </resources>

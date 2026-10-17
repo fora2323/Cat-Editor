@@ -1,6 +1,7 @@
 package org.cat.editor.ui.theme
 
 import android.app.Activity
+import android.content.SharedPreferences
 import android.os.Build
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
@@ -10,7 +11,12 @@ import androidx.compose.material3.dynamicDarkColorScheme
 import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.material3.Typography
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.Immutable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
@@ -257,10 +263,29 @@ val unspecified_scheme = ColorFamily(
 )
 
 @Composable
-private fun resolveDarkTheme(): Boolean {
+fun rememberThemeMode(): Int {
     val context = LocalContext.current
+    var themeMode by remember { mutableStateOf(SettingsManager.getThemeMode(context)) }
+    DisposableEffect(context) {
+        val prefs = SettingsManager.getPrefs(context)
+        val listener = SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
+            if (key == SettingsManager.KEY_THEME_MODE) {
+                themeMode = SettingsManager.getThemeMode(context)
+            }
+        }
+        prefs.registerOnSharedPreferenceChangeListener(listener)
+        onDispose {
+            prefs.unregisterOnSharedPreferenceChangeListener(listener)
+        }
+    }
+    return themeMode
+}
+
+@Composable
+fun resolveDarkTheme(): Boolean {
     val systemDark = isSystemInDarkTheme()
-    return when (SettingsManager.getThemeMode(context)) {
+    val themeMode = rememberThemeMode()
+    return when (themeMode) {
         SettingsManager.THEME_LIGHT -> false
         SettingsManager.THEME_DARK -> true
         else -> systemDark

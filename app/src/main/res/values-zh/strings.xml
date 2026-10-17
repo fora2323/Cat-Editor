@@ -286,4 +286,14 @@
     <string name="search_code_empty_prompt">输入搜索关键字以\n在文件中查找</string>
     <string name="search_code_searching">正在搜索代码…</string>
     <string name="search_code_scanning">正在扫描项目代码…</string>
+
+    <!-- Editor Appearance & Theme Presets -->
+    <string name="editor_cat_appearance">主题与外观</string>
+    <string name="editor_sticky_scroll_title">父级代码标题 (粘性滚动)</string>
+    <string name="editor_sticky_scroll_desc">滚动时将父级函数、标签和类固定在顶部</string>
+    <string name="editor_custom_presets_title">代码主题预设</string>
+    <string name="editor_custom_presets_desc">选择支持浅色与深色预览的语法高亮调色板</string>
+    <string name="editor_preview_title">主题预览</string>
+    <string name="editor_preview_light">浅色</string>
+    <string name="editor_preview_dark">深色</string>
 </resources>

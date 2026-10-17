@@ -10,6 +10,7 @@ import android.os.Environment
 import android.os.FileObserver
 import android.provider.Settings
 import android.widget.Toast
+import android.content.pm.PackageManager
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -29,6 +30,7 @@ import org.cat.editor.utils.ConfigPath
 import org.cat.editor.utils.LocaleHelper
 import org.cat.editor.utils.SafProjectsManager
 import org.cat.editor.utils.StorageUtils
+import org.cat.editor.utils.SettingsManager
 import java.io.File
 
 class MainActivity : ComponentActivity() {
@@ -54,6 +56,7 @@ class MainActivity : ComponentActivity() {
     }
 
     private var fileObserver: FileObserver? = null
+    private var appliedThemeMode = -1
 
     private var currentRootNode by mutableStateOf<ComposeNode>(ComposeNode("Root"))
     private var projectPath by mutableStateOf("")
@@ -141,6 +144,7 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        appliedThemeMode = SettingsManager.getThemeMode(this)
         enableEdgeToEdge(
             statusBarStyle = androidx.activity.SystemBarStyle.dark(android.graphics.Color.TRANSPARENT),
             navigationBarStyle = androidx.activity.SystemBarStyle.dark(android.graphics.Color.TRANSPARENT)
@@ -376,7 +380,7 @@ class MainActivity : ComponentActivity() {
 
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        if (requestCode == 1000 && grantResults.isNotEmpty() && grantResults[0] == android.content.pm.PackageManager.PERMISSION_GRANTED) {
+        if (requestCode == 1000 && grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
             startAppLogic()
         }
     }
@@ -391,7 +395,10 @@ class MainActivity : ComponentActivity() {
 
     override fun onResume() {
         super.onResume()
-        org.cat.editor.utils.SettingsManager.applyFullscreen(this)
+        if (appliedThemeMode != SettingsManager.getThemeMode(this)) {
+            recreate()
+        }
+        SettingsManager.applyFullscreen(this)
     }
 
     override fun onDestroy() {

@@ -78,6 +78,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SheetValue
 import androidx.compose.material3.SmallFloatingActionButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -194,8 +195,13 @@ fun ProjectMenuScreen(
     var showExitDialog by remember { mutableStateOf(false) }
     var isFabExpanded by rememberSaveable { mutableStateOf(false) }
 
+    var hasPermission by remember { mutableStateOf(checkStoragePermission(context)) }
+    var showPermissionDialog by remember { mutableStateOf(!hasPermission) }
+
     BackHandler(enabled = true) {
-        if (isFabExpanded) {
+        if (showPermissionDialog) {
+            return@BackHandler
+        } else if (isFabExpanded) {
             isFabExpanded = false
         } else if (org.cat.editor.utils.SettingsManager.isExitDialogEnabled(context)) {
             showExitDialog = true
@@ -227,8 +233,6 @@ fun ProjectMenuScreen(
         )
     }
 
-    var hasPermission by remember { mutableStateOf(checkStoragePermission(context)) }
-    var showPermissionDialog by remember { mutableStateOf(!hasPermission) }
     var projects by remember { mutableStateOf<List<ProjectItem>>(emptyList()) }
     var isLoading by remember { mutableStateOf(hasPermission) }
     var isRefreshing by remember { mutableStateOf(false) }
@@ -290,7 +294,6 @@ fun ProjectMenuScreen(
         }
     }
 
-    // Launcher SAF untuk menyimpan file hasil Backup (.zip)
     val saveBackupZipLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.CreateDocument("application/zip")
     ) { uri: Uri? ->
@@ -534,12 +537,10 @@ fun ProjectMenuScreen(
         }
     }
     
-    // Tampilkan indikator saat proses Clone, Backup, Remove, atau buka proyek berlangsung
     if (isDeleting || isOpeningProject) {
         M3ELoadingDialog()
     }
 
-    // Tampilkan Menu Project saat di-klik
     if (showProjectMenu && selectedProjectForMenu != null) {
         val project = selectedProjectForMenu!!
         val menuSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
@@ -556,7 +557,6 @@ fun ProjectMenuScreen(
                 modifier = Modifier.padding(bottom = 8.dp, top = 8.dp, start = 8.dp)
             )
 
-            // 1. FITUR PIN / UNPIN
             ProjectMenuItem(
                 icon = Icons.Default.PushPin,
                 title = stringResource(id = R.string.project_pin),
@@ -573,7 +573,6 @@ fun ProjectMenuScreen(
                 }
             )
 
-            // 2. FITUR CLONE (Salin isi ke NamaProject-Clone)
             ProjectMenuItem(
                 icon = Icons.Default.ContentCopy,
                 title = stringResource(id = R.string.project_clone),
@@ -614,7 +613,6 @@ fun ProjectMenuScreen(
                 }
             )
 
-            // 3. FITUR BACKUP (Zip lalu simpan via SAF)
             ProjectMenuItem(
                 icon = Icons.Default.SdStorage,
                 title = stringResource(id = R.string.project_backup),
@@ -648,7 +646,6 @@ fun ProjectMenuScreen(
                 }
             )
 
-            // 4. FITUR REMOVE
             ProjectMenuItem(
                 icon = Icons.Default.Delete,
                 title = stringResource(id = R.string.project_remove),
@@ -658,7 +655,6 @@ fun ProjectMenuScreen(
                     showProjectMenu = false
                     isDeleting = true
                     
-                    // Eksekusi fungsi hapus di Background Thread (IO)
                     scope.launch(Dispatchers.IO) {
                         try {
                             File(project.path).deleteRecursively()
@@ -668,7 +664,6 @@ fun ProjectMenuScreen(
                         SafProjectsManager.removeProject(context, project.path)
                         removePinnedPath(context, project.path)
 
-                        // Setelah selesai, muat ulang list proyek dan tutup loading dialog
                         val updatedProjects = loadAllProjects(context)
                         withContext(Dispatchers.Main) {
                             projects = updatedProjects
@@ -685,7 +680,7 @@ fun ProjectMenuScreen(
     if (showPermissionDialog) {
         val permissionSheetState = rememberModalBottomSheetState(
             skipPartiallyExpanded = true,
-            confirmValueChange = { false }
+            confirmValueChange = { it != SheetValue.Hidden }
         )
         BottomSheetDialog(
             onDismissRequest = { },
@@ -744,7 +739,6 @@ fun ProjectMenuScreen(
     }
 }
 
-// Composable baru untuk item menu di dalam BottomSheet
 @Composable
 fun ProjectMenuItem(
     icon: ImageVector,
@@ -894,7 +888,6 @@ fun ProjectItemRow(
                 )
             }
             
-            // Icon Titik Tiga (More Options)
             IconButton(onClick = onMoreClick) {
                 Icon(
                     imageVector = Icons.Default.MoreVert,
@@ -1109,14 +1102,12 @@ private fun loadIconBitmapForName(resDir: File, targetName: String): Bitmap? {
         return null
     }
 
-    // Step A: Check for exact raster image match for targetName (e.g. ic_launcher.png)
     val exactImageFile = findExactRasterImage(targetName)
     if (exactImageFile != null && backgroundKeywords.none { exactImageFile.name.contains(it, ignoreCase = true) }) {
         val bitmap = BitmapFactory.decodeFile(exactImageFile.absolutePath)
         if (bitmap != null) return bitmap
     }
 
-    // Step B: Check for XML adaptive icon (e.g. ic_launcher.xml)
     val allSubDirs = resDir.listFiles { f -> f.isDirectory } ?: emptyArray()
     var adaptiveXmlFile: File? = null
     for (dir in allSubDirs) {
@@ -1162,7 +1153,6 @@ private fun loadIconBitmapForName(resDir: File, targetName: String): Bitmap? {
         } catch (_: Exception) {}
     }
 
-    // Step C: Fallback search for any image containing targetName excluding background-only files
     for (dir in allSubDirs) {
         if (dir.name.contains("mipmap", ignoreCase = true) || dir.name.contains("drawable", ignoreCase = true)) {
             val files = dir.listFiles { f ->

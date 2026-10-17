@@ -163,6 +163,24 @@ fun AppSettingsScreen(
                             modifier = Modifier.padding(horizontal = 16.dp)
                         )
 
+                        // Theme
+                        val themeLabel = when (themeMode) {
+                            SettingsManager.THEME_LIGHT -> stringResource(id = R.string.theme_light)
+                            SettingsManager.THEME_DARK -> stringResource(id = R.string.theme_dark)
+                            else -> stringResource(id = R.string.theme_system)
+                        }
+                        SettingNavigationItem(
+                            title = stringResource(id = R.string.setting_theme_title),
+                            subtitle = "${stringResource(id = R.string.setting_theme_desc)} · $themeLabel",
+                            onClick = { showThemeDialog = true }
+                        )
+
+                        HorizontalDivider(
+                            color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.15f),
+                            thickness = 0.7.dp,
+                            modifier = Modifier.padding(horizontal = 16.dp)
+                        )
+
                         // Check updates
                         SettingSwitchItem(
                             title = stringResource(id = R.string.setting_check_updates_title),

@@ -296,4 +296,24 @@
     <string name="editor_preview_title">थीम पूर्वावलोकन</string>
     <string name="editor_preview_light">लाइट</string>
     <string name="editor_preview_dark">डार्क</string>
+
+    <!-- Drawable Preview & Actions -->
+    <string name="drawable_preview_title">ड्रॉएबल पूर्वावलोकन</string>
+    <string name="drawable_preview_toggle_bg">पृष्ठभूमि बदलें</string>
+    <string name="drawable_preview_expand">पूर्वावलोकन बड़ा करें</string>
+    <string name="drawable_preview_copied">कॉपी किया गया: %1$s</string>
+    <string name="drawable_preview_bg_checkerboard">चेकरबोर्ड पृष्ठभूमि</string>
+    <string name="drawable_preview_bg_dark">डार्क पृष्ठभूमि</string>
+    <string name="drawable_preview_bg_light">लाइट पृष्ठभूमि</string>
+    <!-- Theme Options & Code Formatter -->
+    <string name="setting_theme_title">थीम</string>
+    <string name="setting_theme_desc">एप्लिकेशन थीम चुनें</string>
+    <string name="select_theme_title">थीम चुनें</string>
+    <string name="theme_system">सिस्टम के अनुसार</string>
+    <string name="theme_light">लाइट</string>
+    <string name="theme_dark">डार्क</string>
+    <string name="theme_dynamic">डायनामिक (Material You)</string>
+    <string name="theme_lemon">लेमन</string>
+    <string name="pretty_print">कोड फॉर्मेट करें</string>
+    <string name="code_formatted">कोड फॉर्मेट हो गया</string>
 </resources>

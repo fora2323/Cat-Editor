@@ -250,6 +250,70 @@ private val highContrastDarkColorScheme = darkColorScheme(
     surfaceContainerHighest = surfaceContainerHighestDarkHighContrast,
 )
 
+val lemonLightScheme = lightColorScheme(
+    primary = Color(0xFF6B6000),
+    onPrimary = Color(0xFFFFFFFF),
+    primaryContainer = Color(0xFFFBE365),
+    onPrimaryContainer = Color(0xFF201C00),
+    secondary = Color(0xFF646043),
+    onSecondary = Color(0xFFFFFFFF),
+    secondaryContainer = Color(0xFFEBE4BE),
+    onSecondaryContainer = Color(0xFF1F1C06),
+    tertiary = Color(0xFF406653),
+    onTertiary = Color(0xFFFFFFFF),
+    tertiaryContainer = Color(0xFFC2ECD4),
+    onTertiaryContainer = Color(0xFF002114),
+    error = Color(0xFFBA1A1A),
+    onError = Color(0xFFFFFFFF),
+    errorContainer = Color(0xFFFFDAD6),
+    onErrorContainer = Color(0xFF410002),
+    background = Color(0xFFFFF9EE),
+    onBackground = Color(0xFF1D1C16),
+    surface = Color(0xFFFFF9EE),
+    onSurface = Color(0xFF1D1C16),
+    surfaceVariant = Color(0xFFE8E2D0),
+    onSurfaceVariant = Color(0xFF4A473A),
+    outline = Color(0xFF7B7768),
+    outlineVariant = Color(0xFFCCC6B5),
+    surfaceContainerLowest = Color(0xFFFFFFFF),
+    surfaceContainerLow = Color(0xFFF9F3E8),
+    surfaceContainer = Color(0xFFF4EEE2),
+    surfaceContainerHigh = Color(0xFFEEE8DC),
+    surfaceContainerHighest = Color(0xFFE8E2D7),
+)
+
+val lemonDarkScheme = darkColorScheme(
+    primary = Color(0xFFDEC74C),
+    onPrimary = Color(0xFF383100),
+    primaryContainer = Color(0xFF514800),
+    onPrimaryContainer = Color(0xFFFBE365),
+    secondary = Color(0xFFCEC8A4),
+    onSecondary = Color(0xFF353119),
+    secondaryContainer = Color(0xFF4C482D),
+    onSecondaryContainer = Color(0xFFEBE4BE),
+    tertiary = Color(0xFFA6D0B8),
+    onTertiary = Color(0xFF0F3726),
+    tertiaryContainer = Color(0xFF284E3C),
+    onTertiaryContainer = Color(0xFFC2ECD4),
+    error = Color(0xFFFFB4AB),
+    onError = Color(0xFF690005),
+    errorContainer = Color(0xFF93000A),
+    onErrorContainer = Color(0xFFFFDAD6),
+    background = Color(0xFF15140E),
+    onBackground = Color(0xFFE8E2D7),
+    surface = Color(0xFF15140E),
+    onSurface = Color(0xFFE8E2D7),
+    surfaceVariant = Color(0xFF4A473A),
+    onSurfaceVariant = Color(0xFFCCC6B5),
+    outline = Color(0xFF959181),
+    outlineVariant = Color(0xFF4A473A),
+    surfaceContainerLowest = Color(0xFF100F09),
+    surfaceContainerLow = Color(0xFF1D1C16),
+    surfaceContainer = Color(0xFF21201A),
+    surfaceContainerHigh = Color(0xFF2C2B24),
+    surfaceContainerHighest = Color(0xFF37362E),
+)
+
 @Immutable
 data class ColorFamily(
     val color: Color,
@@ -296,21 +360,25 @@ fun resolveDarkTheme(): Boolean {
 fun AppTheme(
     darkTheme: Boolean = resolveDarkTheme(),
     dynamicColor: Boolean = false,
-    content: @Composable() () -> Unit
+    content: @Composable () -> Unit
 ) {
-  val colorScheme = when {
-      dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
-          val context = LocalContext.current
-          if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
-      }
+    val context = LocalContext.current
+    val themeMode = rememberThemeMode()
 
-      darkTheme -> darkScheme
-      else -> lightScheme
-  }
+    val colorScheme = when {
+        (themeMode == SettingsManager.THEME_DYNAMIC || dynamicColor) && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
+            if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
+        }
+        themeMode == SettingsManager.THEME_LEMON -> {
+            if (darkTheme) lemonDarkScheme else lemonLightScheme
+        }
+        darkTheme -> darkScheme
+        else -> lightScheme
+    }
 
-  MaterialTheme(
-    colorScheme = colorScheme,
-    typography = AppTypography,
-    content = content
-  )
+    MaterialTheme(
+        colorScheme = colorScheme,
+        typography = AppTypography,
+        content = content
+    )
 }

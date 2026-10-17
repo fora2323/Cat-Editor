@@ -296,4 +296,25 @@
     <string name="editor_preview_title">ตัวอย่างธีม</string>
     <string name="editor_preview_light">สว่าง</string>
     <string name="editor_preview_dark">มืด</string>
+
+    <!-- Drawable Preview & Actions -->
+    <string name="drawable_preview_title">ดูตัวอย่าง Drawable</string>
+    <string name="drawable_preview_toggle_bg">สลับพื้นหลัง</string>
+    <string name="drawable_preview_expand">ขยายการแสดงตัวอย่าง</string>
+    <string name="drawable_preview_copied">คัดลอกแล้ว: %1$s</string>
+    <string name="drawable_preview_bg_checkerboard">พื้นหลังลายตารางหมากรุก</string>
+    <string name="drawable_preview_bg_dark">พื้นหลังมืด</string>
+    <string name="drawable_preview_bg_light">พื้นหลังสว่าง</string>
+    <!-- Theme Options & Code Formatter -->
+    <string name="setting_theme_title">ธีม</string>
+    <string name="setting_theme_desc">เลือกธีมของแอปพลิเคชัน</string>
+    <string name="select_theme_title">เลือกธีม</string>
+    <string name="theme_system">ตามระบบ</string>
+    <string name="theme_light">สว่าง</string>
+    <string name="theme_dark">มืด</string>
+    <string name="theme_dynamic">ไดนามิก (Material You)</string>
+    <string name="theme_lemon">เลมอน</string>
+    <string name="pretty_print">จัดรูปแบบโค้ด</string>
+    <string name="code_formatted">จัดรูปแบบโค้ดเรียบร้อยแล้ว</string>
 </resources>
+

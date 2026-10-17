@@ -51,6 +51,8 @@ object SettingsManager {
     const val THEME_SYSTEM = 0
     const val THEME_LIGHT = 1
     const val THEME_DARK = 2
+    const val THEME_DYNAMIC = 3
+    const val THEME_LEMON = 4
 
     fun getPrefs(context: Context) = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
 

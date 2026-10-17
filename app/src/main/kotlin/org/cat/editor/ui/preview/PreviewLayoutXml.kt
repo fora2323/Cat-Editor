@@ -89,6 +89,15 @@ fun PreviewLayoutXml(
     }
     val effectiveContent = if (sourceCode.isNotBlank()) sourceCode else fileContent
 
+    if (VectorDrawableParser.isVectorXml(effectiveContent)) {
+        VectorPreviewScreen(
+            filePath = activeFilePath,
+            content = effectiveContent,
+            onBackClick = onBackClick
+        )
+        return
+    }
+
     if (!XmlLayoutParser.isLayoutXml(effectiveContent)) {
         EmptyXmlPreviewPlaceholder(
             title = "XML Resource / Manifest File",

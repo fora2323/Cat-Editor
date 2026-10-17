@@ -296,4 +296,25 @@
     <string name="editor_preview_title">主題預覽</string>
     <string name="editor_preview_light">淺色</string>
     <string name="editor_preview_dark">深色</string>
+
+    <!-- Drawable Preview & Actions -->
+    <string name="drawable_preview_title">圖形資源預覽</string>
+    <string name="drawable_preview_toggle_bg">切換背景</string>
+    <string name="drawable_preview_expand">展開預覽</string>
+    <string name="drawable_preview_copied">已複製: %1$s</string>
+    <string name="drawable_preview_bg_checkerboard">棋盤格背景</string>
+    <string name="drawable_preview_bg_dark">深色背景</string>
+    <string name="drawable_preview_bg_light">淺色背景</string>
+    <!-- Theme Options & Code Formatter -->
+    <string name="setting_theme_title">主題</string>
+    <string name="setting_theme_desc">選取應用程式主題</string>
+    <string name="select_theme_title">選取主題</string>
+    <string name="theme_system">依隨系統</string>
+    <string name="theme_light">淺色</string>
+    <string name="theme_dark">深色</string>
+    <string name="theme_dynamic">動態色彩 (Material You)</string>
+    <string name="theme_lemon">檸檬黃</string>
+    <string name="pretty_print">格式化程式碼</string>
+    <string name="code_formatted">程式碼已格式化</string>
 </resources>
+

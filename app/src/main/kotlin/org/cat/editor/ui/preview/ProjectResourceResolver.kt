@@ -545,7 +545,28 @@ object ProjectResourceResolver {
         val cacheKey = "$filePath:$trimmed:$isDark"
         colorCache[cacheKey]?.let { return it }
 
-        if (trimmed.startsWith("@color/") || trimmed.startsWith("@android:color/")) {
+        if (trimmed.startsWith("@android:color/")) {
+            val name = trimmed.substringAfterLast('/').lowercase(Locale.ROOT)
+            return when (name) {
+                "white" -> Color.WHITE
+                "black" -> Color.BLACK
+                "transparent" -> Color.TRANSPARENT
+                "darker_gray" -> Color.DKGRAY
+                "lighter_gray" -> Color.LTGRAY
+                "holo_blue_light" -> Color.parseColor("#33B5E5")
+                "holo_blue_dark" -> Color.parseColor("#0099CC")
+                "holo_green_light" -> Color.parseColor("#99CC00")
+                "holo_green_dark" -> Color.parseColor("#669900")
+                "holo_red_light" -> Color.parseColor("#FF4444")
+                "holo_red_dark" -> Color.parseColor("#CC0000")
+                "holo_orange_light" -> Color.parseColor("#FFBB33")
+                "holo_orange_dark" -> Color.parseColor("#FF8800")
+                "holo_purple" -> Color.parseColor("#AA66CC")
+                else -> Color.GRAY
+            }
+        }
+
+        if (trimmed.startsWith("@color/")) {
             val colorName = trimmed.substringAfterLast('/')
             val resDir = findResDir(filePath)
             if (resDir != null) {
@@ -568,6 +589,14 @@ object ProjectResourceResolver {
     private fun resolveThemeAttributeColor(attrName: String, isDark: Boolean): Int? {
         val clean = attrName.lowercase(Locale.ROOT)
         return when {
+            clean.contains("colorcontrolnormal") || clean.contains("coloricon") || clean.contains("tint") ->
+                if (isDark) Color.parseColor("#E6E0E9") else Color.parseColor("#1D1B20")
+            clean.contains("colorcontrolactivated") || clean.contains("coloraccent") ->
+                if (isDark) Color.parseColor("#D0BCFF") else Color.parseColor("#6750A4")
+            clean.contains("colorcontrolhighlight") ->
+                if (isDark) Color.parseColor("#381E72") else Color.parseColor("#E8DEF8")
+            clean.contains("colorbuttonnormal") ->
+                if (isDark) Color.parseColor("#3B383E") else Color.parseColor("#E6E0E9")
             clean.contains("colorsurfacecontainerhigh") ->
                 if (isDark) Color.parseColor("#2B2930") else Color.parseColor("#ECE6F0")
             clean.contains("colorsurfacecontainerlow") ->

@@ -295,4 +295,26 @@
     <string name="editor_preview_title">Pratinjau Tema</string>
     <string name="editor_preview_light">Terang</string>
     <string name="editor_preview_dark">Gelap</string>
+
+    <!-- Drawable Preview & Actions -->
+    <string name="drawable_preview_title">Pratinjau Drawable</string>
+    <string name="drawable_preview_toggle_bg">Ganti Latar Belakang</string>
+    <string name="drawable_preview_expand">Perbesar Pratinjau</string>
+    <string name="drawable_preview_copied">Disalin: %1$s</string>
+    <string name="drawable_preview_bg_checkerboard">Latar belakang papan catur</string>
+    <string name="drawable_preview_bg_dark">Latar belakang gelap</string>
+    <string name="drawable_preview_bg_light">Latar belakang terang</string>
+
+    <!-- Theme Options & Code Formatter -->
+    <string name="theme_system">Ikuti sistem</string>
+    <string name="theme_light">Terang</string>
+    <string name="theme_dark">Gelap</string>
+    <string name="theme_dynamic">Dinamis (Material You)</string>
+    <string name="theme_lemon">Lemon</string>
+    <string name="pretty_print">Rapikan kode</string>
+    <string name="code_formatted">Kode berhasil dirapikan</string>
+    <!-- Theme Options & Code Formatter -->
+    <string name="setting_theme_title">Tema</string>
+    <string name="setting_theme_desc">Pilih tema aplikasi</string>
+    <string name="select_theme_title">Pilih tema</string>
 </resources>

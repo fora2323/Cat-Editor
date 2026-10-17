@@ -167,6 +167,8 @@ fun AppSettingsScreen(
                         val themeLabel = when (themeMode) {
                             SettingsManager.THEME_LIGHT -> stringResource(id = R.string.theme_light)
                             SettingsManager.THEME_DARK -> stringResource(id = R.string.theme_dark)
+                            SettingsManager.THEME_DYNAMIC -> stringResource(id = R.string.theme_dynamic)
+                            SettingsManager.THEME_LEMON -> stringResource(id = R.string.theme_lemon)
                             else -> stringResource(id = R.string.theme_system)
                         }
                         SettingNavigationItem(
@@ -329,7 +331,9 @@ fun AppSettingsScreen(
         val options = listOf(
             SettingsManager.THEME_SYSTEM to stringResource(id = R.string.theme_system),
             SettingsManager.THEME_LIGHT to stringResource(id = R.string.theme_light),
-            SettingsManager.THEME_DARK to stringResource(id = R.string.theme_dark)
+            SettingsManager.THEME_DARK to stringResource(id = R.string.theme_dark),
+            SettingsManager.THEME_DYNAMIC to stringResource(id = R.string.theme_dynamic),
+            SettingsManager.THEME_LEMON to stringResource(id = R.string.theme_lemon)
         )
 
         BottomSheetDialog(onDismissRequest = { showThemeDialog = false }) {

@@ -295,4 +295,26 @@
     <string name="editor_preview_title">معاينة السمة</string>
     <string name="editor_preview_light">فاتح</string>
     <string name="editor_preview_dark">داكن</string>
+
+    <!-- Drawable Preview & Actions -->
+    <string name="drawable_preview_title">معاينة الرسم القابل للرسم</string>
+    <string name="drawable_preview_toggle_bg">تبديل الخلفية</string>
+    <string name="drawable_preview_expand">توسيع المعاينة</string>
+    <string name="drawable_preview_copied">تم النسخ: %1$s</string>
+    <string name="drawable_preview_bg_checkerboard">خلفية لوحة الشطرنج</string>
+    <string name="drawable_preview_bg_dark">خلفية داكنة</string>
+    <string name="drawable_preview_bg_light">خلفية فاتحة</string>
+
+    <!-- Theme Options & Code Formatter -->
+    <string name="theme_system">اتباع النظام</string>
+    <string name="theme_light">فاتح</string>
+    <string name="theme_dark">داكن</string>
+    <string name="theme_dynamic">ديناميكي (Material You)</string>
+    <string name="theme_lemon">ليموني</string>
+    <string name="pretty_print">تنسيق الكود</string>
+    <string name="code_formatted">تم تنسيق الكود</string>
+    <!-- Theme Options & Code Formatter -->
+    <string name="setting_theme_title">السمة</string>
+    <string name="setting_theme_desc">اختر سمة التطبيق</string>
+    <string name="select_theme_title">اختر سمة</string>
 </resources>

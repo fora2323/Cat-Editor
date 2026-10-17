@@ -34,6 +34,7 @@ import androidx.compose.material.icons.automirrored.filled.InsertDriveFile
 import androidx.compose.material.icons.automirrored.filled.Redo
 import androidx.compose.material.icons.automirrored.filled.Undo
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.AutoFixHigh
 import androidx.compose.material.icons.filled.Bolt
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Code
@@ -135,6 +136,8 @@ import org.cat.editor.ui.preview.ImageDetailViewer
 import org.cat.editor.ui.preview.ImagePreviewIcon
 import org.cat.editor.ui.preview.PreviewLayoutXml
 import org.cat.editor.ui.preview.PreviewScreen
+import org.cat.editor.ui.preview.XmlLayoutParser
+import org.cat.editor.ui.preview.VectorDrawableParser
 import org.cat.editor.ui.preview.isBinaryFile
 import org.cat.editor.ui.preview.isImageFile
 import org.cat.editor.utils.SettingsManager
@@ -178,6 +181,18 @@ fun IdeMainScreen(
     var currentCode by remember { mutableStateOf("") }
     var showMoreMenu by remember { mutableStateOf(false) }
     var viewMode by remember { mutableStateOf(EditorViewMode.EDIT) }
+    var formatTrigger by remember { mutableIntStateOf(0) }
+
+    LaunchedEffect(activeFilePath) {
+        if (activeFilePath.isNotEmpty()) {
+            try {
+                val f = File(activeFilePath)
+                if (f.exists() && f.isFile) {
+                    currentCode = f.readText()
+                }
+            } catch (_: Throwable) {}
+        }
+    }
 
     val clipboardManager = LocalClipboardManager.current
     var treeRefreshTrigger by remember { mutableIntStateOf(0) }
@@ -434,9 +449,32 @@ fun IdeMainScreen(
         showCreateDialog = true
         onAddFile?.invoke()
     }
-    val canPreviewActiveFile = remember(activeFilePath) {
-        val lower = activeFilePath.lowercase()
-        lower.endsWith(".kt") || lower.endsWith(".kts") || lower.endsWith(".xml")
+    val canPreviewActiveFile = remember(activeFilePath, currentCode) {
+        if (activeFilePath.isBlank()) false
+        else {
+            val lower = activeFilePath.lowercase()
+            val effectiveCode = if (currentCode.isNotEmpty()) currentCode else {
+                try {
+                    val f = File(activeFilePath)
+                    if (f.exists() && f.isFile) f.readText() else ""
+                } catch (_: Throwable) { "" }
+            }
+            when {
+                lower.endsWith(".kt") || lower.endsWith(".kts") -> {
+                    effectiveCode.contains("@Preview")
+                }
+                lower.endsWith(".xml") -> {
+                    XmlLayoutParser.isLayoutXml(effectiveCode) || VectorDrawableParser.isVectorXml(effectiveCode)
+                }
+                else -> false
+            }
+        }
+    }
+
+    LaunchedEffect(canPreviewActiveFile) {
+        if (!canPreviewActiveFile && viewMode == EditorViewMode.PREVIEW) {
+            viewMode = EditorViewMode.EDIT
+        }
     }
 
     val handlePlay = {
@@ -609,6 +647,19 @@ fun IdeMainScreen(
                                         )
                                     }
 
+                                    if (activeFilePath.isNotEmpty() && viewMode == EditorViewMode.EDIT) {
+                                        DropdownMenuItem(
+                                            text = { Text(stringResource(id = R.string.pretty_print)) },
+                                            leadingIcon = {
+                                                Icon(Icons.Default.AutoFixHigh, contentDescription = null)
+                                            },
+                                            onClick = {
+                                                showMoreMenu = false
+                                                formatTrigger++
+                                            }
+                                        )
+                                    }
+
                                     DropdownMenuItem(
                                         text = { Text(stringResource(id = R.string.open_folder_saf)) },
                                         leadingIcon = {
@@ -777,7 +828,8 @@ fun IdeMainScreen(
                                             if (drawerState.isOpen) {
                                                 scope.launch { drawerState.close() }
                                             }
-                                        }
+                                        },
+                                        formatTrigger = formatTrigger
                                     )
                                 }
                             }
@@ -786,6 +838,7 @@ fun IdeMainScreen(
                                 if (isXml) {
                                     PreviewLayoutXml(
                                         activeFilePath = activeFilePath,
+                                        sourceCode = currentCode,
                                         onBackClick = {
                                             viewMode = EditorViewMode.EDIT
                                         }

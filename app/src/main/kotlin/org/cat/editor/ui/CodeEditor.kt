@@ -23,6 +23,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.Lifecycle
@@ -43,7 +44,33 @@ import io.github.rosemoe.sora.langs.textmate.registry.provider.AssetsFileResolve
 import io.github.rosemoe.sora.widget.CodeEditor
 import io.github.rosemoe.sora.widget.component.EditorAutoCompletion
 import io.github.rosemoe.sora.widget.schemes.EditorColorScheme
+import android.widget.Toast
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Image
+import androidx.compose.material3.Icon
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.withContext
+import org.cat.editor.ui.preview.ExpandedDrawablePreviewBottomSheet
+import org.cat.editor.ui.preview.FloatingDrawablePreviewCard
+import org.cat.editor.ui.preview.PreviewBgMode
+import org.cat.editor.ui.preview.VectorDrawableMeta
+import org.cat.editor.ui.preview.VectorDrawableParser
 import org.cat.editor.ui.preview.isBinaryFile
+import org.cat.editor.R
 import org.cat.editor.utils.SettingsManager
 import org.eclipse.tm4e.core.registry.IThemeSource
 import java.io.File
@@ -106,21 +133,8 @@ private val THEME_FILES = listOf(
     "material3.json" to "Material3"
 )
 
-fun resolveThemeName(context: Context, isDark: Boolean): String {
-    val prefs = SettingsManager.getPrefs(context)
-    val customPresetsEnabled = prefs.getBoolean("editor_custom_presets_enabled", false)
-    val preset = if (customPresetsEnabled) {
-        prefs.getString("editor_color_preset", "material3") ?: "material3"
-    } else {
-        "material3"
-    }
-
-    return when (preset.lowercase()) {
-        "github" -> if (isDark) "GitHub Dark" else "GitHub Light"
-        "one" -> if (isDark) "One Dark" else "One Light"
-        "dracula" -> if (isDark) "Dracula" else "Solarized Light"
-        else -> if (isDark) "Material3 Dark" else "Material3 Light"
-    }
+fun resolveThemeName(context: Context? = null, isDark: Boolean = true): String {
+    return "Dracula"
 }
 
 @Synchronized
@@ -367,7 +381,8 @@ private fun applyEditorSettings(
 fun KotlinCodeEditor(
     filePath: String,
     onCodeChange: (String) -> Unit,
-    onEditorInteraction: (() -> Unit)? = null
+    onEditorInteraction: (() -> Unit)? = null,
+    formatTrigger: Int = 0
 ) {
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
@@ -409,6 +424,85 @@ fun KotlinCodeEditor(
     var currentLoadedPath by remember { mutableStateOf(filePath) }
     var editorInstance by remember { mutableStateOf<CodeEditor?>(null) }
     var isProgrammaticTextUpdate by remember { mutableStateOf(false) }
+
+    var activeCode by remember(filePath) { mutableStateOf(initialContent) }
+
+    LaunchedEffect(formatTrigger) {
+        if (formatTrigger > 0) {
+            editorInstance?.let { editor ->
+                val code = editor.text.toString()
+                val formatted = org.cat.editor.utility.CodeFormatter.format(code, filePath)
+                if (formatted != code) {
+                    val cursor = editor.cursor
+                    val cursorLine = cursor.leftLine
+                    val cursorCol = cursor.leftColumn
+                    isProgrammaticTextUpdate = true
+                    try {
+                        editor.setText(formatted)
+                        activeCode = formatted
+                        onCodeChange(formatted)
+                        try {
+                            val maxLine = (editor.lineCount - 1).coerceAtLeast(0)
+                            val targetLine = cursorLine.coerceIn(0, maxLine)
+                            val maxCol = editor.text.getColumnCount(targetLine)
+                            editor.setSelection(targetLine, cursorCol.coerceIn(0, maxCol))
+                        } catch (_: Throwable) {}
+                    } finally {
+                        isProgrammaticTextUpdate = false
+                    }
+                }
+            }
+        }
+    }
+    val isVectorXml = remember(filePath, activeCode) {
+        filePath.lowercase().endsWith(".xml") && VectorDrawableParser.isVectorXml(activeCode)
+    }
+
+    var showFloatingPreview by remember(filePath) { mutableStateOf(false) }
+    var showExpandedBottomSheet by remember { mutableStateOf(false) }
+    var previewBgMode by remember { mutableStateOf(PreviewBgMode.CHECKERBOARD) }
+
+    var previewBitmap by remember { mutableStateOf<android.graphics.Bitmap?>(null) }
+    var previewMeta by remember { mutableStateOf(VectorDrawableMeta()) }
+    var isPreviewLoading by remember { mutableStateOf(false) }
+    val isThemeDark = m3Scheme.surface.luminance() < 0.5f
+
+    // Automatically enable preview card if opening a vector drawable xml
+    LaunchedEffect(filePath) {
+        if (filePath.lowercase().endsWith(".xml") && VectorDrawableParser.isVectorXml(initialContent)) {
+            showFloatingPreview = true
+        }
+    }
+
+    // Debounced live update for vector drawable preview
+    LaunchedEffect(activeCode, previewBgMode, showFloatingPreview, showExpandedBottomSheet, isThemeDark) {
+        if (isVectorXml && (showFloatingPreview || showExpandedBottomSheet)) {
+            delay(250)
+            isPreviewLoading = true
+            withContext(Dispatchers.Default) {
+                try {
+                    val parser = VectorDrawableParser(activeCode, filePath, context)
+                    val m = parser.getMeta()
+                    val isDark = when (previewBgMode) {
+                        PreviewBgMode.CHECKERBOARD -> isThemeDark
+                        PreviewBgMode.DARK -> true
+                        PreviewBgMode.LIGHT -> false
+                    }
+                    val bmp = parser.renderBitmap(512, 512, isDark)
+                    withContext(Dispatchers.Main) {
+                        previewMeta = m
+                        previewBitmap = bmp
+                        isPreviewLoading = false
+                    }
+                } catch (e: Throwable) {
+                    withContext(Dispatchers.Main) {
+                        previewBitmap = null
+                        isPreviewLoading = false
+                    }
+                }
+            }
+        }
+    }
 
     // Perbarui pengaturan editor secara otomatis saat kembali dari halaman Settings
     DisposableEffect(lifecycleOwner, filePath, editorColors) {
@@ -455,12 +549,15 @@ fun KotlinCodeEditor(
                         } finally {
                             isProgrammaticTextUpdate = false
                         }
+                        onCodeChange(initialContent)
                         setTextSize(14f)
                         applyEditorSettings(this, filePath, editorColors)
 
                         subscribeAlways(ContentChangeEvent::class.java) { _ ->
                             if (!isProgrammaticTextUpdate) {
-                                onCodeChange(text.toString())
+                                val newText = text.toString()
+                                activeCode = newText
+                                onCodeChange(newText)
                             }
                         }
 
@@ -514,6 +611,7 @@ fun KotlinCodeEditor(
                             }
                         } else ""
 
+                        activeCode = textToSet
                         isProgrammaticTextUpdate = true
                         try {
                             editor.setText(textToSet)
@@ -522,12 +620,92 @@ fun KotlinCodeEditor(
                         } finally {
                             isProgrammaticTextUpdate = false
                         }
+                        onCodeChange(textToSet)
 
                         applyLanguageAndTheme(editor, filePath, autoCloseTag, editorColors)
                     }
                 },
                 modifier = Modifier.fillMaxSize()
             )
+
+            if (isVectorXml) {
+                if (!showFloatingPreview) {
+                    Surface(
+                        onClick = { showFloatingPreview = true },
+                        shape = RoundedCornerShape(16.dp),
+                        color = MaterialTheme.colorScheme.surfaceContainerHigh.copy(alpha = 0.92f),
+                        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.6f)),
+                        shadowElevation = 3.dp,
+                        modifier = Modifier
+                            .align(Alignment.TopEnd)
+                            .padding(top = 10.dp, end = 12.dp)
+                    ) {
+                        Row(
+                            modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Icon(
+                                Icons.Default.Image,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.size(16.dp)
+                            )
+                            Spacer(modifier = Modifier.width(6.dp))
+                            Text(
+                                text = "Preview",
+                                style = MaterialTheme.typography.labelSmall,
+                                fontWeight = FontWeight.SemiBold,
+                                color = MaterialTheme.colorScheme.onSurface
+                            )
+                        }
+                    }
+                }
+
+                if (showFloatingPreview) {
+                    FloatingDrawablePreviewCard(
+                        fileName = File(filePath).name,
+                        infoText = previewMeta.infoText,
+                        bitmap = previewBitmap,
+                        isLoading = isPreviewLoading,
+                        bgMode = previewBgMode,
+                        onToggleBg = {
+                            previewBgMode = when (previewBgMode) {
+                                PreviewBgMode.CHECKERBOARD -> PreviewBgMode.DARK
+                                PreviewBgMode.DARK -> PreviewBgMode.LIGHT
+                                PreviewBgMode.LIGHT -> PreviewBgMode.CHECKERBOARD
+                            }
+                            val msg = when (previewBgMode) {
+                                PreviewBgMode.CHECKERBOARD -> context.getString(R.string.drawable_preview_bg_checkerboard)
+                                PreviewBgMode.DARK -> context.getString(R.string.drawable_preview_bg_dark)
+                                PreviewBgMode.LIGHT -> context.getString(R.string.drawable_preview_bg_light)
+                            }
+                            Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
+                        },
+                        onExpandClick = { showExpandedBottomSheet = true },
+                        onCloseClick = { showFloatingPreview = false },
+                        modifier = Modifier
+                            .align(Alignment.TopEnd)
+                            .padding(12.dp)
+                    )
+                }
+
+                if (showExpandedBottomSheet) {
+                    ExpandedDrawablePreviewBottomSheet(
+                        fileName = File(filePath).name,
+                        infoText = previewMeta.infoText,
+                        bitmap = previewBitmap,
+                        bgMode = previewBgMode,
+                        onToggleBg = {
+                            previewBgMode = when (previewBgMode) {
+                                PreviewBgMode.CHECKERBOARD -> PreviewBgMode.DARK
+                                PreviewBgMode.DARK -> PreviewBgMode.LIGHT
+                                PreviewBgMode.LIGHT -> PreviewBgMode.CHECKERBOARD
+                            }
+                        },
+                        onDismiss = { showExpandedBottomSheet = false }
+                    )
+                }
+            }
         }
 
         QuickSymbolBar(

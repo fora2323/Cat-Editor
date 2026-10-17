@@ -296,4 +296,24 @@
     <string name="editor_preview_title">تھیم کا پیش منظر</string>
     <string name="editor_preview_light">لائٹ</string>
     <string name="editor_preview_dark">ڈارک</string>
+
+    <!-- Drawable Preview & Actions -->
+    <string name="drawable_preview_title">ڈرا ایبل پیش منظر</string>
+    <string name="drawable_preview_toggle_bg">پس منظر تبدیل کریں</string>
+    <string name="drawable_preview_expand">پیش منظر بڑا کریں</string>
+    <string name="drawable_preview_copied">کاپی ہو گیا: %1$s</string>
+    <string name="drawable_preview_bg_checkerboard">شطرنجی پس منظر</string>
+    <string name="drawable_preview_bg_dark">ڈارک پس منظر</string>
+    <string name="drawable_preview_bg_light">لائٹ پس منظر</string>
+    <!-- Theme Options & Code Formatter -->
+    <string name="setting_theme_title">تھیم</string>
+    <string name="setting_theme_desc">ایپلی کیشن تھیم منتخب کریں</string>
+    <string name="select_theme_title">تھیم منتخب کریں</string>
+    <string name="theme_system">سسٹم کے مطابق</string>
+    <string name="theme_light">روشن</string>
+    <string name="theme_dark">تاریک</string>
+    <string name="theme_dynamic">ڈائنامک (Material You)</string>
+    <string name="theme_lemon">لیمن</string>
+    <string name="pretty_print">کوڈ فارمیٹ کریں</string>
+    <string name="code_formatted">کوڈ فارمیٹ ہو گیا</string>
 </resources>

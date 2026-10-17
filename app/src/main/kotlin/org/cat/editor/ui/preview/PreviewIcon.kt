@@ -10,8 +10,14 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.BrokenImage
+import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material.icons.filled.Image
 import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.OpenInFull
+import androidx.compose.material.icons.outlined.Contrast
+import androidx.compose.material.icons.outlined.DarkMode
+import androidx.compose.material.icons.outlined.LightMode
+import androidx.compose.material.icons.outlined.Tune
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -22,6 +28,7 @@ import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import java.io.File
@@ -51,42 +58,54 @@ fun ImagePreviewIcon(file: File, modifier: Modifier = Modifier) {
 }
 
 /**
- * Full-screen dedicated Image Viewer for drawable icons, PNG, JPG, and WEBP files.
+ * Full-screen dedicated Image Viewer for drawable icons, PNG, JPG, WEBP, and SVG files.
  * Replaces the code editor view when viewing binary image assets.
  */
 @Composable
 fun ImageDetailViewer(file: File, modifier: Modifier = Modifier) {
+    val context = androidx.compose.ui.platform.LocalContext.current
     val bitmap = remember(file.absolutePath, file.lastModified()) {
         try {
             BitmapFactory.decodeFile(file.absolutePath)
         } catch (_: Throwable) { null }
     }
 
+    var bgMode by remember { mutableStateOf(PreviewBgMode.CHECKERBOARD) }
+    var showExpandedSheet by remember { mutableStateOf(false) }
+
+    val baseName = remember(file.name) { VectorDrawableParser.getResourceBaseName(file.name) }
+    val sizeKb = file.length() / 1024f
+    val sizeStr = if (sizeKb > 1024) String.format("%.2f MB", sizeKb / 1024f) else String.format("%.1f KB", sizeKb)
+    val infoText = if (bitmap != null) "${bitmap.width} × ${bitmap.height} px • $sizeStr" else sizeStr
+
     Box(
         modifier = modifier
             .fillMaxSize()
-            .background(Color(0xFF181818)),
+            .background(MaterialTheme.colorScheme.background),
         contentAlignment = Alignment.Center
     ) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(24.dp)
+                .padding(20.dp)
                 .verticalScroll(rememberScrollState()),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
-            // Checkerboard container for image transparency
+            // Container with background mode toggle (Checkerboard / Dark / Light)
             Surface(
                 modifier = Modifier
                     .sizeIn(minWidth = 140.dp, minHeight = 140.dp, maxWidth = 340.dp, maxHeight = 340.dp)
                     .clip(RoundedCornerShape(16.dp))
-                    .border(1.dp, Color(0xFF333333), RoundedCornerShape(16.dp)),
-                color = Color(0xFF222222),
-                shadowElevation = 6.dp
+                    .border(1.dp, MaterialTheme.colorScheme.outlineVariant, RoundedCornerShape(16.dp)),
+                color = MaterialTheme.colorScheme.surfaceContainer,
+                shadowElevation = 4.dp
             ) {
                 Box(
-                    modifier = Modifier.padding(24.dp),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(260.dp)
+                        .drawPreviewBackground(bgMode),
                     contentAlignment = Alignment.Center
                 ) {
                     if (bitmap != null) {
@@ -94,8 +113,8 @@ fun ImageDetailViewer(file: File, modifier: Modifier = Modifier) {
                             bitmap = bitmap.asImageBitmap(),
                             contentDescription = file.name,
                             modifier = Modifier
-                                .fillMaxWidth()
-                                .heightIn(max = 280.dp),
+                                .fillMaxSize()
+                                .padding(24.dp),
                             contentScale = ContentScale.Fit
                         )
                     } else {
@@ -117,10 +136,124 @@ fun ImageDetailViewer(file: File, modifier: Modifier = Modifier) {
                             )
                         }
                     }
+
+                    // Floating quick toggles on the image container
+                    Row(
+                        modifier = Modifier
+                            .align(Alignment.TopEnd)
+                            .padding(8.dp),
+                        horizontalArrangement = Arrangement.spacedBy(4.dp)
+                    ) {
+                        Surface(
+                            shape = RoundedCornerShape(8.dp),
+                            color = MaterialTheme.colorScheme.surfaceContainerHigh.copy(alpha = 0.85f)
+                        ) {
+                            IconButton(
+                                onClick = {
+                                    bgMode = when (bgMode) {
+                                        PreviewBgMode.CHECKERBOARD -> PreviewBgMode.DARK
+                                        PreviewBgMode.DARK -> PreviewBgMode.LIGHT
+                                        PreviewBgMode.LIGHT -> PreviewBgMode.CHECKERBOARD
+                                    }
+                                    val msg = when (bgMode) {
+                                        PreviewBgMode.CHECKERBOARD -> "Checkerboard background"
+                                        PreviewBgMode.DARK -> "Dark background"
+                                        PreviewBgMode.LIGHT -> "Light background"
+                                    }
+                                    android.widget.Toast.makeText(context, msg, android.widget.Toast.LENGTH_SHORT).show()
+                                },
+                                modifier = Modifier.size(32.dp)
+                            ) {
+                                Icon(
+                                    imageVector = when (bgMode) {
+                                        PreviewBgMode.CHECKERBOARD -> Icons.Outlined.Contrast
+                                        PreviewBgMode.DARK -> Icons.Outlined.DarkMode
+                                        PreviewBgMode.LIGHT -> Icons.Outlined.LightMode
+                                    },
+                                    contentDescription = "Toggle Background",
+                                    tint = MaterialTheme.colorScheme.onSurface,
+                                    modifier = Modifier.size(18.dp)
+                                )
+                            }
+                        }
+
+                        Surface(
+                            shape = RoundedCornerShape(8.dp),
+                            color = MaterialTheme.colorScheme.surfaceContainerHigh.copy(alpha = 0.85f)
+                        ) {
+                            IconButton(
+                                onClick = { showExpandedSheet = true },
+                                modifier = Modifier.size(32.dp)
+                            ) {
+                                Icon(
+                                    imageVector = androidx.compose.material.icons.Icons.Default.OpenInFull,
+                                    contentDescription = "Expand",
+                                    tint = MaterialTheme.colorScheme.onSurface,
+                                    modifier = Modifier.size(16.dp)
+                                )
+                            }
+                        }
+                    }
                 }
             }
 
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Quick Copy Buttons for Android Developers
+            Row(
+                modifier = Modifier.fillMaxWidth(0.92f),
+                horizontalArrangement = Arrangement.spacedBy(10.dp)
+            ) {
+                FilledTonalButton(
+                    onClick = {
+                        val text = "R.drawable.$baseName"
+                        val cm = context.getSystemService(android.content.Context.CLIPBOARD_SERVICE) as? android.content.ClipboardManager
+                        cm?.setPrimaryClip(android.content.ClipData.newPlainText("Resource ID", text))
+                        android.widget.Toast.makeText(context, "Copied: $text", android.widget.Toast.LENGTH_SHORT).show()
+                    },
+                    modifier = Modifier.weight(1f),
+                    shape = RoundedCornerShape(12.dp)
+                ) {
+                    Icon(
+                        Icons.Default.ContentCopy,
+                        contentDescription = null,
+                        modifier = Modifier.size(16.dp)
+                    )
+                    Spacer(modifier = Modifier.width(6.dp))
+                    Text(
+                        text = "R.drawable.$baseName",
+                        style = MaterialTheme.typography.labelMedium,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                }
+
+                FilledTonalButton(
+                    onClick = {
+                        val text = "@drawable/$baseName"
+                        val cm = context.getSystemService(android.content.Context.CLIPBOARD_SERVICE) as? android.content.ClipboardManager
+                        cm?.setPrimaryClip(android.content.ClipData.newPlainText("XML Reference", text))
+                        android.widget.Toast.makeText(context, "Copied: $text", android.widget.Toast.LENGTH_SHORT).show()
+                    },
+                    modifier = Modifier.weight(1f),
+                    shape = RoundedCornerShape(12.dp)
+                ) {
+                    Icon(
+                        Icons.Default.ContentCopy,
+                        contentDescription = null,
+                        modifier = Modifier.size(16.dp)
+                    )
+                    Spacer(modifier = Modifier.width(6.dp))
+                    Text(
+                        text = "@drawable/$baseName",
+                        style = MaterialTheme.typography.labelMedium,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
 
             // Metadata Card
             ElevatedCard(
@@ -148,9 +281,6 @@ fun ImageDetailViewer(file: File, modifier: Modifier = Modifier) {
                     }
 
                     HorizontalDivider(modifier = Modifier.padding(vertical = 10.dp))
-
-                    val sizeKb = file.length() / 1024f
-                    val sizeStr = if (sizeKb > 1024) String.format("%.2f MB", sizeKb / 1024f) else String.format("%.1f KB", sizeKb)
 
                     Row(
                         modifier = Modifier.fillMaxWidth(),
@@ -195,6 +325,23 @@ fun ImageDetailViewer(file: File, modifier: Modifier = Modifier) {
                     }
                 }
             }
+        }
+
+        if (showExpandedSheet) {
+            ExpandedDrawablePreviewBottomSheet(
+                fileName = file.name,
+                infoText = infoText,
+                bitmap = bitmap,
+                bgMode = bgMode,
+                onToggleBg = {
+                    bgMode = when (bgMode) {
+                        PreviewBgMode.CHECKERBOARD -> PreviewBgMode.DARK
+                        PreviewBgMode.DARK -> PreviewBgMode.LIGHT
+                        PreviewBgMode.LIGHT -> PreviewBgMode.CHECKERBOARD
+                    }
+                },
+                onDismiss = { showExpandedSheet = false }
+            )
         }
     }
 }

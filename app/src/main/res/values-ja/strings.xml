@@ -296,4 +296,24 @@
     <string name="editor_preview_title">テーマプレビュー</string>
     <string name="editor_preview_light">ライト</string>
     <string name="editor_preview_dark">ダーク</string>
+
+    <!-- Drawable Preview & Actions -->
+    <string name="drawable_preview_title">ドローアブルプレビュー</string>
+    <string name="drawable_preview_toggle_bg">背景を切り替え</string>
+    <string name="drawable_preview_expand">プレビューを展開</string>
+    <string name="drawable_preview_copied">コピーしました: %1$s</string>
+    <string name="drawable_preview_bg_checkerboard">市松模様の背景</string>
+    <string name="drawable_preview_bg_dark">ダーク背景</string>
+    <string name="drawable_preview_bg_light">ライト背景</string>
+    <!-- Theme Options & Code Formatter -->
+    <string name="setting_theme_title">テーマ</string>
+    <string name="setting_theme_desc">アプリのテーマを選択</string>
+    <string name="select_theme_title">テーマを選択</string>
+    <string name="theme_system">システムに従う</string>
+    <string name="theme_light">ライト</string>
+    <string name="theme_dark">ダーク</string>
+    <string name="theme_dynamic">ダイナミック (Material You)</string>
+    <string name="theme_lemon">レモン</string>
+    <string name="pretty_print">コード整形</string>
+    <string name="code_formatted">コードを整形しました</string>
 </resources>

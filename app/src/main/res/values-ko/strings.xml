@@ -296,4 +296,25 @@
     <string name="editor_preview_title">테마 미리보기</string>
     <string name="editor_preview_light">라이트</string>
     <string name="editor_preview_dark">다크</string>
+
+    <!-- Drawable Preview & Actions -->
+    <string name="drawable_preview_title">드로어블 미리보기</string>
+    <string name="drawable_preview_toggle_bg">배경 전환</string>
+    <string name="drawable_preview_expand">미리보기 확대</string>
+    <string name="drawable_preview_copied">복사됨: %1$s</string>
+    <string name="drawable_preview_bg_checkerboard">체커보드 배경</string>
+    <string name="drawable_preview_bg_dark">다크 배경</string>
+    <string name="drawable_preview_bg_light">라이트 배경</string>
+    <!-- Theme Options & Code Formatter -->
+    <string name="setting_theme_title">테마</string>
+    <string name="setting_theme_desc">애플리케이션 테마 선택</string>
+    <string name="select_theme_title">테마 선택</string>
+    <string name="theme_system">시스템 기본값</string>
+    <string name="theme_light">라이트</string>
+    <string name="theme_dark">다크</string>
+    <string name="theme_dynamic">동적 (Material You)</string>
+    <string name="theme_lemon">레몬</string>
+    <string name="pretty_print">코드 정리</string>
+    <string name="code_formatted">코드가 정리되었습니다</string>
 </resources>
+

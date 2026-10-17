@@ -134,6 +134,8 @@
     <string name="theme_system">Follow the system</string>
     <string name="theme_light">Light</string>
     <string name="theme_dark">Dark</string>
+    <string name="theme_dynamic">Dynamic (Material You)</string>
+    <string name="theme_lemon">Lemon</string>
     
     <!-- Editor Settings Screen -->
     <string name="editor_cat_smart_features">Smart features</string>
@@ -300,4 +302,17 @@
     <string name="editor_preview_title">Theme Preview</string>
     <string name="editor_preview_light">Light</string>
     <string name="editor_preview_dark">Dark</string>
+
+    <!-- Drawable Preview & Actions -->
+    <string name="drawable_preview_title">Drawable Preview</string>
+    <string name="drawable_preview_toggle_bg">Toggle Background</string>
+    <string name="drawable_preview_expand">Expand Preview</string>
+    <string name="drawable_preview_copied">Copied: %1$s</string>
+    <string name="drawable_preview_bg_checkerboard">Checkerboard background</string>
+    <string name="drawable_preview_bg_dark">Dark background</string>
+    <string name="drawable_preview_bg_light">Light background</string>
+
+    <!-- Code Formatter (Pretty Print) -->
+    <string name="pretty_print">Pretty print</string>
+    <string name="code_formatted">Code formatted</string>
 </resources>

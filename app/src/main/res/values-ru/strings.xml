@@ -295,4 +295,24 @@
     <string name="editor_preview_title">Предпросмотр темы</string>
     <string name="editor_preview_light">Светлая</string>
     <string name="editor_preview_dark">Темная</string>
+
+    <!-- Drawable Preview & Actions -->
+    <string name="drawable_preview_title">Предпросмотр Drawable</string>
+    <string name="drawable_preview_toggle_bg">Переключить фон</string>
+    <string name="drawable_preview_expand">Развернуть предпросмотр</string>
+    <string name="drawable_preview_copied">Скопировано: %1$s</string>
+    <string name="drawable_preview_bg_checkerboard">Шахматный фон</string>
+    <string name="drawable_preview_bg_dark">Темный фон</string>
+    <string name="drawable_preview_bg_light">Светлый фон</string>
+    <!-- Theme Options & Code Formatter -->
+    <string name="setting_theme_title">Тема</string>
+    <string name="setting_theme_desc">Выберите тему приложения</string>
+    <string name="select_theme_title">Выберите тему</string>
+    <string name="theme_system">Системная</string>
+    <string name="theme_light">Светлая</string>
+    <string name="theme_dark">Тёмная</string>
+    <string name="theme_dynamic">Динамическая (Material You)</string>
+    <string name="theme_lemon">Лимонная</string>
+    <string name="pretty_print">Форматировать код</string>
+    <string name="code_formatted">Код отформатирован</string>
 </resources>

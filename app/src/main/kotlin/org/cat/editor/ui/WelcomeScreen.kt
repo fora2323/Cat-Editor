@@ -107,7 +107,7 @@ fun WelcomeScreen(
                     imageVector = Icons.Default.Menu,
                     contentDescription = null,
                     modifier = Modifier
-                        .size(20.dp)
+                        .size(26.dp)
                         .padding(end = 8.dp)
                 )
                 Text(

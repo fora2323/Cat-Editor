@@ -31,6 +31,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LargeTopAppBar
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -53,6 +54,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
 import org.cat.editor.BuildConfig
+import org.cat.editor.ui.BottomSheetDialog
 import org.cat.editor.R
 import org.cat.editor.utils.SettingsManager
 
@@ -71,8 +73,10 @@ fun AppSettingsScreen(
     var exitDialog by remember { mutableStateOf(SettingsManager.isExitDialogEnabled(context)) }
     var debugOptions by remember { mutableStateOf(SettingsManager.isDebugOptionsEnabled(context)) }
     var currentFont by remember { mutableStateOf(SettingsManager.getEditorFont(context)) }
+    var themeMode by remember { mutableStateOf(SettingsManager.getThemeMode(context)) }
 
     var showFontDialog by remember { mutableStateOf(false) }
+    var showThemeDialog by remember { mutableStateOf(false) }
 
     fun runUpdateCheck() {
         scope.launch {
@@ -299,6 +303,50 @@ fun AppSettingsScreen(
             item {
                 Spacer(modifier = Modifier.height(24.dp))
             }
+        }
+    }
+
+    // Theme selection dialog
+    if (showThemeDialog) {
+        val options = listOf(
+            SettingsManager.THEME_SYSTEM to stringResource(id = R.string.theme_system),
+            SettingsManager.THEME_LIGHT to stringResource(id = R.string.theme_light),
+            SettingsManager.THEME_DARK to stringResource(id = R.string.theme_dark)
+        )
+
+        BottomSheetDialog(onDismissRequest = { showThemeDialog = false }) {
+            Text(
+                text = stringResource(id = R.string.select_theme_title),
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.SemiBold,
+                color = MaterialTheme.colorScheme.onSurface,
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+            )
+
+            options.forEach { (mode, label) ->
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable {
+                            themeMode = mode
+                            SettingsManager.setThemeMode(context, mode)
+                            showThemeDialog = false
+                            (context as? Activity)?.recreate()
+                        }
+                        .padding(vertical = 14.dp, horizontal = 16.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    RadioButton(selected = themeMode == mode, onClick = null)
+                    Spacer(modifier = Modifier.width(14.dp))
+                    Text(
+                        text = label,
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(20.dp))
         }
     }
 

@@ -98,6 +98,8 @@ dependencies {
     
     implementation("com.github.Netsnake-TN:ExpressivepullToRefresh:v1.0.5")
     implementation("com.google.android.material:material:1.14.0")
+    implementation("com.google.android.ump:user-messaging-platform:4.0.0")
+    implementation("com.google.android.libraries.ads.mobile.sdk:ads-mobile-sdk:1.5.0")
     
     implementation("androidx.compose.material:material-icons-extended:1.5.0")
     implementation("androidx.compose.ui:ui")

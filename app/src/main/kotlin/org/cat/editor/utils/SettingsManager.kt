@@ -46,6 +46,11 @@ object SettingsManager {
     const val FONT_MONOSPACE = "Monospace"
     const val FONT_SANS = "Sans-Serif"
     const val FONT_SERIF = "Serif"
+    
+    const val KEY_THEME_MODE = "theme_mode"
+    const val THEME_SYSTEM = 0
+    const val THEME_LIGHT = 1
+    const val THEME_DARK = 2
 
     fun getPrefs(context: Context) = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
 
@@ -147,18 +152,22 @@ object SettingsManager {
         getPrefs(context).edit().putBoolean(KEY_EDITOR_CURSOR_ANIMATION, enabled).apply()
     }
 
-    fun getCachedStars(context: Context): String =
-        getPrefs(context).getString(KEY_CACHED_STARS, "0") ?: "0"
+    fun getCachedStars(context: Context): String = getPrefs(context).getString(KEY_CACHED_STARS, "0") ?: "0"
 
     fun setCachedStars(context: Context, stars: String) {
         getPrefs(context).edit().putString(KEY_CACHED_STARS, stars).apply()
     }
 
-    fun getCachedCommit(context: Context): String =
-        getPrefs(context).getString(KEY_CACHED_COMMIT, BuildConfig.GIT_HASH) ?: BuildConfig.GIT_HASH
+    fun getCachedCommit(context: Context): String = getPrefs(context).getString(KEY_CACHED_COMMIT, BuildConfig.GIT_HASH) ?: BuildConfig.GIT_HASH
 
     fun setCachedCommit(context: Context, commit: String) {
         getPrefs(context).edit().putString(KEY_CACHED_COMMIT, commit).apply()
+    }
+    
+    fun getThemeMode(context: Context): Int = getPrefs(context).getInt(KEY_THEME_MODE, THEME_SYSTEM)
+
+    fun setThemeMode(context: Context, mode: Int) {
+        getPrefs(context).edit().putInt(KEY_THEME_MODE, mode).apply()
     }
 
     fun applyFullscreen(activity: Activity) {

@@ -128,6 +128,12 @@
     <string name="setting_manage_fonts_desc">Manage application fonts</string>
     <string name="section_feature_toggles">Feature toggles</string>
     <string name="setting_debug_options_title">Debug options</string>
+    <string name="setting_theme_title">Theme</string>
+    <string name="setting_theme_desc">Select the application theme</string>
+    <string name="select_theme_title">Select a theme</string>
+    <string name="theme_system">Follow the system</string>
+    <string name="theme_light">Dark</string>
+    <string name="theme_dark">Light</string>
     
     <!-- Editor Settings Screen -->
     <string name="editor_cat_smart_features">Smart features</string>

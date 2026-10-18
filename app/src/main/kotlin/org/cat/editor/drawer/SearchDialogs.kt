@@ -37,6 +37,7 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -64,6 +65,7 @@ import org.cat.editor.ui.preview.isImageFile
 import java.io.File
 import kotlin.coroutines.coroutineContext
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SearchOptionsBottomSheet(
     isProjectIndexed: Boolean,

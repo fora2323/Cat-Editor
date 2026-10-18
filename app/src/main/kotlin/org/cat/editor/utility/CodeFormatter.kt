@@ -1,14 +1,5 @@
 package org.cat.editor.utility
 
-import java.io.StringReader
-import java.io.StringWriter
-import javax.xml.parsers.DocumentBuilderFactory
-import javax.xml.transform.OutputKeys
-import javax.xml.transform.TransformerFactory
-import javax.xml.transform.dom.DOMSource
-import javax.xml.transform.stream.StreamResult
-import org.xml.sax.InputSource
-
 /**
  * Intelligent code formatter supporting Java, Kotlin, XML, and Gradle.
  * Formats messy or pasted code to adhere to Android Studio and Material standards.
@@ -17,6 +8,17 @@ object CodeFormatter {
 
     private const val INDENT_SIZE = 4
     private val INDENT_STR = " ".repeat(INDENT_SIZE)
+
+    // --- XML FORMATTER CONSTANTS ---
+    private val XML_TAG_REGEX = Regex("<!--.*?-->|<\\?.*?\\?>|<!\\[CDATA\\[.*?\\]\\]>|<[^>]+>", RegexOption.DOT_MATCHES_ALL)
+    private val XML_ATTR_REGEX = Regex("""[^\s=]+=("[^"]*"|'[^']*')""")
+    private val XML_ALWAYS_WRAP_TAGS = setOf(
+        "manifest", "application", "uses-library", "meta-data", 
+        "activity", "activity-alias", "service", "receiver", 
+        "provider", "intent-filter"
+    )
+    private const val XML_CUSTOM_LINE_LENGTH = 150
+    private const val XML_MAX_LINE_LENGTH = 100
 
     /**
      * Format given code based on file path extension.
@@ -43,225 +45,234 @@ object CodeFormatter {
     fun formatXml(rawXml: String): String {
         if (rawXml.isBlank()) return rawXml
 
-        // First attempt standard XML DOM formatting if valid well-formed XML
-        val domFormatted = formatXmlWithDom(rawXml)
-        val sourceToFormat = domFormatted ?: rawXml
+        val tokens = parseXmlTokens(rawXml)
+        val sb = StringBuilder()
+        var depth = 0
+        var inlineMode = false
 
-        // Clean and align tags and Android attributes
-        return formatXmlTags(sourceToFormat)
-    }
+        for (i in tokens.indices) {
+            val token = tokens[i]
 
-    private fun formatXmlWithDom(xml: String): String? {
-        return try {
-            val dbf = DocumentBuilderFactory.newInstance()
-            dbf.isNamespaceAware = true
-            // Disable DTD entity expansion for security
-            try {
-                dbf.setFeature("http://apache.org/xml/features/disallow-doctype-decl", false)
-                dbf.setFeature("http://xml.org/sax/features/external-general-entities", false)
-                dbf.setFeature("http://xml.org/sax/features/external-parameter-entities", false)
-            } catch (_: Throwable) {}
-
-            val db = dbf.newDocumentBuilder()
-            val doc = db.parse(InputSource(StringReader(xml)))
-            doc.normalizeDocument()
-
-            val transformer = TransformerFactory.newInstance().newTransformer()
-            transformer.setOutputProperty(OutputKeys.INDENT, "yes")
-            transformer.setOutputProperty(OutputKeys.ENCODING, "UTF-8")
-            transformer.setOutputProperty(
-                OutputKeys.OMIT_XML_DECLARATION,
-                if (xml.trim().startsWith("<?xml")) "no" else "yes"
-            )
-            transformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "$INDENT_SIZE")
-
-            val writer = StringWriter()
-            transformer.transform(DOMSource(doc), StreamResult(writer))
-            writer.toString()
-        } catch (_: Throwable) {
-            null
-        }
-    }
-
-    private fun formatXmlTags(xml: String): String {
-        val lines = xml.lines()
-        val result = StringBuilder()
-        var indentLevel = 0
-
-        var inComment = false
-        var inCdata = false
-
-        for (rawLine in lines) {
-            val line = rawLine.trim()
-            if (line.isEmpty()) {
-                if (result.isNotEmpty() && !result.endsWith("\n\n")) {
-                    result.append("\n")
+            when (token) {
+                is XmlToken.Decl -> {
+                    if (sb.isNotEmpty() && !sb.endsWith("\n")) sb.append("\n")
+                    sb.append(token.raw).append("\n")
+                    inlineMode = false
                 }
-                continue
-            }
-
-            // Handle multi-line comment state
-            if (inComment) {
-                result.append(INDENT_STR.repeat(indentLevel.coerceAtLeast(0))).append(line).append("\n")
-                if (line.contains("-->")) inComment = false
-                continue
-            }
-            if (line.startsWith("<!--") && !line.contains("-->")) {
-                inComment = true
-                result.append(INDENT_STR.repeat(indentLevel.coerceAtLeast(0))).append(line).append("\n")
-                continue
-            }
-
-            // Handle CDATA state
-            if (inCdata) {
-                result.append(line).append("\n")
-                if (line.contains("]]>")) inCdata = false
-                continue
-            }
-            if (line.contains("<![CDATA[") && !line.contains("]]>")) {
-                inCdata = true
-                result.append(INDENT_STR.repeat(indentLevel.coerceAtLeast(0))).append(line).append("\n")
-                continue
-            }
-
-            // XML Declaration <?xml ... ?>
-            if (line.startsWith("<?xml") || line.startsWith("<!DOCTYPE")) {
-                result.append(line).append("\n")
-                continue
-            }
-
-            // Closing tag on its own: </tag>
-            if (line.startsWith("</")) {
-                indentLevel = (indentLevel - 1).coerceAtLeast(0)
-                result.append(INDENT_STR.repeat(indentLevel)).append(line).append("\n")
-                continue
-            }
-
-            // Closing of a multi-line tag: /> or >
-            if (line == "/>" || line == ">") {
-                val currentIndent = (indentLevel - 1).coerceAtLeast(0)
-                result.append(INDENT_STR.repeat(currentIndent)).append(line).append("\n")
-                if (line == "/>") {
-                    indentLevel = (indentLevel - 1).coerceAtLeast(0)
+                is XmlToken.Comment -> {
+                    if (sb.isNotEmpty() && !sb.endsWith("\n")) sb.append("\n")
+                    sb.append(INDENT_STR.repeat(depth)).append(token.raw).append("\n")
+                    inlineMode = false
                 }
-                continue
-            }
+                is XmlToken.Text -> {
+                    val isBlank = token.raw.isBlank()
+                    val hasNewline = token.raw.contains("\n")
 
-            // Tag that opens and closes on the same line: <tag ...>text</tag> or <tag .../>
-            val isSelfClosing = line.endsWith("/>")
-            val isSingleLineTag = isSelfClosing || (line.startsWith("<") && line.contains("</") && line.endsWith(">"))
-
-            if (isSingleLineTag) {
-                // If the single-line tag has multiple attributes, format attributes nicely
-                if (shouldSplitAttributes(line)) {
-                    val formattedTag = splitTagAttributes(line, indentLevel)
-                    result.append(formattedTag)
-                } else {
-                    result.append(INDENT_STR.repeat(indentLevel)).append(line).append("\n")
-                }
-                continue
-            }
-
-            // Multi-line Opening tag: <tag ...
-            if (line.startsWith("<") && !line.startsWith("</")) {
-                if (shouldSplitAttributes(line)) {
-                    val formattedTag = splitTagAttributes(line, indentLevel)
-                    result.append(formattedTag)
-                    if (!line.endsWith("/>")) {
-                        indentLevel++
+                    if (isBlank && hasNewline) {
+                        continue
                     }
-                } else {
-                    result.append(INDENT_STR.repeat(indentLevel)).append(line).append("\n")
-                    if (!line.endsWith("/>") && !line.endsWith(">")) {
-                        // Tag header continues onto next line
-                    } else if (line.endsWith(">")) {
-                        indentLevel++
+
+                    if (!hasNewline) {
+                        if (inlineMode) {
+                            sb.append(token.raw)
+                        } else {
+                            sb.append(INDENT_STR.repeat(depth)).append(token.raw.trim())
+                            inlineMode = true
+                        }
+                    } else {
+                        if (sb.isNotEmpty() && !sb.endsWith("\n")) sb.append("\n")
+                        val lines = token.raw.lines()
+                        for (line in lines) {
+                            if (line.isBlank()) continue
+                            sb.append(INDENT_STR.repeat(depth)).append(line.trim()).append("\n")
+                        }
+                        inlineMode = false
                     }
                 }
-                continue
-            }
+                is XmlToken.Tag -> {
+                    if (token.isClosing) {
+                        depth = (depth - 1).coerceAtLeast(0)
+                        
+                        if (depth == 0 && !inlineMode) {
+                            if (sb.isNotEmpty() && !sb.endsWith("\n\n")) sb.append("\n")
+                        }
 
-            // Attribute on continuation line: android:layout_width="..."
-            if (line.contains("=\"") || line.contains("='")) {
-                result.append(INDENT_STR.repeat(indentLevel + 1)).append(line).append("\n")
-                if (line.endsWith("/>")) {
-                    indentLevel = (indentLevel - 1).coerceAtLeast(0)
-                }
-                continue
-            }
+                        if (inlineMode) {
+                            sb.append(token.raw).append("\n")
+                        } else {
+                            if (sb.isNotEmpty() && !sb.endsWith("\n")) sb.append("\n")
+                            sb.append(INDENT_STR.repeat(depth)).append(token.raw).append("\n")
+                        }
+                        inlineMode = false
+                    } else {
+                        if (sb.isNotEmpty() && !sb.endsWith("\n")) sb.append("\n")
+                        
+                        if (depth == 1) {
+                            if (sb.isNotEmpty() && !sb.endsWith("\n\n")) sb.append("\n")
+                        }
 
-            // Normal text content inside tag
-            result.append(INDENT_STR.repeat(indentLevel)).append(line).append("\n")
-        }
+                        val formattedTag = formatTag(token, depth)
 
-        return result.toString().trimEnd() + "\n"
-    }
+                        var isInlineElement = false
+                        if (!token.isSelfClosing) {
+                            var j = i + 1
+                            var validInline = true
+                            var hasText = false
+                            while (j < tokens.size) {
+                                val next = tokens[j]
+                                if (next is XmlToken.Text) {
+                                    if (next.raw.contains("\n")) {
+                                        validInline = false
+                                        break
+                                    }
+                                    if (next.raw.isNotBlank()) {
+                                        if (hasText) { validInline = false; break }
+                                        hasText = true
+                                    }
+                                } else if (next is XmlToken.Tag && next.isClosing && next.name == token.name) {
+                                    break
+                                } else {
+                                    validInline = false
+                                    break
+                                }
+                                j++
+                            }
+                            isInlineElement = validInline
+                        }
 
-    private fun shouldSplitAttributes(tagLine: String): Boolean {
-        if (!tagLine.startsWith("<") || tagLine.startsWith("</")) return false
-        val attrCount = countOccurrences(tagLine, "=\"") + countOccurrences(tagLine, "='")
-        return attrCount >= 2 && tagLine.length > 70
-    }
+                        if (isInlineElement) {
+                            sb.append(INDENT_STR.repeat(depth)).append(formattedTag)
+                            inlineMode = true
+                        } else {
+                            sb.append(INDENT_STR.repeat(depth)).append(formattedTag).append("\n")
+                            inlineMode = false
+                        }
 
-    private fun splitTagAttributes(tagLine: String, indentLevel: Int): String {
-        val baseIndent = INDENT_STR.repeat(indentLevel)
-        val attrIndent = INDENT_STR.repeat(indentLevel + 1)
-
-        val firstSpace = tagLine.indexOf(' ')
-        if (firstSpace == -1) return baseIndent + tagLine + "\n"
-
-        val tagName = tagLine.substring(0, firstSpace).trim()
-        val rest = tagLine.substring(firstSpace).trim()
-
-        val isSelfClosing = rest.endsWith("/>")
-        val cleanRest = if (isSelfClosing) rest.removeSuffix("/>").trim() else rest.removeSuffix(">").trim()
-
-        val attrs = extractAttributes(cleanRest)
-        val sb = StringBuilder()
-        sb.append(baseIndent).append(tagName).append("\n")
-
-        for (attr in attrs) {
-            sb.append(attrIndent).append(attr).append("\n")
-        }
-
-        if (isSelfClosing) {
-            sb.append(baseIndent).append("/>\n")
-        } else {
-            sb.append(baseIndent).append(">\n")
-        }
-        return sb.toString()
-    }
-
-    private fun extractAttributes(text: String): List<String> {
-        val list = mutableListOf<String>()
-        val sb = StringBuilder()
-        var inQuote = false
-        var quoteChar = '"'
-
-        for (i in text.indices) {
-            val c = text[i]
-            if (c == '"' || c == '\'') {
-                if (!inQuote) {
-                    inQuote = true
-                    quoteChar = c
-                } else if (quoteChar == c) {
-                    inQuote = false
+                        if (!token.isSelfClosing) {
+                            depth++
+                        }
+                    }
                 }
             }
+        }
+        return sb.toString().trim() + "\n"
+    }
 
-            if (c.isWhitespace() && !inQuote) {
-                if (sb.isNotBlank()) {
-                    list.add(sb.toString().trim())
-                    sb.clear()
+    private fun parseXmlTokens(rawXml: String): List<XmlToken> {
+        val tokens = mutableListOf<XmlToken>()
+        var lastEnd = 0
+        XML_TAG_REGEX.findAll(rawXml).forEach { match ->
+            val textBefore = rawXml.substring(lastEnd, match.range.first)
+            if (textBefore.isNotEmpty()) {
+                tokens.add(XmlToken.Text(textBefore))
+            }
+            val value = match.value
+            when {
+                value.startsWith("<!--") -> tokens.add(XmlToken.Comment(value))
+                value.startsWith("<?") || value.startsWith("<!") -> tokens.add(XmlToken.Decl(value))
+                value.startsWith("</") -> {
+                    val name = value.removePrefix("</").removeSuffix(">").trim()
+                    tokens.add(XmlToken.Tag(value, name, isClosing = true, isSelfClosing = false, attrsText = ""))
                 }
+                value.startsWith("<") -> {
+                    val inner = value.removePrefix("<").removeSuffix(">")
+                    val isSelfClosing = inner.endsWith("/")
+                    val cleanInner = if (isSelfClosing) inner.removeSuffix("/").trimEnd() else inner
+                    val firstSpace = cleanInner.indexOfFirst { it.isWhitespace() }
+                    if (firstSpace == -1) {
+                        tokens.add(XmlToken.Tag(value, cleanInner, isClosing = false, isSelfClosing = isSelfClosing, attrsText = ""))
+                    } else {
+                        val name = cleanInner.substring(0, firstSpace)
+                        val attrs = cleanInner.substring(firstSpace).trim()
+                        tokens.add(XmlToken.Tag(value, name, isClosing = false, isSelfClosing = isSelfClosing, attrsText = attrs))
+                    }
+                }
+            }
+            lastEnd = match.range.last + 1
+        }
+        val textAfter = rawXml.substring(lastEnd)
+        if (textAfter.isNotEmpty()) {
+            tokens.add(XmlToken.Text(textAfter))
+        }
+        return tokens
+    }
+
+    private fun formatTag(token: XmlToken.Tag, depth: Int): String {
+        if (token.attrsText.isBlank()) {
+            return if (token.isSelfClosing) "<${token.name} />" else "<${token.name}>"
+        }
+
+        val attrs = XML_ATTR_REGEX.findAll(token.attrsText).map { it.value }.toList()
+        
+        val originalAttrsNoSpaces = token.attrsText.replace(Regex("\\s+"), "")
+        val parsedAttrsNoSpaces = attrs.joinToString("").replace(Regex("\\s+"), "")
+        if (originalAttrsNoSpaces != parsedAttrsNoSpaces) {
+            return token.raw
+        }
+
+        var shouldSplit = false
+        if (attrs.size >= 2) {
+            val isAlwaysWrap = XML_ALWAYS_WRAP_TAGS.contains(token.name)
+            val maxLength = if (token.name == "uses-permission") XML_CUSTOM_LINE_LENGTH else XML_MAX_LINE_LENGTH
+            
+            val singleLineTag = buildString {
+                append("<").append(token.name)
+                for (attr in attrs) {
+                    append(" ").append(attr)
+                }
+                if (token.isSelfClosing) append(" />") else append(">")
+            }
+            val totalLength = depth * INDENT_STR.length + singleLineTag.length
+            
+            if (isAlwaysWrap || totalLength > maxLength) {
+                shouldSplit = true
+            }
+        }
+
+        // Pengecualian khusus: tag <item> biarkan lurus sejajar satu baris
+        if (token.name == "item") {
+            shouldSplit = false
+        }
+
+        if (!shouldSplit) {
+            return buildString {
+                append("<").append(token.name)
+                for (attr in attrs) {
+                    append(" ").append(attr)
+                }
+                if (token.isSelfClosing) append(" />") else append(">")
+            }
+        }
+
+        return buildString {
+            append("<").append(token.name)
+            
+            var firstAttrIsXmlns = false
+            if (attrs.isNotEmpty() && attrs[0].startsWith("xmlns:")) {
+                firstAttrIsXmlns = true
+                append(" ").append(attrs[0])
+            }
+
+            val startIndex = if (firstAttrIsXmlns) 1 else 0
+            val attrIndent = INDENT_STR.repeat(depth + 1)
+            
+            for (i in startIndex until attrs.size) {
+                append("\n").append(attrIndent).append(attrs[i])
+            }
+            
+            if (token.isSelfClosing) {
+                append(" />")
             } else {
-                sb.append(c)
+                append(">")
             }
         }
-        if (sb.isNotBlank()) {
-            list.add(sb.toString().trim())
-        }
-        return list
+    }
+
+    private sealed class XmlToken {
+        class Tag(val raw: String, val name: String, val isClosing: Boolean, val isSelfClosing: Boolean, val attrsText: String) : XmlToken()
+        class Comment(val raw: String) : XmlToken()
+        class Text(val raw: String) : XmlToken()
+        class Decl(val raw: String) : XmlToken()
     }
 
     private fun countOccurrences(haystack: String, needle: String): Int {
@@ -294,7 +305,6 @@ object CodeFormatter {
         for (rawLine in rawLines) {
             val trimmed = rawLine.trim()
 
-            // Handle blank lines: collapse consecutive blank lines
             if (trimmed.isEmpty()) {
                 if (processedLines.isNotEmpty() && processedLines.last().isNotEmpty()) {
                     processedLines.add("")
@@ -302,9 +312,8 @@ object CodeFormatter {
                 continue
             }
 
-            // Triple-quote Kotlin multiline string handling: """ ... """
             if (inTripleQuote) {
-                processedLines.add(rawLine) // preserve raw indentation inside multiline strings
+                processedLines.add(rawLine) 
                 if (trimmed.contains("\"\"\"")) {
                     inTripleQuote = false
                 }
@@ -316,7 +325,6 @@ object CodeFormatter {
                 continue
             }
 
-            // Block comment handling: /* ... */
             if (inBlockComment) {
                 val commentIndent = if (trimmed.startsWith("*")) " " else ""
                 processedLines.add(INDENT_STR.repeat(indentLevel) + commentIndent + trimmed)
@@ -331,23 +339,16 @@ object CodeFormatter {
                 continue
             }
 
-            // Compute change in braces/parentheses for this line
             val (openCount, closeCount, leadingCloses) = analyzeBraces(trimmed)
-
-            // Adjust indent for leading close braces on this line (e.g., "}", ")", "},")
             val currentLineIndent = (indentLevel - leadingCloses).coerceAtLeast(0)
-
-            // Normalize spacing outside of strings and comments
             val spacedLine = normalizeLineSpacing(trimmed, isKotlin)
-
-            // Check if line is a continuation line (starts with ., ?., ->, &&, ||, +, :, ?)
+            
             val isContinuation = isContinuationLine(trimmed)
             val continuationIndent = if (isContinuation && leadingCloses == 0) 1 else 0
 
             val finalIndent = currentLineIndent + continuationIndent
             processedLines.add(INDENT_STR.repeat(finalIndent) + spacedLine)
 
-            // Update indent for subsequent lines
             indentLevel = (indentLevel + openCount - closeCount).coerceAtLeast(0)
         }
 
@@ -370,12 +371,10 @@ object CodeFormatter {
         while (i < line.length) {
             val c = line[i]
 
-            // Check for line comments
             if (!inString && !inChar && c == '/' && i + 1 < line.length && line[i + 1] == '/') {
                 break
             }
 
-            // String & Char literals
             if (c == '\\' && (inString || inChar)) {
                 i += 2
                 continue
@@ -433,14 +432,12 @@ object CodeFormatter {
         while (i < line.length) {
             val c = line[i]
 
-            // Single line comment
             if (!inString && !inChar && c == '/' && i + 1 < line.length && line[i + 1] == '/') {
                 inComment = true
                 sb.append(line.substring(i))
                 break
             }
 
-            // String escape
             if (c == '\\' && (inString || inChar)) {
                 sb.append(c)
                 if (i + 1 < line.length) {
@@ -450,7 +447,6 @@ object CodeFormatter {
                 }
             }
 
-            // Strings
             if (c == '"' && !inChar) {
                 inString = !inString
                 sb.append(c)
@@ -470,9 +466,7 @@ object CodeFormatter {
                 continue
             }
 
-            // Outside strings & comments: normalize spacing
             when {
-                // Ensure space before opening curly brace: fun foo(){ -> fun foo() {
                 c == '{' -> {
                     if (sb.isNotEmpty() && !sb.endsWith(" ") && !sb.endsWith("(") && !sb.endsWith("$")) {
                         sb.append(" ")
@@ -480,7 +474,6 @@ object CodeFormatter {
                     sb.append(c)
                 }
 
-                // Ensure space after comma: foo(a,b) -> foo(a, b)
                 c == ',' -> {
                     sb.append(c)
                     if (i + 1 < line.length && !line[i + 1].isWhitespace() && line[i + 1] != ')') {
@@ -488,7 +481,6 @@ object CodeFormatter {
                     }
                 }
 
-                // Ensure space after semicolon in for loops: for (int i=0;i<10;i++) -> for (int i=0; i<10; i++)
                 c == ';' -> {
                     sb.append(c)
                     if (i + 1 < line.length && !line[i + 1].isWhitespace()) {
@@ -496,7 +488,6 @@ object CodeFormatter {
                     }
                 }
 
-                // Spacing around binary operators: =, +=, -=, *=, /=, ==, !=, <=, >=, ->
                 c == '=' && i + 1 < line.length && line[i + 1] == '=' -> {
                     ensureSpacedOperator(sb, "==")
                     i += 2
@@ -523,7 +514,6 @@ object CodeFormatter {
                     continue
                 }
                 c == '=' -> {
-                    // Check if it is a default argument or assignment, avoiding == or !=
                     if (i + 1 < line.length && line[i + 1] != '=') {
                         ensureSpacedOperator(sb, "=")
                     } else {

@@ -316,4 +316,37 @@
     <string name="theme_lemon">لیمن</string>
     <string name="pretty_print">کوڈ فارمیٹ کریں</string>
     <string name="code_formatted">کوڈ فارمیٹ ہو گیا</string>
+
+    <!-- Git Drawer & Branches -->
+    <string name="tab_project">پروجیکٹ</string>
+    <string name="tab_commit">کمیٹ</string>
+    <string name="git_action_fetch">حاصل کریں (Fetch)</string>
+    <string name="git_action_sync">مطابقت پذیر کریں</string>
+    <string name="git_action_push">پش کریں</string>
+    <string name="git_action_settings">ترتیبات</string>
+    <string name="git_branches">برانچیں</string>
+    <string name="git_new_branch">نئی برانچ</string>
+    <string name="git_new_branch_label">نئی برانچ (\'%1$s\' برانچ پر مبنی)</string>
+    <string name="git_rename_branch">برانچ کا نام تبدیل کریں</string>
+    <string name="git_delete_branch">برانچ حذف کریں</string>
+    <string name="git_delete_branch_confirm">کیا آپ واقعی \'%1$s\' برانچ حذف کرنا چاہتے ہیں؟</string>
+    <string name="git_checkout">چیک آؤٹ</string>
+    <string name="git_merge">ضم کریں</string>
+    <string name="git_rebase">ری بیس کریں</string>
+    <string name="git_rename">نام تبدیل کریں</string>
+    <string name="git_delete">حذف کریں</string>
+    <string name="git_changes">تبدیلیاں</string>
+    <string name="git_unversioned">غیر ٹریک شدہ فائلیں</string>
+    <string name="git_commit">کمیٹ کریں</string>
+    <string name="git_commit_and_push">کمیٹ اور پش کریں</string>
+    <string name="git_amend">ترمیم کریں (Amend)</string>
+    <string name="git_commit_message_hint">کمیٹ کا پیغام</string>
+    <string name="git_history">تاریخچہ</string>
+    <string name="git_local_branches">مقامی برانچیں</string>
+    <string name="git_remote_branches">ریموٹ برانچیں</string>
+    <string name="git_no_changes">کوئی تبدیلی نہیں ملی</string>
+    <string name="git_no_commits">کوئی کمیٹ تاریخچہ نہیں</string>
+    <string name="git_not_a_repo">گٹ ریپوزٹری نہیں ہے</string>
+    <string name="git_init_repo">گٹ ریپوزٹری شروع کریں</string>
+    <string name="git_commit_details">کمیٹ کی تفصیلات</string>
 </resources>

@@ -1,6 +1,7 @@
 package org.cat.editor.ui.settings
 
 import android.content.Context
+import android.widget.Toast
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
@@ -50,6 +51,7 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import org.cat.editor.R
+import org.cat.editor.utils.SettingsManager
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -57,13 +59,18 @@ fun GitSettingsScreen(
     onBackClick: () -> Unit
 ) {
     val context = LocalContext.current
-    val prefs = remember { context.getSharedPreferences("app_settings", Context.MODE_PRIVATE) }
+    val prefs = remember { SettingsManager.getPrefs(context) }
 
     var gitColorFilenames by remember { mutableStateOf(prefs.getBoolean("git_color_filenames", true)) }
     var gitGutterIndicators by remember { mutableStateOf(prefs.getBoolean("git_gutter_indicators", true)) }
     var gitConflictDetection by remember { mutableStateOf(prefs.getBoolean("git_conflict_detection", true)) }
     var gitSubmodules by remember { mutableStateOf(prefs.getBoolean("git_submodules", true)) }
     var gitRecursiveSubmodules by remember { mutableStateOf(prefs.getBoolean("git_recursive_submodules", true)) }
+
+    var gitUsername by remember { mutableStateOf(SettingsManager.getGitUsername(context)) }
+    var gitToken by remember { mutableStateOf(SettingsManager.getGitToken(context)) }
+    var gitAuthorName by remember { mutableStateOf(SettingsManager.getGitAuthorName(context)) }
+    var gitAuthorEmail by remember { mutableStateOf(SettingsManager.getGitAuthorEmail(context)) }
 
     var showCredentialsDialog by remember { mutableStateOf(false) }
     var showUserDataDialog by remember { mutableStateOf(false) }
@@ -192,9 +199,14 @@ fun GitSettingsScreen(
                     elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
                 ) {
                     Column(modifier = Modifier.fillMaxWidth()) {
+                        val credSubtitle = if (gitUsername.isNotBlank()) {
+                            gitUsername
+                        } else {
+                            stringResource(id = R.string.git_credentials_desc)
+                        }
                         GitActionItem(
                             title = stringResource(id = R.string.git_credentials_title),
-                            subtitle = stringResource(id = R.string.git_credentials_desc),
+                            subtitle = credSubtitle,
                             onClick = { showCredentialsDialog = true }
                         )
 
@@ -204,9 +216,14 @@ fun GitSettingsScreen(
                             modifier = Modifier.padding(horizontal = 16.dp)
                         )
 
+                        val authorSubtitle = if (gitAuthorName.isNotBlank() || gitAuthorEmail.isNotBlank()) {
+                            if (gitAuthorEmail.isNotBlank()) "$gitAuthorName <$gitAuthorEmail>".trim() else gitAuthorName
+                        } else {
+                            stringResource(id = R.string.git_user_data_desc)
+                        }
                         GitActionItem(
                             title = stringResource(id = R.string.git_user_data_title),
-                            subtitle = stringResource(id = R.string.git_user_data_desc),
+                            subtitle = authorSubtitle,
                             onClick = { showUserDataDialog = true }
                         )
                     }
@@ -271,14 +288,15 @@ fun GitSettingsScreen(
 
     if (showCredentialsDialog) {
         GitCredentialsDialog(
-            currentUsername = prefs.getString("git_username", "") ?: "",
-            currentPassword = prefs.getString("git_token", "") ?: "",
+            currentUsername = gitUsername,
+            currentPassword = gitToken,
             onDismiss = { showCredentialsDialog = false },
             onApply = { username, password ->
-                prefs.edit()
-                    .putString("git_username", username)
-                    .putString("git_token", password)
-                    .apply()
+                gitUsername = username.trim()
+                gitToken = password.trim()
+                SettingsManager.setGitUsername(context, gitUsername)
+                SettingsManager.setGitToken(context, gitToken)
+                Toast.makeText(context, context.getString(R.string.save), Toast.LENGTH_SHORT).show()
                 showCredentialsDialog = false
             }
         )
@@ -286,14 +304,15 @@ fun GitSettingsScreen(
 
     if (showUserDataDialog) {
         GitUserDataDialog(
-            currentName = prefs.getString("git_author_name", "") ?: "",
-            currentEmail = prefs.getString("git_author_email", "") ?: "",
+            currentName = gitAuthorName,
+            currentEmail = gitAuthorEmail,
             onDismiss = { showUserDataDialog = false },
             onApply = { name, email ->
-                prefs.edit()
-                    .putString("git_author_name", name)
-                    .putString("git_author_email", email)
-                    .apply()
+                gitAuthorName = name.trim()
+                gitAuthorEmail = email.trim()
+                SettingsManager.setGitAuthorName(context, gitAuthorName)
+                SettingsManager.setGitAuthorEmail(context, gitAuthorEmail)
+                Toast.makeText(context, context.getString(R.string.save), Toast.LENGTH_SHORT).show()
                 showUserDataDialog = false
             }
         )

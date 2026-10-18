@@ -315,4 +315,37 @@
     <string name="theme_lemon">Лимонная</string>
     <string name="pretty_print">Форматировать код</string>
     <string name="code_formatted">Код отформатирован</string>
+
+    <!-- Git Drawer & Branches -->
+    <string name="tab_project">Проект</string>
+    <string name="tab_commit">Коммит</string>
+    <string name="git_action_fetch">Fetch</string>
+    <string name="git_action_sync">Синхронизировать</string>
+    <string name="git_action_push">Push</string>
+    <string name="git_action_settings">Настройки</string>
+    <string name="git_branches">Ветки</string>
+    <string name="git_new_branch">Новая ветка</string>
+    <string name="git_new_branch_label">Новая ветка (на основе ветки \'%1$s\')</string>
+    <string name="git_rename_branch">Переименовать ветку</string>
+    <string name="git_delete_branch">Удалить ветку</string>
+    <string name="git_delete_branch_confirm">Вы уверены, что хотите удалить ветку \'%1$s\'?</string>
+    <string name="git_checkout">Переключиться</string>
+    <string name="git_merge">Слить</string>
+    <string name="git_rebase">Rebase</string>
+    <string name="git_rename">Переименовать</string>
+    <string name="git_delete">Удалить</string>
+    <string name="git_changes">Изменения</string>
+    <string name="git_unversioned">Неотслеживаемые файлы</string>
+    <string name="git_commit">Закоммитить</string>
+    <string name="git_commit_and_push">Закоммитить и отправить (Push)</string>
+    <string name="git_amend">Amend (исправить)</string>
+    <string name="git_commit_message_hint">Сообщение коммита</string>
+    <string name="git_history">История</string>
+    <string name="git_local_branches">Локальные ветки</string>
+    <string name="git_remote_branches">Удалённые ветки</string>
+    <string name="git_no_changes">Изменений не обнаружено</string>
+    <string name="git_no_commits">История коммитов пуста</string>
+    <string name="git_not_a_repo">Не является репозиторием Git</string>
+    <string name="git_init_repo">Инициализировать репозиторий Git</string>
+    <string name="git_commit_details">Детали коммита</string>
 </resources>

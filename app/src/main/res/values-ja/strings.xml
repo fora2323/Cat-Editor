@@ -316,4 +316,37 @@
     <string name="theme_lemon">レモン</string>
     <string name="pretty_print">コード整形</string>
     <string name="code_formatted">コードを整形しました</string>
+
+    <!-- Git Drawer & Branches -->
+    <string name="tab_project">プロジェクト</string>
+    <string name="tab_commit">コミット</string>
+    <string name="git_action_fetch">フェッチ</string>
+    <string name="git_action_sync">同期</string>
+    <string name="git_action_push">プッシュ</string>
+    <string name="git_action_settings">設定</string>
+    <string name="git_branches">ブランチ</string>
+    <string name="git_new_branch">新規ブランチ</string>
+    <string name="git_new_branch_label">新規ブランチ（\'%1$s\' ブランチに基づく）</string>
+    <string name="git_rename_branch">ブランチ名を変更</string>
+    <string name="git_delete_branch">ブランチを削除</string>
+    <string name="git_delete_branch_confirm">ブランチ \'%1$s\' を削除してもよろしいですか？</string>
+    <string name="git_checkout">チェックアウト</string>
+    <string name="git_merge">マージ</string>
+    <string name="git_rebase">リベース</string>
+    <string name="git_rename">名前を変更</string>
+    <string name="git_delete">削除</string>
+    <string name="git_changes">変更</string>
+    <string name="git_unversioned">未バージョン管理ファイル</string>
+    <string name="git_commit">コミット</string>
+    <string name="git_commit_and_push">コミットしてプッシュ</string>
+    <string name="git_amend">直前のコミットを修正 (Amend)</string>
+    <string name="git_commit_message_hint">コミットメッセージ</string>
+    <string name="git_history">履歴</string>
+    <string name="git_local_branches">ローカルブランチ</string>
+    <string name="git_remote_branches">リモートブランチ</string>
+    <string name="git_no_changes">変更は検出されませんでした</string>
+    <string name="git_no_commits">コミット履歴がありません</string>
+    <string name="git_not_a_repo">Gitリポジトリではありません</string>
+    <string name="git_init_repo">Gitリポジトリを初期化</string>
+    <string name="git_commit_details">コミットの詳細</string>
 </resources>

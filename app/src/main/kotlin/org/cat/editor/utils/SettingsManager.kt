@@ -54,7 +54,46 @@ object SettingsManager {
     const val THEME_DYNAMIC = 3
     const val THEME_LEMON = 4
 
+    // Git Settings Keys
+    const val KEY_GIT_USERNAME = "git_username"
+    const val KEY_GIT_TOKEN = "git_token"
+    const val KEY_GIT_AUTHOR_NAME = "git_author_name"
+    const val KEY_GIT_AUTHOR_EMAIL = "git_author_email"
+    const val KEY_GIT_COLOR_FILENAMES = "git_color_filenames"
+    const val KEY_GIT_GUTTER_INDICATORS = "git_gutter_indicators"
+    const val KEY_GIT_CONFLICT_DETECTION = "git_conflict_detection"
+    const val KEY_GIT_SUBMODULES = "git_submodules"
+    const val KEY_GIT_RECURSIVE_SUBMODULES = "git_recursive_submodules"
+
     fun getPrefs(context: Context) = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+
+    fun getGitUsername(context: Context): String =
+        getPrefs(context).getString(KEY_GIT_USERNAME, "") ?: ""
+
+    fun setGitUsername(context: Context, username: String) {
+        getPrefs(context).edit().putString(KEY_GIT_USERNAME, username).apply()
+    }
+
+    fun getGitToken(context: Context): String =
+        getPrefs(context).getString(KEY_GIT_TOKEN, "") ?: ""
+
+    fun setGitToken(context: Context, token: String) {
+        getPrefs(context).edit().putString(KEY_GIT_TOKEN, token).apply()
+    }
+
+    fun getGitAuthorName(context: Context): String =
+        getPrefs(context).getString(KEY_GIT_AUTHOR_NAME, "") ?: ""
+
+    fun setGitAuthorName(context: Context, name: String) {
+        getPrefs(context).edit().putString(KEY_GIT_AUTHOR_NAME, name).apply()
+    }
+
+    fun getGitAuthorEmail(context: Context): String =
+        getPrefs(context).getString(KEY_GIT_AUTHOR_EMAIL, "") ?: ""
+
+    fun setGitAuthorEmail(context: Context, email: String) {
+        getPrefs(context).edit().putString(KEY_GIT_AUTHOR_EMAIL, email).apply()
+    }
 
     fun isCheckUpdatesEnabled(context: Context): Boolean =
         getPrefs(context).getBoolean(KEY_CHECK_UPDATES, true)

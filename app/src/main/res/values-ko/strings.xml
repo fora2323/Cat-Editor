@@ -316,5 +316,38 @@
     <string name="theme_lemon">레몬</string>
     <string name="pretty_print">코드 정리</string>
     <string name="code_formatted">코드가 정리되었습니다</string>
+
+    <!-- Git Drawer & Branches -->
+    <string name="tab_project">프로젝트</string>
+    <string name="tab_commit">커밋</string>
+    <string name="git_action_fetch">가져오기 (Fetch)</string>
+    <string name="git_action_sync">동기화</string>
+    <string name="git_action_push">푸시 (Push)</string>
+    <string name="git_action_settings">설정</string>
+    <string name="git_branches">브랜치</string>
+    <string name="git_new_branch">새 브랜치</string>
+    <string name="git_new_branch_label">새 브랜치 (\'%1$s\' 브랜치 기반)</string>
+    <string name="git_rename_branch">브랜치 이름 변경</string>
+    <string name="git_delete_branch">브랜치 삭제</string>
+    <string name="git_delete_branch_confirm">\'%1$s\' 브랜치를 삭제하시겠습니까?</string>
+    <string name="git_checkout">체크아웃</string>
+    <string name="git_merge">병합</string>
+    <string name="git_rebase">리베이스</string>
+    <string name="git_rename">이름 변경</string>
+    <string name="git_delete">삭제</string>
+    <string name="git_changes">변경 사항</string>
+    <string name="git_unversioned">버전 관리되지 않는 파일</string>
+    <string name="git_commit">커밋</string>
+    <string name="git_commit_and_push">커밋 및 푸시</string>
+    <string name="git_amend">이전 커밋 수정 (Amend)</string>
+    <string name="git_commit_message_hint">커밋 메시지</string>
+    <string name="git_history">히스토리</string>
+    <string name="git_local_branches">로컬 브랜치</string>
+    <string name="git_remote_branches">원격 브랜치</string>
+    <string name="git_no_changes">감지된 변경 사항 없음</string>
+    <string name="git_no_commits">커밋 히스토리 없음</string>
+    <string name="git_not_a_repo">Git 저장소가 아닙니다</string>
+    <string name="git_init_repo">Git 저장소 초기화</string>
+    <string name="git_commit_details">커밋 세부 정보</string>
 </resources>
 

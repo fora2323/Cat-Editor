@@ -317,4 +317,37 @@
     <string name="setting_theme_title">السمة</string>
     <string name="setting_theme_desc">اختر سمة التطبيق</string>
     <string name="select_theme_title">اختر سمة</string>
+
+    <!-- Git Drawer & Branches -->
+    <string name="tab_project">المشروع</string>
+    <string name="tab_commit">تثبيت (Commit)</string>
+    <string name="git_action_fetch">جلب (Fetch)</string>
+    <string name="git_action_sync">مزامنة</string>
+    <string name="git_action_push">دفع (Push)</string>
+    <string name="git_action_settings">الإعدادات</string>
+    <string name="git_branches">الفروع</string>
+    <string name="git_new_branch">فرع جديد</string>
+    <string name="git_new_branch_label">فرع جديد (مبني على فرع \'%1$s\')</string>
+    <string name="git_rename_branch">إعادة تسمية الفرع</string>
+    <string name="git_delete_branch">حذف الفرع</string>
+    <string name="git_delete_branch_confirm">هل أنت متأكد من رغبتك في حذف الفرع \'%1$s\'؟</string>
+    <string name="git_checkout">التبديل إلى (Checkout)</string>
+    <string name="git_merge">دمج (Merge)</string>
+    <string name="git_rebase">إعادة التأسيس (Rebase)</string>
+    <string name="git_rename">إعادة التسمية</string>
+    <string name="git_delete">حذف</string>
+    <string name="git_changes">التغييرات</string>
+    <string name="git_unversioned">الملفات غير المتعقبة</string>
+    <string name="git_commit">تثبيت (Commit)</string>
+    <string name="git_commit_and_push">تثبيت ودفع (Commit and push)</string>
+    <string name="git_amend">تعديل السابق (Amend)</string>
+    <string name="git_commit_message_hint">رسالة التثبيت</string>
+    <string name="git_history">السجل</string>
+    <string name="git_local_branches">فروع محلية</string>
+    <string name="git_remote_branches">فروع بعيدة</string>
+    <string name="git_no_changes">لم يتم العثور على أي تغييرات</string>
+    <string name="git_no_commits">لا يوجد سجل تثبيتات</string>
+    <string name="git_not_a_repo">ليس مستودع Git</string>
+    <string name="git_init_repo">تهيئة مستودع Git</string>
+    <string name="git_commit_details">تفاصيل التثبيت</string>
 </resources>

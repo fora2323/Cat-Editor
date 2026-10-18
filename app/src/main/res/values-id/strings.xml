@@ -317,4 +317,37 @@
     <string name="setting_theme_title">Tema</string>
     <string name="setting_theme_desc">Pilih tema aplikasi</string>
     <string name="select_theme_title">Pilih tema</string>
+
+    <!-- Git Drawer & Branches -->
+    <string name="tab_project">Proyek</string>
+    <string name="tab_commit">Komit</string>
+    <string name="git_action_fetch">Fetch</string>
+    <string name="git_action_sync">Sinkronkan</string>
+    <string name="git_action_push">Push</string>
+    <string name="git_action_settings">Pengaturan</string>
+    <string name="git_branches">Cabang</string>
+    <string name="git_new_branch">Cabang baru</string>
+    <string name="git_new_branch_label">Cabang baru (berdasarkan cabang \'%1$s\')</string>
+    <string name="git_rename_branch">Ganti nama cabang</string>
+    <string name="git_delete_branch">Hapus cabang</string>
+    <string name="git_delete_branch_confirm">Apakah Anda yakin ingin menghapus cabang \'%1$s\'?</string>
+    <string name="git_checkout">Checkout</string>
+    <string name="git_merge">Gabungkan</string>
+    <string name="git_rebase">Rebase</string>
+    <string name="git_rename">Ganti nama</string>
+    <string name="git_delete">Hapus</string>
+    <string name="git_changes">Perubahan</string>
+    <string name="git_unversioned">File yang Belum Dilacak</string>
+    <string name="git_commit">Komit</string>
+    <string name="git_commit_and_push">Komit dan push</string>
+    <string name="git_amend">Amend</string>
+    <string name="git_commit_message_hint">Pesan komit</string>
+    <string name="git_history">Riwayat</string>
+    <string name="git_local_branches">Cabang lokal</string>
+    <string name="git_remote_branches">Cabang remote</string>
+    <string name="git_no_changes">Tidak ada perubahan terdeteksi</string>
+    <string name="git_no_commits">Tidak ada riwayat komit</string>
+    <string name="git_not_a_repo">Bukan repositori Git</string>
+    <string name="git_init_repo">Inisialisasi repositori Git</string>
+    <string name="git_commit_details">Detail komit</string>
 </resources>

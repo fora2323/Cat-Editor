@@ -325,4 +325,31 @@
     <string name="git_action_sync">Sync</string>
     <string name="git_action_push">Push</string>
     <string name="git_action_settings">Settings</string>
+
+    <!-- Git Panel & Branch Actions -->
+    <string name="git_branches">Branches</string>
+    <string name="git_new_branch">New branch</string>
+    <string name="git_new_branch_label">New branch (based on \'%1$s\' branch)</string>
+    <string name="git_rename_branch">Rename branch</string>
+    <string name="git_delete_branch">Delete branch</string>
+    <string name="git_delete_branch_confirm">Are you sure you want to delete branch \'%1$s\'?</string>
+    <string name="git_checkout">Checkout</string>
+    <string name="git_merge">Merge</string>
+    <string name="git_rebase">Rebase</string>
+    <string name="git_rename">Rename</string>
+    <string name="git_delete">Delete</string>
+    <string name="git_changes">Changes</string>
+    <string name="git_unversioned">Unversioned Files</string>
+    <string name="git_commit">Commit</string>
+    <string name="git_commit_and_push">Commit and push</string>
+    <string name="git_amend">Amend</string>
+    <string name="git_commit_message_hint">Commit message</string>
+    <string name="git_history">History</string>
+    <string name="git_local_branches">Local branches</string>
+    <string name="git_remote_branches">Remote branches</string>
+    <string name="git_no_changes">No changes detected</string>
+    <string name="git_no_commits">No commit history</string>
+    <string name="git_not_a_repo">Not a Git repository</string>
+    <string name="git_init_repo">Initialize Git repository</string>
+    <string name="git_commit_details">Commit details</string>
 </resources>

@@ -316,5 +316,38 @@
     <string name="theme_lemon">檸檬黃</string>
     <string name="pretty_print">格式化程式碼</string>
     <string name="code_formatted">程式碼已格式化</string>
+
+    <!-- Git Drawer & Branches -->
+    <string name="tab_project">專案</string>
+    <string name="tab_commit">提交</string>
+    <string name="git_action_fetch">擷取 (Fetch)</string>
+    <string name="git_action_sync">同步</string>
+    <string name="git_action_push">推送 (Push)</string>
+    <string name="git_action_settings">設定</string>
+    <string name="git_branches">分支</string>
+    <string name="git_new_branch">新增分支</string>
+    <string name="git_new_branch_label">新增分支 (基於 \'%1$s\' 分支)</string>
+    <string name="git_rename_branch">重新命名分支</string>
+    <string name="git_delete_branch">刪除分支</string>
+    <string name="git_delete_branch_confirm">確定要刪除分支 \'%1$s\' 嗎？</string>
+    <string name="git_checkout">簽出 (Checkout)</string>
+    <string name="git_merge">合併</string>
+    <string name="git_rebase">變基 (Rebase)</string>
+    <string name="git_rename">重新命名</string>
+    <string name="git_delete">刪除</string>
+    <string name="git_changes">變更</string>
+    <string name="git_unversioned">未納入版本控制的檔案</string>
+    <string name="git_commit">提交</string>
+    <string name="git_commit_and_push">提交並推送</string>
+    <string name="git_amend">修改上一提交 (Amend)</string>
+    <string name="git_commit_message_hint">提交訊息</string>
+    <string name="git_history">歷史紀錄</string>
+    <string name="git_local_branches">本機分支</string>
+    <string name="git_remote_branches">遠端分支</string>
+    <string name="git_no_changes">未偵測到任何變更</string>
+    <string name="git_no_commits">無提交歷史</string>
+    <string name="git_not_a_repo">不是 Git 存放庫</string>
+    <string name="git_init_repo">初始化 Git 存放庫</string>
+    <string name="git_commit_details">提交詳細資訊</string>
 </resources>
 

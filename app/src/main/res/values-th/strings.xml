@@ -316,5 +316,38 @@
     <string name="theme_lemon">เลมอน</string>
     <string name="pretty_print">จัดรูปแบบโค้ด</string>
     <string name="code_formatted">จัดรูปแบบโค้ดเรียบร้อยแล้ว</string>
+
+    <!-- Git Drawer & Branches -->
+    <string name="tab_project">โปรเจกต์</string>
+    <string name="tab_commit">คอมมิต</string>
+    <string name="git_action_fetch">ดึง (Fetch)</string>
+    <string name="git_action_sync">ซิงค์</string>
+    <string name="git_action_push">พุช (Push)</string>
+    <string name="git_action_settings">การตั้งค่า</string>
+    <string name="git_branches">สาขา (Branches)</string>
+    <string name="git_new_branch">สร้างสาขาใหม่</string>
+    <string name="git_new_branch_label">สร้างสาขาใหม่ (อิงจากสาขา \'%1$s\')</string>
+    <string name="git_rename_branch">เปลี่ยนชื่อสาขา</string>
+    <string name="git_delete_branch">ลบสาขา</string>
+    <string name="git_delete_branch_confirm">คุณแน่ใจหรือไม่ว่าต้องการลบสาขา \'%1$s\'?</string>
+    <string name="git_checkout">สลับสาขา (Checkout)</string>
+    <string name="git_merge">ผสานสาขา (Merge)</string>
+    <string name="git_rebase">รีเบส (Rebase)</string>
+    <string name="git_rename">เปลี่ยนชื่อ</string>
+    <string name="git_delete">ลบ</string>
+    <string name="git_changes">การเปลี่ยนแปลง</string>
+    <string name="git_unversioned">ไฟล์ที่ยังไม่ติดตาม (Unversioned)</string>
+    <string name="git_commit">คอมมิต</string>
+    <string name="git_commit_and_push">คอมมิตและพุช</string>
+    <string name="git_amend">แก้ไขคอมมิตล่าสุด (Amend)</string>
+    <string name="git_commit_message_hint">ข้อความคอมมิต</string>
+    <string name="git_history">ประวัติ</string>
+    <string name="git_local_branches">สาขาในเครื่อง</string>
+    <string name="git_remote_branches">สาขาระยะไกล</string>
+    <string name="git_no_changes">ไม่พบการเปลี่ยนแปลงใดๆ</string>
+    <string name="git_no_commits">ไม่มีประวัติคอมมิต</string>
+    <string name="git_not_a_repo">ไม่ใช่ที่เก็บ Git</string>
+    <string name="git_init_repo">สร้างที่เก็บ Git ใหม่</string>
+    <string name="git_commit_details">รายละเอียดคอมมิต</string>
 </resources>
 

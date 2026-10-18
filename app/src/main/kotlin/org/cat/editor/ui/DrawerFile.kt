@@ -154,6 +154,7 @@ fun IdeMainScreen(
 
     val clipboardManager = LocalClipboardManager.current
     var treeRefreshTrigger by remember { mutableIntStateOf(0) }
+    var gitRefreshTrigger by remember { mutableIntStateOf(0) }
     var showCreateDialog by remember { mutableStateOf(false) }
     var targetCreateFolder by remember { mutableStateOf<File?>(null) }
     var selectedFileForActions by remember { mutableStateOf<File?>(null) }
@@ -242,6 +243,11 @@ fun IdeMainScreen(
                 windowInsets = WindowInsets.systemBars
             ) {
                 DrawerWithSections(
+                    onSectionChange = { section ->
+                        if (section == DrawerSection.COMMIT) {
+                            gitRefreshTrigger++
+                        }
+                    },
                     projectContent = {
                         Column(modifier = Modifier.fillMaxSize()) {
                             Row(
@@ -375,8 +381,21 @@ fun IdeMainScreen(
                     },
                     commitContent = {
                         CommitPanel(
-                            changes = emptyList(),
-                            onCommit = { message -> /* TODO: logika git, jangan diisi sekarang */ }
+                            projectPath = projectPath,
+                            refreshTrigger = gitRefreshTrigger,
+                            onOpenFile = { file ->
+                                if (!file.exists() || file.isDirectory) return@CommitPanel
+                                val lower = file.name.lowercase()
+                                val isPreviewable = lower.endsWith(".kt") || lower.endsWith(".kts") || lower.endsWith(".xml")
+                                if (!isPreviewable) {
+                                    viewMode = EditorViewMode.EDIT
+                                }
+                                onFileSelected(file)
+                                scope.launch { drawerState.close() }
+                            },
+                            onNavigateSettings = {
+                                context.startActivity(Intent(context, SettingsActivity::class.java))
+                            }
                         )
                     }
                 )
@@ -399,6 +418,7 @@ fun IdeMainScreen(
                 try {
                     File(activeFilePath).writeText(currentCode)
                     Toast.makeText(context, context.getString(R.string.file_saved), Toast.LENGTH_SHORT).show()
+                    gitRefreshTrigger++
                     onSaveFile?.invoke()
                 } catch (e: Exception) {
                     Toast.makeText(context, context.getString(R.string.failed_to_save, e.message ?: ""), Toast.LENGTH_SHORT).show()
@@ -914,6 +934,7 @@ fun IdeMainScreen(
                 onItemCreated = { newFile ->
                     expandedPaths[targetCreateFolder!!.absolutePath] = true
                     treeRefreshTrigger++
+                    gitRefreshTrigger++
                     if (newFile.isFile) {
                         onFileSelected(newFile)
                     }
@@ -960,6 +981,7 @@ fun IdeMainScreen(
                 onDismiss = { fileToRename = null },
                 onRenamed = { renamedFile ->
                     treeRefreshTrigger++
+                    gitRefreshTrigger++
                     if (openedFiles.contains(file.absolutePath)) {
                         onCloseFile?.invoke(file.absolutePath)
                         if (renamedFile.isFile) {
@@ -977,6 +999,7 @@ fun IdeMainScreen(
                 onDismiss = { fileToDelete = null },
                 onDeleted = {
                     treeRefreshTrigger++
+                    gitRefreshTrigger++
                     if (file.isDirectory) {
                         openedFiles.filter { it.startsWith(file.absolutePath) }.forEach {
                             onCloseFile?.invoke(it)

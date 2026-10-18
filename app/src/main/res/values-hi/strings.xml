@@ -316,4 +316,37 @@
     <string name="theme_lemon">लेमन</string>
     <string name="pretty_print">कोड फॉर्मेट करें</string>
     <string name="code_formatted">कोड फॉर्मेट हो गया</string>
+
+    <!-- Git Drawer & Branches -->
+    <string name="tab_project">प्रोजेक्ट</string>
+    <string name="tab_commit">कमिट</string>
+    <string name="git_action_fetch">फेच करें</string>
+    <string name="git_action_sync">सिंक करें</string>
+    <string name="git_action_push">पुश करें</string>
+    <string name="git_action_settings">सेटिंग्स</string>
+    <string name="git_branches">शाखाएं (Branches)</string>
+    <string name="git_new_branch">नई शाखा</string>
+    <string name="git_new_branch_label">नई शाखा (\'%1$s\' शाखा के आधार पर)</string>
+    <string name="git_rename_branch">शाखा का नाम बदलें</string>
+    <string name="git_delete_branch">शाखा हटाएं</string>
+    <string name="git_delete_branch_confirm">क्या आप वाकई \'%1$s\' शाखा हटाना चाहते हैं?</string>
+    <string name="git_checkout">चेकआउट</string>
+    <string name="git_merge">मर्ज करें</string>
+    <string name="git_rebase">रीबेस करें</string>
+    <string name="git_rename">नाम बदलें</string>
+    <string name="git_delete">हटाएं</string>
+    <string name="git_changes">बदलाव (Changes)</string>
+    <string name="git_unversioned">अनट्रैक्ड फाइलें</string>
+    <string name="git_commit">कमिट करें</string>
+    <string name="git_commit_and_push">कमिट और पुश करें</string>
+    <string name="git_amend">संशोधित करें (Amend)</string>
+    <string name="git_commit_message_hint">कमिट संदेश</string>
+    <string name="git_history">इतिहास</string>
+    <string name="git_local_branches">स्थानीय शाखाएं</string>
+    <string name="git_remote_branches">रिमोट शाखाएं</string>
+    <string name="git_no_changes">कोई बदलाव नहीं मिला</string>
+    <string name="git_no_commits">कोई कमिट इतिहास नहीं है</string>
+    <string name="git_not_a_repo">गिट रिपॉजिटरी नहीं है</string>
+    <string name="git_init_repo">गिट रिपॉजिटरी आरंभ करें</string>
+    <string name="git_commit_details">कमिट विवरण</string>
 </resources>

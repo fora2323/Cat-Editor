@@ -12,11 +12,7 @@ object CodeFormatter {
     // --- XML FORMATTER CONSTANTS ---
     private val XML_TAG_REGEX = Regex("<!--.*?-->|<\\?.*?\\?>|<!\\[CDATA\\[.*?\\]\\]>|<[^>]+>", RegexOption.DOT_MATCHES_ALL)
     private val XML_ATTR_REGEX = Regex("""[^\s=]+=("[^"]*"|'[^']*')""")
-    private val XML_ALWAYS_WRAP_TAGS = setOf(
-        "manifest", "application", "uses-library", "meta-data", 
-        "activity", "activity-alias", "service", "receiver", 
-        "provider", "intent-filter"
-    )
+    private val XML_ALWAYS_WRAP_TAGS = setOf("manifest", "application", "uses-library", "meta-data", "activity", "activity-alias", "service", "receiver", "provider", "intent-filter")
     private const val XML_CUSTOM_LINE_LENGTH = 150
     private const val XML_MAX_LINE_LENGTH = 100
 

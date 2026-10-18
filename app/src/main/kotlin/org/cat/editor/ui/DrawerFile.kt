@@ -7,13 +7,14 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
-import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.ime
 import androidx.compose.foundation.layout.isImeVisible
 import androidx.compose.foundation.layout.padding
@@ -41,8 +42,6 @@ import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material3.Checkbox
-import androidx.compose.material3.ModalDrawerSheet
-import androidx.compose.material3.ModalNavigationDrawer
 import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
@@ -52,6 +51,8 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalDrawerSheet
+import androidx.compose.material3.ModalNavigationDrawer
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.ScrollableTabRow
@@ -104,8 +105,8 @@ import org.cat.editor.ui.preview.ComposeNode
 import org.cat.editor.ui.preview.ImageDetailViewer
 import org.cat.editor.ui.preview.PreviewLayoutXml
 import org.cat.editor.ui.preview.PreviewScreen
-import org.cat.editor.ui.preview.XmlLayoutParser
 import org.cat.editor.ui.preview.VectorDrawableParser
+import org.cat.editor.ui.preview.XmlLayoutParser
 import org.cat.editor.ui.preview.isBinaryFile
 import org.cat.editor.ui.preview.isImageFile
 import org.cat.editor.utils.SettingsManager
@@ -240,740 +241,752 @@ fun IdeMainScreen(
                     .fillMaxHeight(),
                 windowInsets = WindowInsets.systemBars
             ) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(start = 16.dp, end = 4.dp, top = 4.dp, bottom = 4.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.End
-                ) {
-                    IconButton(onClick = { treeRefreshTrigger++ }) {
-                        Icon(
-                            imageVector = Icons.Default.Refresh,
-                            contentDescription = stringResource(id = R.string.refresh)
-                        )
-                    }
-                    IconButton(onClick = { showSearchBottomSheet = true }) {
-                        Icon(
-                            imageVector = Icons.Default.Search,
-                            contentDescription = stringResource(id = R.string.search_files)
-                        )
-                    }
-                    Box {
-                        IconButton(onClick = { showDrawerMoreMenu = true }) {
-                            Icon(
-                                imageVector = Icons.Default.MoreVert,
-                                contentDescription = stringResource(id = R.string.more_options)
-                            )
-                        }
-                        DropdownMenu(
-                            expanded = showDrawerMoreMenu,
-                            onDismissRequest = { showDrawerMoreMenu = false },
-                            shape = RoundedCornerShape(16.dp)
-                        ) {
-                            DropdownMenuItem(
-                                text = { Text(stringResource(id = R.string.drawer_show_hidden_files)) },
-                                leadingIcon = {
-                                    Checkbox(
-                                        checked = showHiddenFiles,
-                                        onCheckedChange = null
+                DrawerWithSections(
+                    projectContent = {
+                        Column(modifier = Modifier.fillMaxSize()) {
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(start = 16.dp, end = 4.dp, top = 4.dp, bottom = 4.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.End
+                            ) {
+                                IconButton(onClick = { treeRefreshTrigger++ }) {
+                                    Icon(
+                                        imageVector = Icons.Default.Refresh,
+                                        contentDescription = stringResource(id = R.string.refresh)
                                     )
-                                },
-                                onClick = {
-                                    showHiddenFiles = !showHiddenFiles
-                                    prefs.edit().putBoolean("drawer_show_hidden_files", showHiddenFiles).apply()
                                 }
-                            )
-                            DropdownMenuItem(
-                                text = { Text(stringResource(id = R.string.drawer_compact_folders)) },
-                                leadingIcon = {
-                                    Checkbox(
-                                        checked = compactFolders,
-                                        onCheckedChange = null
+                                IconButton(onClick = { showSearchBottomSheet = true }) {
+                                    Icon(
+                                        imageVector = Icons.Default.Search,
+                                        contentDescription = stringResource(id = R.string.search_files)
                                     )
-                                },
-                                onClick = {
-                                    compactFolders = !compactFolders
-                                    prefs.edit().putBoolean("drawer_compact_folders", compactFolders).apply()
                                 }
-                            )
-                            DropdownMenuItem(
-                                text = { Text(stringResource(id = R.string.drawer_sort_by_name)) },
-                                leadingIcon = {
-                                    RadioButton(
-                                        selected = sortMode == DrawerSortMode.NAME,
-                                        onClick = null
-                                    )
-                                },
-                                onClick = {
-                                    sortMode = DrawerSortMode.NAME
-                                    prefs.edit().putInt("drawer_sort_mode", DrawerSortMode.NAME.value).apply()
+                                Box {
+                                    IconButton(onClick = { showDrawerMoreMenu = true }) {
+                                        Icon(
+                                            imageVector = Icons.Default.MoreVert,
+                                            contentDescription = stringResource(id = R.string.more_options)
+                                        )
+                                    }
+                                    DropdownMenu(
+                                        expanded = showDrawerMoreMenu,
+                                        onDismissRequest = { showDrawerMoreMenu = false },
+                                        shape = RoundedCornerShape(16.dp)
+                                    ) {
+                                        DropdownMenuItem(
+                                            text = { Text(stringResource(id = R.string.drawer_show_hidden_files)) },
+                                            leadingIcon = {
+                                                Checkbox(
+                                                    checked = showHiddenFiles,
+                                                    onCheckedChange = null
+                                                )
+                                            },
+                                            onClick = {
+                                                showHiddenFiles = !showHiddenFiles
+                                                prefs.edit().putBoolean("drawer_show_hidden_files", showHiddenFiles).apply()
+                                            }
+                                        )
+                                        DropdownMenuItem(
+                                            text = { Text(stringResource(id = R.string.drawer_compact_folders)) },
+                                            leadingIcon = {
+                                                Checkbox(
+                                                    checked = compactFolders,
+                                                    onCheckedChange = null
+                                                )
+                                            },
+                                            onClick = {
+                                                compactFolders = !compactFolders
+                                                prefs.edit().putBoolean("drawer_compact_folders", compactFolders).apply()
+                                            }
+                                        )
+                                        DropdownMenuItem(
+                                            text = { Text(stringResource(id = R.string.drawer_sort_by_name)) },
+                                            leadingIcon = {
+                                                RadioButton(
+                                                    selected = sortMode == DrawerSortMode.NAME,
+                                                    onClick = null
+                                                )
+                                            },
+                                            onClick = {
+                                                sortMode = DrawerSortMode.NAME
+                                                prefs.edit().putInt("drawer_sort_mode", DrawerSortMode.NAME.value).apply()
+                                            }
+                                        )
+                                        DropdownMenuItem(
+                                            text = { Text(stringResource(id = R.string.drawer_sort_by_size)) },
+                                            leadingIcon = {
+                                                RadioButton(
+                                                    selected = sortMode == DrawerSortMode.SIZE,
+                                                    onClick = null
+                                                )
+                                            },
+                                            onClick = {
+                                                sortMode = DrawerSortMode.SIZE
+                                                prefs.edit().putInt("drawer_sort_mode", DrawerSortMode.SIZE.value).apply()
+                                            }
+                                        )
+                                        DropdownMenuItem(
+                                            text = { Text(stringResource(id = R.string.drawer_sort_by_date)) },
+                                            leadingIcon = {
+                                                RadioButton(
+                                                    selected = sortMode == DrawerSortMode.DATE,
+                                                    onClick = null
+                                                )
+                                            },
+                                            onClick = {
+                                                sortMode = DrawerSortMode.DATE
+                                                prefs.edit().putInt("drawer_sort_mode", DrawerSortMode.DATE.value).apply()
+                                            }
+                                        )
+                                    }
                                 }
-                            )
-                            DropdownMenuItem(
-                                text = { Text(stringResource(id = R.string.drawer_sort_by_size)) },
-                                leadingIcon = {
-                                    RadioButton(
-                                        selected = sortMode == DrawerSortMode.SIZE,
-                                        onClick = null
-                                    )
-                                },
-                                onClick = {
-                                    sortMode = DrawerSortMode.SIZE
-                                    prefs.edit().putInt("drawer_sort_mode", DrawerSortMode.SIZE.value).apply()
-                                }
-                            )
-                            DropdownMenuItem(
-                                text = { Text(stringResource(id = R.string.drawer_sort_by_date)) },
-                                leadingIcon = {
-                                    RadioButton(
-                                        selected = sortMode == DrawerSortMode.DATE,
-                                        onClick = null
-                                    )
-                                },
-                                onClick = {
-                                    sortMode = DrawerSortMode.DATE
-                                    prefs.edit().putInt("drawer_sort_mode", DrawerSortMode.DATE.value).apply()
-                                }
-                            )
-                        }
-                    }
-                }
-                HorizontalDivider()
-                if (projectPath.isNotEmpty()) {
-                    Column {
-                        FileTreeView(
-                            root = File(projectPath),
-                            refreshKey = treeRefreshTrigger,
-                            showHiddenFiles = showHiddenFiles,
-                            compactFolders = compactFolders,
-                            sortMode = sortMode,
-                            expandedPaths = expandedPaths,
-                            onFileClick = { file ->
-                                if (!file.exists() || file.isDirectory) return@FileTreeView
-                                val lower = file.name.lowercase()
-                                val isPreviewable = lower.endsWith(".kt") || lower.endsWith(".kts") || lower.endsWith(".xml")
-                                if (!isPreviewable) {
-                                    viewMode = EditorViewMode.EDIT
-                                }
-                                onFileSelected(file)
-                                scope.launch {
-                                    drawerState.close()
-                                }
-                            },
-                            onFileLongClick = { file ->
-                                selectedFileForActions = file
                             }
+                            HorizontalDivider()
+                            if (projectPath.isNotEmpty()) {
+                                Column {
+                                    FileTreeView(
+                                        root = File(projectPath),
+                                        refreshKey = treeRefreshTrigger,
+                                        showHiddenFiles = showHiddenFiles,
+                                        compactFolders = compactFolders,
+                                        sortMode = sortMode,
+                                        expandedPaths = expandedPaths,
+                                        onFileClick = { file ->
+                                            if (!file.exists() || file.isDirectory) return@FileTreeView
+                                            val lower = file.name.lowercase()
+                                            val isPreviewable = lower.endsWith(".kt") || lower.endsWith(".kts") || lower.endsWith(".xml")
+                                            if (!isPreviewable) {
+                                                viewMode = EditorViewMode.EDIT
+                                            }
+                                            onFileSelected(file)
+                                            scope.launch {
+                                                drawerState.close()
+                                            }
+                                        },
+                                        onFileLongClick = { file ->
+                                            selectedFileForActions = file
+                                        }
+                                    )
+                                }
+                            }
+                        }
+                    },
+                    commitContent = {
+                        CommitPanel(
+                            changes = emptyList(),
+                            onCommit = { message -> /* TODO: logika git, jangan diisi sekarang */ }
                         )
                     }
-                }
+                )
             }
         }
     ) {
-    val configuration = LocalConfiguration.current
-    val screenWidthDp = configuration.screenWidthDp
-    val isSmallDpi = screenWidthDp < 380
-    val isVerySmallDpi = screenWidthDp < 320
+        val configuration = LocalConfiguration.current
+        val screenWidthDp = configuration.screenWidthDp
+        val isSmallDpi = screenWidthDp < 380
+        val isVerySmallDpi = screenWidthDp < 320
 
-    val handleUndo = {
-        Toast.makeText(context, context.getString(R.string.undo), Toast.LENGTH_SHORT).show()
-    }
-    val handleRedo = {
-        Toast.makeText(context, context.getString(R.string.redo), Toast.LENGTH_SHORT).show()
-    }
-    val handleSave = {
-        if (activeFilePath.isNotEmpty()) {
-            try {
-                File(activeFilePath).writeText(currentCode)
-                Toast.makeText(context, context.getString(R.string.file_saved), Toast.LENGTH_SHORT).show()
-                onSaveFile?.invoke()
-            } catch (e: Exception) {
-                Toast.makeText(context, context.getString(R.string.failed_to_save, e.message ?: ""), Toast.LENGTH_SHORT).show()
-            }
+        val handleUndo = {
+            Toast.makeText(context, context.getString(R.string.undo), Toast.LENGTH_SHORT).show()
         }
-    }
-    val handleAdd = {
-        targetCreateFolder = if (activeFilePath.isNotEmpty()) {
-            val active = File(activeFilePath)
-            if (active.isDirectory) active else active.parentFile ?: File(projectPath)
-        } else {
-            File(projectPath)
+        val handleRedo = {
+            Toast.makeText(context, context.getString(R.string.redo), Toast.LENGTH_SHORT).show()
         }
-        showCreateDialog = true
-        onAddFile?.invoke()
-    }
-    val canPreviewActiveFile = remember(activeFilePath, currentCode) {
-        if (activeFilePath.isBlank()) false
-        else {
-            val lower = activeFilePath.lowercase()
-            val effectiveCode = if (currentCode.isNotEmpty()) currentCode else {
+        val handleSave = {
+            if (activeFilePath.isNotEmpty()) {
                 try {
-                    val f = File(activeFilePath)
-                    if (f.exists() && f.isFile) f.readText() else ""
-                } catch (_: Throwable) { "" }
-            }
-            when {
-                lower.endsWith(".kt") || lower.endsWith(".kts") -> {
-                    effectiveCode.contains("@Preview")
+                    File(activeFilePath).writeText(currentCode)
+                    Toast.makeText(context, context.getString(R.string.file_saved), Toast.LENGTH_SHORT).show()
+                    onSaveFile?.invoke()
+                } catch (e: Exception) {
+                    Toast.makeText(context, context.getString(R.string.failed_to_save, e.message ?: ""), Toast.LENGTH_SHORT).show()
                 }
-                lower.endsWith(".xml") -> {
-                    XmlLayoutParser.isLayoutXml(effectiveCode) || VectorDrawableParser.isVectorXml(effectiveCode)
+            }
+        }
+        val handleAdd = {
+            targetCreateFolder = if (activeFilePath.isNotEmpty()) {
+                val active = File(activeFilePath)
+                if (active.isDirectory) active else active.parentFile ?: File(projectPath)
+            } else {
+                File(projectPath)
+            }
+            showCreateDialog = true
+            onAddFile?.invoke()
+        }
+        val canPreviewActiveFile = remember(activeFilePath, currentCode) {
+            if (activeFilePath.isBlank()) false
+            else {
+                val lower = activeFilePath.lowercase()
+                val effectiveCode = if (currentCode.isNotEmpty()) currentCode else {
+                    try {
+                        val f = File(activeFilePath)
+                        if (f.exists() && f.isFile) f.readText() else ""
+                    } catch (_: Throwable) { "" }
                 }
-                else -> false
+                when {
+                    lower.endsWith(".kt") || lower.endsWith(".kts") -> {
+                        effectiveCode.contains("@Preview")
+                    }
+                    lower.endsWith(".xml") -> {
+                        XmlLayoutParser.isLayoutXml(effectiveCode) || VectorDrawableParser.isVectorXml(effectiveCode)
+                    }
+                    else -> false
+                }
             }
         }
-    }
 
-    LaunchedEffect(canPreviewActiveFile) {
-        if (!canPreviewActiveFile && viewMode == EditorViewMode.PREVIEW) {
-            viewMode = EditorViewMode.EDIT
-        }
-    }
-
-    val handlePlay = {
-        Toast.makeText(context, "Run Code", Toast.LENGTH_SHORT).show()
-    }
-    val handlePreview = {
-        if (activeFilePath.isNotEmpty() && canPreviewActiveFile) {
-            viewMode = if (viewMode == EditorViewMode.EDIT) EditorViewMode.PREVIEW else EditorViewMode.EDIT
-            if (drawerState.isOpen) {
-                scope.launch { drawerState.close() }
+        LaunchedEffect(canPreviewActiveFile) {
+            if (!canPreviewActiveFile && viewMode == EditorViewMode.PREVIEW) {
+                viewMode = EditorViewMode.EDIT
             }
         }
-    }
 
-    Scaffold(
-        contentWindowInsets = WindowInsets.systemBars,
-        topBar = {
-            Column {
-                AnimatedVisibility(visible = isToolbarVisible) {
-                    TopAppBar(
-                        title = { },
-                        navigationIcon = {
-                            IconButton(onClick = { 
-                                scope.launch { 
-                                    if (drawerState.isClosed) drawerState.open() else drawerState.close() 
-                                } 
-                            }) {
-                                Icon(Icons.Default.Menu, contentDescription = stringResource(id = R.string.menu))
-                            }
-                        },
-                        actions = {
-                            if (SettingsManager.isDebugOptionsEnabled(context)) {
-                                Surface(
-                                    color = MaterialTheme.colorScheme.tertiaryContainer,
-                                    shape = RoundedCornerShape(6.dp),
-                                    modifier = Modifier.padding(end = 4.dp)
-                                ) {
-                                    Text(
-                                        text = "DEBUG",
-                                        style = MaterialTheme.typography.labelSmall,
-                                        fontWeight = FontWeight.Bold,
-                                        color = MaterialTheme.colorScheme.onTertiaryContainer,
-                                        modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
-                                    )
-                                }
-                            }
+        val handlePlay = {
+            Toast.makeText(context, "Run Code", Toast.LENGTH_SHORT).show()
+        }
+        val handlePreview = {
+            if (activeFilePath.isNotEmpty() && canPreviewActiveFile) {
+                viewMode = if (viewMode == EditorViewMode.EDIT) EditorViewMode.PREVIEW else EditorViewMode.EDIT
+                if (drawerState.isOpen) {
+                    scope.launch { drawerState.close() }
+                }
+            }
+        }
 
-                            if (isSmartToolbar) {
-                                IconButton(onClick = { isToolbarVisible = false }) {
-                                    Icon(Icons.Default.Fullscreen, contentDescription = "Hide Toolbar")
-                                }
-                            }
-
-                            if (!isVerySmallDpi) {
-                                IconButton(onClick = { handleUndo() }) {
-                                    Icon(Icons.AutoMirrored.Filled.Undo, contentDescription = stringResource(id = R.string.undo))
-                                }
-
-                                IconButton(onClick = { handleRedo() }) {
-                                    Icon(Icons.AutoMirrored.Filled.Redo, contentDescription = stringResource(id = R.string.redo))
-                                }
-                            }
-
-                            if (!isSmallDpi) {
-                                IconButton(onClick = { handleSave() }) {
-                                    Icon(Icons.Default.Save, contentDescription = stringResource(id = R.string.save))
-                                }
-
-                                IconButton(onClick = { handlePlay() }) {
-                                    Icon(
-                                        Icons.Default.PlayArrow,
-                                        contentDescription = "Run"
-                                    )
-                                }
-
-                                if (activeFilePath.isNotEmpty() && canPreviewActiveFile) {
-                                    IconButton(onClick = { handlePreview() }) {
-                                        Icon(
-                                            if (viewMode == EditorViewMode.EDIT) Icons.Default.Visibility else Icons.Default.Edit,
-                                            contentDescription = if (viewMode == EditorViewMode.EDIT) "Preview" else "Edit",
-                                            tint = if (viewMode == EditorViewMode.PREVIEW) MaterialTheme.colorScheme.primary else LocalContentColor.current
-                                        )
-                                    }
-                                }
-
-                                IconButton(onClick = { handleAdd() }) {
-                                    Icon(Icons.Default.Add, contentDescription = stringResource(id = R.string.add))
-                                }
-                            }
-
-                            Box {
-                                IconButton(onClick = {
-                                    showMoreMenu = true
+        Scaffold(
+            contentWindowInsets = WindowInsets.systemBars,
+            topBar = {
+                Column {
+                    AnimatedVisibility(visible = isToolbarVisible) {
+                        TopAppBar(
+                            title = { },
+                            navigationIcon = {
+                                IconButton(onClick = { 
+                                    scope.launch { 
+                                        if (drawerState.isClosed) drawerState.open() else drawerState.close() 
+                                    } 
                                 }) {
-                                    Icon(Icons.Default.MoreVert, contentDescription = stringResource(id = R.string.more_options))
+                                    Icon(Icons.Default.Menu, contentDescription = stringResource(id = R.string.menu))
+                                }
+                            },
+                            actions = {
+                                if (SettingsManager.isDebugOptionsEnabled(context)) {
+                                    Surface(
+                                        color = MaterialTheme.colorScheme.tertiaryContainer,
+                                        shape = RoundedCornerShape(6.dp),
+                                        modifier = Modifier.padding(end = 4.dp)
+                                    ) {
+                                        Text(
+                                            text = "DEBUG",
+                                            style = MaterialTheme.typography.labelSmall,
+                                            fontWeight = FontWeight.Bold,
+                                            color = MaterialTheme.colorScheme.onTertiaryContainer,
+                                            modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+                                        )
+                                    }
                                 }
 
-                                DropdownMenu(
-                                    expanded = showMoreMenu,
-                                    onDismissRequest = { showMoreMenu = false }
-                                ) {
-                                    if (isVerySmallDpi) {
-                                        DropdownMenuItem(
-                                            text = { Text(stringResource(id = R.string.undo)) },
-                                            leadingIcon = {
-                                                Icon(Icons.AutoMirrored.Filled.Undo, contentDescription = null)
-                                            },
-                                            onClick = {
-                                                showMoreMenu = false
-                                                handleUndo()
-                                            }
-                                        )
-                                        DropdownMenuItem(
-                                            text = { Text(stringResource(id = R.string.redo)) },
-                                            leadingIcon = {
-                                                Icon(Icons.AutoMirrored.Filled.Redo, contentDescription = null)
-                                            },
-                                            onClick = {
-                                                showMoreMenu = false
-                                                handleRedo()
-                                            }
+                                if (isSmartToolbar) {
+                                    IconButton(onClick = { isToolbarVisible = false }) {
+                                        Icon(Icons.Default.Fullscreen, contentDescription = "Hide Toolbar")
+                                    }
+                                }
+
+                                if (!isVerySmallDpi) {
+                                    IconButton(onClick = { handleUndo() }) {
+                                        Icon(Icons.AutoMirrored.Filled.Undo, contentDescription = stringResource(id = R.string.undo))
+                                    }
+
+                                    IconButton(onClick = { handleRedo() }) {
+                                        Icon(Icons.AutoMirrored.Filled.Redo, contentDescription = stringResource(id = R.string.redo))
+                                    }
+                                }
+
+                                if (!isSmallDpi) {
+                                    IconButton(onClick = { handleSave() }) {
+                                        Icon(Icons.Default.Save, contentDescription = stringResource(id = R.string.save))
+                                    }
+
+                                    IconButton(onClick = { handlePlay() }) {
+                                        Icon(
+                                            Icons.Default.PlayArrow,
+                                            contentDescription = "Run"
                                         )
                                     }
 
-                                    if (isSmallDpi) {
-                                        DropdownMenuItem(
-                                            text = { Text(stringResource(id = R.string.save)) },
-                                            leadingIcon = {
-                                                Icon(Icons.Default.Save, contentDescription = null)
-                                            },
-                                            onClick = {
-                                                showMoreMenu = false
-                                                handleSave()
-                                            }
-                                        )
-                                        DropdownMenuItem(
-                                            text = { Text("Run Code") },
-                                            leadingIcon = {
-                                                Icon(Icons.Default.PlayArrow, contentDescription = null)
-                                            },
-                                            onClick = {
-                                                showMoreMenu = false
-                                                handlePlay()
-                                            }
-                                        )
-                                        if (activeFilePath.isNotEmpty() && canPreviewActiveFile) {
+                                    if (activeFilePath.isNotEmpty() && canPreviewActiveFile) {
+                                        IconButton(onClick = { handlePreview() }) {
+                                            Icon(
+                                                if (viewMode == EditorViewMode.EDIT) Icons.Default.Visibility else Icons.Default.Edit,
+                                                contentDescription = if (viewMode == EditorViewMode.EDIT) "Preview" else "Edit",
+                                                tint = if (viewMode == EditorViewMode.PREVIEW) MaterialTheme.colorScheme.primary else LocalContentColor.current
+                                            )
+                                        }
+                                    }
+
+                                    IconButton(onClick = { handleAdd() }) {
+                                        Icon(Icons.Default.Add, contentDescription = stringResource(id = R.string.add))
+                                    }
+                                }
+
+                                Box {
+                                    IconButton(onClick = {
+                                        showMoreMenu = true
+                                    }) {
+                                        Icon(Icons.Default.MoreVert, contentDescription = stringResource(id = R.string.more_options))
+                                    }
+
+                                    DropdownMenu(
+                                        expanded = showMoreMenu,
+                                        onDismissRequest = { showMoreMenu = false }
+                                    ) {
+                                        if (isVerySmallDpi) {
                                             DropdownMenuItem(
-                                                text = { Text(if (viewMode == EditorViewMode.EDIT) "Preview" else "Edit Code") },
+                                                text = { Text(stringResource(id = R.string.undo)) },
                                                 leadingIcon = {
-                                                    Icon(
-                                                        if (viewMode == EditorViewMode.EDIT) Icons.Default.Visibility else Icons.Default.Edit,
-                                                        contentDescription = null
-                                                    )
+                                                    Icon(Icons.AutoMirrored.Filled.Undo, contentDescription = null)
                                                 },
                                                 onClick = {
                                                     showMoreMenu = false
-                                                    handlePreview()
+                                                    handleUndo()
+                                                }
+                                            )
+                                            DropdownMenuItem(
+                                                text = { Text(stringResource(id = R.string.redo)) },
+                                                leadingIcon = {
+                                                    Icon(Icons.AutoMirrored.Filled.Redo, contentDescription = null)
+                                                },
+                                                onClick = {
+                                                    showMoreMenu = false
+                                                    handleRedo()
                                                 }
                                             )
                                         }
-                                        DropdownMenuItem(
-                                            text = { Text(stringResource(id = R.string.add)) },
-                                            leadingIcon = {
-                                                Icon(Icons.Default.Add, contentDescription = null)
-                                            },
-                                            onClick = {
-                                                showMoreMenu = false
-                                                handleAdd()
-                                            }
-                                        )
-                                    }
 
-                                    if (activeFilePath.isNotEmpty() && viewMode == EditorViewMode.EDIT) {
-                                        DropdownMenuItem(
-                                            text = { Text(stringResource(id = R.string.pretty_print)) },
-                                            leadingIcon = {
-                                                Icon(Icons.Default.AutoFixHigh, contentDescription = null)
-                                            },
-                                            onClick = {
-                                                showMoreMenu = false
-                                                formatTrigger++
-                                            }
-                                        )
-                                    }
-
-                                    DropdownMenuItem(
-                                        text = { Text(stringResource(id = R.string.open_folder_saf)) },
-                                        leadingIcon = {
-                                            Icon(Icons.Default.FolderOpen, contentDescription = null)
-                                        },
-                                        onClick = {
-                                            showMoreMenu = false
-                                            onTogglePicker(true)
-                                        }
-                                    )
-                                    DropdownMenuItem(
-                                        text = { Text(stringResource(id = R.string.settings)) },
-                                        leadingIcon = {
-                                            Icon(Icons.Default.Settings, contentDescription = null)
-                                        },
-                                        onClick = {
-                                            showMoreMenu = false
-                                            context.startActivity(Intent(context, SettingsActivity::class.java))
-                                        }
-                                    )
-                                }
-                            }
-                        },
-                        colors = TopAppBarDefaults.topAppBarColors(
-                            containerColor = MaterialTheme.colorScheme.surface
-                        )
-                    )
-                }
-
-                val validOpenedFiles = remember(openedFiles, projectPath) {
-                    if (projectPath.isBlank()) emptyList()
-                    else {
-                        try {
-                            val projectDir = File(projectPath).canonicalFile
-                            openedFiles.filter { path ->
-                                val f = File(path)
-                                f.exists() && f.isFile && f.canonicalFile.startsWith(projectDir)
-                            }
-                        } catch (_: Throwable) {
-                            emptyList()
-                        }
-                    }
-                }
-
-                if (validOpenedFiles.isNotEmpty()) {
-                    val activeIndex = validOpenedFiles.indexOf(activeFilePath).let { idx ->
-                        if (idx in validOpenedFiles.indices) idx else 0
-                    }
-
-                    ScrollableTabRow(
-                        selectedTabIndex = activeIndex,
-                        edgePadding = 0.dp,
-                        containerColor = MaterialTheme.colorScheme.surface,
-                        divider = { },
-                        indicator = { tabPositions ->
-                            if (activeIndex in tabPositions.indices) {
-                                TabRowDefaults.SecondaryIndicator(
-                                    modifier = Modifier.tabIndicatorOffset(tabPositions[activeIndex])
-                                )
-                            }
-                        }
-                    ) {
-                            validOpenedFiles.forEachIndexed { index, path ->
-                                val file = File(path)
-                                Tab(
-                                    selected = activeFilePath == path,
-                                    onClick = {
-                                        val f = File(path)
-                                        if (!f.exists() || !f.isFile) return@Tab
-                                        val lower = path.lowercase()
-                                        val isPreviewable = lower.endsWith(".kt") || lower.endsWith(".kts") || lower.endsWith(".xml")
-                                        if (!isPreviewable) {
-                                            viewMode = EditorViewMode.EDIT
-                                        }
-                                        onTabSelected(path)
-                                    },
-                                    text = {
-                                        Row(
-                                            verticalAlignment = Alignment.CenterVertically,
-                                            modifier = Modifier.wrapContentWidth()
-                                        ) {
-                                            FileIcon(file = file, modifier = Modifier.size(16.dp))
-                                            Spacer(modifier = Modifier.width(8.dp))
-                                            Text(text = file.name, fontSize = 12.sp, maxLines = 1)
-
-                                            IconButton(
-                                                onClick = {
-                                                    onCloseFile?.invoke(path)
+                                        if (isSmallDpi) {
+                                            DropdownMenuItem(
+                                                text = { Text(stringResource(id = R.string.save)) },
+                                                leadingIcon = {
+                                                    Icon(Icons.Default.Save, contentDescription = null)
                                                 },
-                                                modifier = Modifier
-                                                    .size(24.dp)
-                                                    .padding(0.dp)
-                                            ) {
-                                                Icon(
-                                                    Icons.Default.Close,
-                                                    contentDescription = stringResource(id = R.string.close),
-                                                    modifier = Modifier.size(14.dp)
+                                                onClick = {
+                                                    showMoreMenu = false
+                                                    handleSave()
+                                                }
+                                            )
+                                            DropdownMenuItem(
+                                                text = { Text("Run Code") },
+                                                leadingIcon = {
+                                                    Icon(Icons.Default.PlayArrow, contentDescription = null)
+                                                },
+                                                onClick = {
+                                                    showMoreMenu = false
+                                                    handlePlay()
+                                                }
+                                            )
+                                            if (activeFilePath.isNotEmpty() && canPreviewActiveFile) {
+                                                DropdownMenuItem(
+                                                    text = { Text(if (viewMode == EditorViewMode.EDIT) "Preview" else "Edit Code") },
+                                                    leadingIcon = {
+                                                        Icon(
+                                                            if (viewMode == EditorViewMode.EDIT) Icons.Default.Visibility else Icons.Default.Edit,
+                                                            contentDescription = null
+                                                        )
+                                                    },
+                                                    onClick = {
+                                                        showMoreMenu = false
+                                                        handlePreview()
+                                                    }
                                                 )
                                             }
+                                            DropdownMenuItem(
+                                                text = { Text(stringResource(id = R.string.add)) },
+                                                leadingIcon = {
+                                                    Icon(Icons.Default.Add, contentDescription = null)
+                                                },
+                                                onClick = {
+                                                    showMoreMenu = false
+                                                    handleAdd()
+                                                }
+                                            )
                                         }
+
+                                        if (activeFilePath.isNotEmpty() && viewMode == EditorViewMode.EDIT) {
+                                            DropdownMenuItem(
+                                                text = { Text(stringResource(id = R.string.pretty_print)) },
+                                                leadingIcon = {
+                                                    Icon(Icons.Default.AutoFixHigh, contentDescription = null)
+                                                },
+                                                onClick = {
+                                                    showMoreMenu = false
+                                                    formatTrigger++
+                                                }
+                                            )
+                                        }
+
+                                        DropdownMenuItem(
+                                            text = { Text(stringResource(id = R.string.open_folder_saf)) },
+                                            leadingIcon = {
+                                                Icon(Icons.Default.FolderOpen, contentDescription = null)
+                                            },
+                                            onClick = {
+                                                showMoreMenu = false
+                                                onTogglePicker(true)
+                                            }
+                                        )
+                                        DropdownMenuItem(
+                                            text = { Text(stringResource(id = R.string.settings)) },
+                                            leadingIcon = {
+                                                Icon(Icons.Default.Settings, contentDescription = null)
+                                            },
+                                            onClick = {
+                                                showMoreMenu = false
+                                                context.startActivity(Intent(context, SettingsActivity::class.java))
+                                            }
+                                        )
                                     }
+                                }
+                            },
+                            colors = TopAppBarDefaults.topAppBarColors(
+                                containerColor = MaterialTheme.colorScheme.surface
+                            )
+                        )
+                    }
+
+                    val validOpenedFiles = remember(openedFiles, projectPath) {
+                        if (projectPath.isBlank()) emptyList()
+                        else {
+                            try {
+                                val projectDir = File(projectPath).canonicalFile
+                                openedFiles.filter { path ->
+                                    val f = File(path)
+                                    f.exists() && f.isFile && f.canonicalFile.startsWith(projectDir)
+                                }
+                            } catch (_: Throwable) {
+                                emptyList()
+                            }
+                        }
+                    }
+
+                    if (validOpenedFiles.isNotEmpty()) {
+                        val activeIndex = validOpenedFiles.indexOf(activeFilePath).let { idx ->
+                            if (idx in validOpenedFiles.indices) idx else 0
+                        }
+
+                        ScrollableTabRow(
+                            selectedTabIndex = activeIndex,
+                            edgePadding = 0.dp,
+                            containerColor = MaterialTheme.colorScheme.surface,
+                            divider = { },
+                            indicator = { tabPositions ->
+                                if (activeIndex in tabPositions.indices) {
+                                    TabRowDefaults.SecondaryIndicator(
+                                        modifier = Modifier.tabIndicatorOffset(tabPositions[activeIndex])
+                                    )
+                                }
+                            }
+                        ) {
+                                validOpenedFiles.forEachIndexed { index, path ->
+                                    val file = File(path)
+                                    Tab(
+                                        selected = activeFilePath == path,
+                                        onClick = {
+                                            val f = File(path)
+                                            if (!f.exists() || !f.isFile) return@Tab
+                                            val lower = path.lowercase()
+                                            val isPreviewable = lower.endsWith(".kt") || lower.endsWith(".kts") || lower.endsWith(".xml")
+                                            if (!isPreviewable) {
+                                                viewMode = EditorViewMode.EDIT
+                                            }
+                                            onTabSelected(path)
+                                        },
+                                        text = {
+                                            Row(
+                                                verticalAlignment = Alignment.CenterVertically,
+                                                modifier = Modifier.wrapContentWidth()
+                                            ) {
+                                                FileIcon(file = file, modifier = Modifier.size(16.dp))
+                                                Spacer(modifier = Modifier.width(8.dp))
+                                                Text(text = file.name, fontSize = 12.sp, maxLines = 1)
+
+                                                IconButton(
+                                                    onClick = {
+                                                        onCloseFile?.invoke(path)
+                                                    },
+                                                    modifier = Modifier
+                                                        .size(24.dp)
+                                                        .padding(0.dp)
+                                                ) {
+                                                    Icon(
+                                                        Icons.Default.Close,
+                                                        contentDescription = stringResource(id = R.string.close),
+                                                        modifier = Modifier.size(14.dp)
+                                                    )
+                                                }
+                                            }
+                                        }
+                                    )
+                                }
+                            }
+                        }
+
+                        HorizontalDivider(
+                            thickness = 0.5.dp,
+                            color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.35f)
+                        )
+                    }
+                },
+                floatingActionButton = {
+                    val density = LocalDensity.current
+                    val isImeVisible = WindowInsets.ime.getBottom(density) > 0 || WindowInsets.isImeVisible
+                    if (!isImeVisible) {
+                        if (isSmartToolbar && !isToolbarVisible) {
+                            SmallFloatingActionButton(
+                                onClick = { isToolbarVisible = true },
+                                containerColor = MaterialTheme.colorScheme.primaryContainer,
+                                contentColor = MaterialTheme.colorScheme.onPrimaryContainer
+                            ) {
+                                Icon(Icons.Default.FullscreenExit, contentDescription = "Show Toolbar")
+                            }
+                        }
+                    }
+                }
+            ) { paddingValues ->
+                Box(
+                    modifier = Modifier
+                        .padding(paddingValues)
+                        .consumeWindowInsets(paddingValues)
+                        .fillMaxSize()
+                ) {
+                    if (activeFilePath.isNotEmpty()) {
+                        val activeFile = remember(activeFilePath) { File(activeFilePath) }
+                        val isImg = remember(activeFilePath) { isImageFile(activeFilePath) }
+                        val isBin = remember(activeFilePath) { isBinaryFile(activeFilePath) }
+
+                        if (!activeFile.exists() || activeFile.isDirectory) {
+                            Box(
+                                modifier = Modifier.fillMaxSize(),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text(
+                                    text = stringResource(id = R.string.not_found),
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
                             }
-                        }
-                    }
-
-                    HorizontalDivider(
-                        thickness = 0.5.dp,
-                        color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.35f)
-                    )
-                }
-            },
-            floatingActionButton = {
-                val density = LocalDensity.current
-                val isImeVisible = WindowInsets.ime.getBottom(density) > 0 || WindowInsets.isImeVisible
-                if (!isImeVisible) {
-                    if (isSmartToolbar && !isToolbarVisible) {
-                        SmallFloatingActionButton(
-                            onClick = { isToolbarVisible = true },
-                            containerColor = MaterialTheme.colorScheme.primaryContainer,
-                            contentColor = MaterialTheme.colorScheme.onPrimaryContainer
-                        ) {
-                            Icon(Icons.Default.FullscreenExit, contentDescription = "Show Toolbar")
-                        }
-                    }
-                }
-            }
-        ) { paddingValues ->
-            Box(
-                modifier = Modifier
-                    .padding(paddingValues)
-                    .consumeWindowInsets(paddingValues)
-                    .fillMaxSize()
-            ) {
-                if (activeFilePath.isNotEmpty()) {
-                    val activeFile = remember(activeFilePath) { File(activeFilePath) }
-                    val isImg = remember(activeFilePath) { isImageFile(activeFilePath) }
-                    val isBin = remember(activeFilePath) { isBinaryFile(activeFilePath) }
-
-                    if (!activeFile.exists() || activeFile.isDirectory) {
-                        Box(
-                            modifier = Modifier.fillMaxSize(),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Text(
-                                text = stringResource(id = R.string.not_found),
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-                        }
-                    } else if (isImg) {
-                        ImageDetailViewer(file = activeFile)
-                    } else if (isBin) {
-                        BinaryFilePlaceholder(file = activeFile)
-                    } else {
-                        when (viewMode) {
-                            EditorViewMode.EDIT -> {
-                                Box(
-                                    modifier = Modifier.fillMaxSize()
-                                ) {
-                                    KotlinCodeEditor(
-                                        filePath = activeFilePath,
-                                        onCodeChange = { newCode ->
-                                            currentCode = newCode
-                                        },
-                                        onEditorInteraction = {
-                                            if (drawerState.isOpen) {
-                                                scope.launch { drawerState.close() }
+                        } else if (isImg) {
+                            ImageDetailViewer(file = activeFile)
+                        } else if (isBin) {
+                            BinaryFilePlaceholder(file = activeFile)
+                        } else {
+                            when (viewMode) {
+                                EditorViewMode.EDIT -> {
+                                    Box(
+                                        modifier = Modifier.fillMaxSize()
+                                    ) {
+                                        KotlinCodeEditor(
+                                            filePath = activeFilePath,
+                                            onCodeChange = { newCode ->
+                                                currentCode = newCode
+                                            },
+                                            onEditorInteraction = {
+                                                if (drawerState.isOpen) {
+                                                    scope.launch { drawerState.close() }
+                                                }
+                                            },
+                                            formatTrigger = formatTrigger
+                                        )
+                                    }
+                                }
+                                EditorViewMode.PREVIEW -> {
+                                    val isXml = activeFilePath.lowercase().endsWith(".xml")
+                                    if (isXml) {
+                                        PreviewLayoutXml(
+                                            activeFilePath = activeFilePath,
+                                            sourceCode = currentCode,
+                                            onBackClick = {
+                                                viewMode = EditorViewMode.EDIT
                                             }
-                                        },
-                                        formatTrigger = formatTrigger
-                                    )
-                                }
-                            }
-                            EditorViewMode.PREVIEW -> {
-                                val isXml = activeFilePath.lowercase().endsWith(".xml")
-                                if (isXml) {
-                                    PreviewLayoutXml(
-                                        activeFilePath = activeFilePath,
-                                        sourceCode = currentCode,
-                                        onBackClick = {
-                                            viewMode = EditorViewMode.EDIT
-                                        }
-                                    )
-                                } else {
-                                    PreviewScreen(
-                                        activeFilePath = activeFilePath,
-                                        currentRootNode = currentRootNode,
-                                        onBackClick = {
-                                            viewMode = EditorViewMode.EDIT
-                                        }
-                                    )
+                                        )
+                                    } else {
+                                        PreviewScreen(
+                                            activeFilePath = activeFilePath,
+                                            currentRootNode = currentRootNode,
+                                            onBackClick = {
+                                                viewMode = EditorViewMode.EDIT
+                                            }
+                                        )
+                                    }
                                 }
                             }
                         }
+                    } else {
+                        WelcomeScreen(
+                            projectPath = projectPath,
+                            onBrowseClick = {
+                                scope.launch {
+                                    if (drawerState.isClosed) drawerState.open()
+                                }
+                            }
+                        )
                     }
-                } else {
-                    WelcomeScreen(
-                        projectPath = projectPath,
-                        onBrowseClick = {
-                            scope.launch {
-                                if (drawerState.isClosed) drawerState.open()
-                            }
-                        }
-                    )
                 }
             }
         }
-    }
 
-    if (showSearchBottomSheet) {
-        SearchOptionsBottomSheet(
-            isProjectIndexed = isProjectIndexed,
-            onToggleIndexProject = { checked ->
-                isProjectIndexed = checked
-                prefs.edit().putBoolean("index_project", checked).apply()
-            },
-            onSearchFilesClick = {
-                showSearchBottomSheet = false
-                showSearchFileDialog = true
-            },
-            onSearchCodeClick = {
-                showSearchBottomSheet = false
-                showSearchCodeDialog = true
-            },
-            onDismiss = { showSearchBottomSheet = false }
-        )
-    }
+        if (showSearchBottomSheet) {
+            SearchOptionsBottomSheet(
+                isProjectIndexed = isProjectIndexed,
+                onToggleIndexProject = { checked ->
+                    isProjectIndexed = checked
+                    prefs.edit().putBoolean("index_project", checked).apply()
+                },
+                onSearchFilesClick = {
+                    showSearchBottomSheet = false
+                    showSearchFileDialog = true
+                },
+                onSearchCodeClick = {
+                    showSearchBottomSheet = false
+                    showSearchCodeDialog = true
+                },
+                onDismiss = { showSearchBottomSheet = false }
+            )
+        }
 
-    if (showSearchFileDialog) {
-        SearchFileDialog(
-            projectRoot = File(projectPath),
-            showHiddenFiles = showHiddenFiles,
-            cachedFiles = indexedFilesCache,
-            onDismiss = { showSearchFileDialog = false },
-            onItemSelected = { selectedFile ->
-                showSearchFileDialog = false
-                if (selectedFile.isDirectory) {
-                    var current: File? = selectedFile
-                    val rootAbs = File(projectPath).absolutePath
-                    while (current != null && current.absolutePath.startsWith(rootAbs)) {
-                        expandedPaths[current.absolutePath] = true
-                        if (current.absolutePath == rootAbs) break
-                        current = current.parentFile
+        if (showSearchFileDialog) {
+            SearchFileDialog(
+                projectRoot = File(projectPath),
+                showHiddenFiles = showHiddenFiles,
+                cachedFiles = indexedFilesCache,
+                onDismiss = { showSearchFileDialog = false },
+                onItemSelected = { selectedFile ->
+                    showSearchFileDialog = false
+                    if (selectedFile.isDirectory) {
+                        var current: File? = selectedFile
+                        val rootAbs = File(projectPath).absolutePath
+                        while (current != null && current.absolutePath.startsWith(rootAbs)) {
+                            expandedPaths[current.absolutePath] = true
+                            if (current.absolutePath == rootAbs) break
+                            current = current.parentFile
+                        }
+                        treeRefreshTrigger++
+                    } else {
+                        val lower = selectedFile.name.lowercase()
+                        val isPreviewable = lower.endsWith(".kt") || lower.endsWith(".kts") || lower.endsWith(".xml")
+                        if (!isPreviewable) {
+                            viewMode = EditorViewMode.EDIT
+                        }
+                        onFileSelected(selectedFile)
+                        scope.launch { drawerState.close() }
                     }
-                    treeRefreshTrigger++
-                } else {
-                    val lower = selectedFile.name.lowercase()
+                }
+            )
+        }
+
+        if (showSearchCodeDialog) {
+            SearchCodeDialog(
+                projectRoot = File(projectPath),
+                showHiddenFiles = showHiddenFiles,
+                cachedFiles = indexedFilesCache,
+                onDismiss = { showSearchCodeDialog = false },
+                onResultClick = { matchedFile ->
+                    showSearchCodeDialog = false
+                    val lower = matchedFile.name.lowercase()
                     val isPreviewable = lower.endsWith(".kt") || lower.endsWith(".kts") || lower.endsWith(".xml")
                     if (!isPreviewable) {
                         viewMode = EditorViewMode.EDIT
                     }
-                    onFileSelected(selectedFile)
+                    onFileSelected(matchedFile)
                     scope.launch { drawerState.close() }
                 }
-            }
-        )
-    }
+            )
+        }
 
-    if (showSearchCodeDialog) {
-        SearchCodeDialog(
-            projectRoot = File(projectPath),
-            showHiddenFiles = showHiddenFiles,
-            cachedFiles = indexedFilesCache,
-            onDismiss = { showSearchCodeDialog = false },
-            onResultClick = { matchedFile ->
-                showSearchCodeDialog = false
-                val lower = matchedFile.name.lowercase()
-                val isPreviewable = lower.endsWith(".kt") || lower.endsWith(".kts") || lower.endsWith(".xml")
-                if (!isPreviewable) {
-                    viewMode = EditorViewMode.EDIT
-                }
-                onFileSelected(matchedFile)
-                scope.launch { drawerState.close() }
-            }
-        )
-    }
-
-    if (showCreateDialog && targetCreateFolder != null) {
-        CreateItemDialog(
-            targetFolder = targetCreateFolder!!,
-            projectRoot = File(projectPath),
-            onDismiss = {
-                showCreateDialog = false
-                targetCreateFolder = null
-            },
-            onItemCreated = { newFile ->
-                expandedPaths[targetCreateFolder!!.absolutePath] = true
-                treeRefreshTrigger++
-                if (newFile.isFile) {
-                    onFileSelected(newFile)
-                }
-            }
-        )
-    }
-
-    if (selectedFileForActions != null) {
-        val file = selectedFileForActions!!
-        FileActionsBottomSheet(
-            file = file,
-            projectRoot = File(projectPath),
-            onDismiss = { selectedFileForActions = null },
-            onNewInside = {
-                selectedFileForActions = null
-                targetCreateFolder = file
-                showCreateDialog = true
-            },
-            onRename = {
-                selectedFileForActions = null
-                fileToRename = file
-            },
-            onDelete = {
-                selectedFileForActions = null
-                fileToDelete = file
-            },
-            onCopyPath = { path ->
-                clipboardManager.setText(AnnotatedString(path))
-                Toast.makeText(context, context.getString(R.string.path_copied), Toast.LENGTH_SHORT).show()
-                selectedFileForActions = null
-            },
-            onCopyRelativePath = { relPath ->
-                clipboardManager.setText(AnnotatedString(relPath))
-                Toast.makeText(context, context.getString(R.string.path_copied), Toast.LENGTH_SHORT).show()
-                selectedFileForActions = null
-            }
-        )
-    }
-
-    if (fileToRename != null) {
-        val file = fileToRename!!
-        RenameFileDialog(
-            file = file,
-            onDismiss = { fileToRename = null },
-            onRenamed = { renamedFile ->
-                treeRefreshTrigger++
-                if (openedFiles.contains(file.absolutePath)) {
-                    onCloseFile?.invoke(file.absolutePath)
-                    if (renamedFile.isFile) {
-                        onFileSelected(renamedFile)
+        if (showCreateDialog && targetCreateFolder != null) {
+            CreateItemDialog(
+                targetFolder = targetCreateFolder!!,
+                projectRoot = File(projectPath),
+                onDismiss = {
+                    showCreateDialog = false
+                    targetCreateFolder = null
+                },
+                onItemCreated = { newFile ->
+                    expandedPaths[targetCreateFolder!!.absolutePath] = true
+                    treeRefreshTrigger++
+                    if (newFile.isFile) {
+                        onFileSelected(newFile)
                     }
                 }
-            }
-        )
-    }
+            )
+        }
 
-    if (fileToDelete != null) {
-        val file = fileToDelete!!
-        DeleteFileDialog(
-            file = file,
-            onDismiss = { fileToDelete = null },
-            onDeleted = {
-                treeRefreshTrigger++
-                if (file.isDirectory) {
-                    openedFiles.filter { it.startsWith(file.absolutePath) }.forEach {
-                        onCloseFile?.invoke(it)
-                    }
-                } else {
+        if (selectedFileForActions != null) {
+            val file = selectedFileForActions!!
+            FileActionsBottomSheet(
+                file = file,
+                projectRoot = File(projectPath),
+                onDismiss = { selectedFileForActions = null },
+                onNewInside = {
+                    selectedFileForActions = null
+                    targetCreateFolder = file
+                    showCreateDialog = true
+                },
+                onRename = {
+                    selectedFileForActions = null
+                    fileToRename = file
+                },
+                onDelete = {
+                    selectedFileForActions = null
+                    fileToDelete = file
+                },
+                onCopyPath = { path ->
+                    clipboardManager.setText(AnnotatedString(path))
+                    Toast.makeText(context, context.getString(R.string.path_copied), Toast.LENGTH_SHORT).show()
+                    selectedFileForActions = null
+                },
+                onCopyRelativePath = { relPath ->
+                    clipboardManager.setText(AnnotatedString(relPath))
+                    Toast.makeText(context, context.getString(R.string.path_copied), Toast.LENGTH_SHORT).show()
+                    selectedFileForActions = null
+                }
+            )
+        }
+
+        if (fileToRename != null) {
+            val file = fileToRename!!
+            RenameFileDialog(
+                file = file,
+                onDismiss = { fileToRename = null },
+                onRenamed = { renamedFile ->
+                    treeRefreshTrigger++
                     if (openedFiles.contains(file.absolutePath)) {
                         onCloseFile?.invoke(file.absolutePath)
+                        if (renamedFile.isFile) {
+                            onFileSelected(renamedFile)
+                        }
                     }
                 }
-            }
-        )
+            )
+        }
+
+        if (fileToDelete != null) {
+            val file = fileToDelete!!
+            DeleteFileDialog(
+                file = file,
+                onDismiss = { fileToDelete = null },
+                onDeleted = {
+                    treeRefreshTrigger++
+                    if (file.isDirectory) {
+                        openedFiles.filter { it.startsWith(file.absolutePath) }.forEach {
+                            onCloseFile?.invoke(it)
+                        }
+                    } else {
+                        if (openedFiles.contains(file.absolutePath)) {
+                            onCloseFile?.invoke(file.absolutePath)
+                        }
+                    }
+                }
+            )
+        }
     }
-}

@@ -315,4 +315,14 @@
     <!-- Code Formatter (Pretty Print) -->
     <string name="pretty_print">Pretty print</string>
     <string name="code_formatted">Code formatted</string>
+    
+        <!-- Drawer Bottom Tabs -->
+    <string name="tab_project">Project</string>
+    <string name="tab_commit">Commit</string>
+
+    <!-- Git Actions -->
+    <string name="git_action_fetch">Fetch</string>
+    <string name="git_action_sync">Sync</string>
+    <string name="git_action_push">Push</string>
+    <string name="git_action_settings">Settings</string>
 </resources>

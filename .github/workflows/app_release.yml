@@ -1,10 +1,12 @@
 name: Build Release
 
 on:
-  push:
-    branches: [ "main", "master" ]
-    paths:
-      - 'app/build.gradle.kts'
+  workflow_dispatch:
+    inputs:
+      version_name:
+        description: 'Version name untuk release (contoh: 1.2.0)'
+        required: true
+        type: string
 
 jobs:
   build:
@@ -16,12 +18,12 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Extract Version Name
-        id: version
+      - name: Set Version Name
+        env:
+          VERSION_INPUT: ${{ inputs.version_name }}
         run: |
-          VERSION_NAME=$(grep 'versionName = ' app/build.gradle.kts | head -1 | sed 's/.*versionName = "\(.*\)".*/\1/')
-          echo "VERSION_NAME=$VERSION_NAME" >> $GITHUB_ENV
-          echo "VERSION_NAME=$VERSION_NAME" >> $GITHUB_OUTPUT
+          echo "VERSION_NAME=$VERSION_INPUT" >> $GITHUB_ENV
+          echo "VERSION_NAME=$VERSION_INPUT" >> $GITHUB_OUTPUT
 
       - name: Set up JDK 17
         uses: actions/setup-java@v4
@@ -43,21 +45,21 @@ jobs:
           SHORT_SHA=$(echo "${{ github.sha }}" | cut -c1-7)
           ORIGINAL_APK="app/build/outputs/apk/release/app-release.apk"
           NEW_APK_NAME="app-release-${{ env.VERSION_NAME }}.apk"
-          
+
           cp "$ORIGINAL_APK" "$NEW_APK_NAME"
-          
+
           AUTHOR_NAME=$(git log -1 --format='%an')
           COMMIT_MSG=$(git log -1 --format='%B')
-          
+
           DELIMITER="EOF_${SHORT_SHA}"
-          
+
           echo "APK_PATH=$NEW_APK_NAME" >> $GITHUB_ENV
           echo "SHORT_SHA=$SHORT_SHA" >> $GITHUB_ENV
-          
+
           echo "AUTHOR_NAME<<${DELIMITER}" >> $GITHUB_ENV
           echo "$AUTHOR_NAME" >> $GITHUB_ENV
           echo "${DELIMITER}" >> $GITHUB_ENV
-          
+
           echo "COMMIT_MSG<<${DELIMITER}" >> $GITHUB_ENV
           echo "$COMMIT_MSG" >> $GITHUB_ENV
           echo "${DELIMITER}" >> $GITHUB_ENV
@@ -91,7 +93,7 @@ jobs:
             Version: ${{ env.VERSION_NAME }}
             Commit: ${{ env.SHORT_SHA }}
             Author: ${{ env.AUTHOR_NAME }}
-            
+
             ${{ env.COMMIT_MSG }}
           files: ${{ env.APK_PATH }}
           draft: false

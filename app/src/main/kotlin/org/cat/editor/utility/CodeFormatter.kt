@@ -93,10 +93,6 @@ object CodeFormatter {
                     if (token.isClosing) {
                         depth = (depth - 1).coerceAtLeast(0)
                         
-                        if (depth == 0 && !inlineMode) {
-                            if (sb.isNotEmpty() && !sb.endsWith("\n\n")) sb.append("\n")
-                        }
-
                         if (inlineMode) {
                             sb.append(token.raw).append("\n")
                         } else {
@@ -107,10 +103,6 @@ object CodeFormatter {
                     } else {
                         if (sb.isNotEmpty() && !sb.endsWith("\n")) sb.append("\n")
                         
-                        if (depth == 1) {
-                            if (sb.isNotEmpty() && !sb.endsWith("\n\n")) sb.append("\n")
-                        }
-
                         val formattedTag = formatTag(token, depth)
 
                         var isInlineElement = false
@@ -155,7 +147,7 @@ object CodeFormatter {
                 }
             }
         }
-        return sb.toString().trim() + "\n"
+        return sb.toString().trim()
     }
 
     private fun parseXmlTokens(rawXml: String): List<XmlToken> {

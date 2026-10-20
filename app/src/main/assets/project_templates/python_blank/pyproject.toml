@@ -1,0 +1,5 @@
+﻿[project]
+name = "__PROJECT_NAME__"
+version = "0.1.0"
+description = "Blank Python project created with Cat-Editor"
+dependencies = []

@@ -1,0 +1,8 @@
+[project]
+name = "__PROJECT_NAME__"
+version = "0.1.0"
+description = "A starter Python project for __PACKAGE_NAME__"
+requires-python = ">=3.10"
+
+[project.scripts]
+__PROJECT_NAME__ = "main:main"

@@ -131,11 +131,13 @@ import org.cat.editor.ui.M3ELoadingIndicator
 import org.cat.editor.ui.theme.AppTheme
 import org.cat.editor.utils.ConfigPath
 import org.cat.editor.utils.LocaleHelper
+import org.cat.editor.utils.ProjectTemplateManager
 import org.cat.editor.utils.SafProjectsManager
 import org.cat.editor.utils.StorageUtils
 import java.io.BufferedOutputStream
 import java.io.File
 import java.io.FileOutputStream
+import java.nio.file.FileAlreadyExistsException
 import java.util.zip.ZipEntry
 import java.util.zip.ZipOutputStream
 
@@ -247,6 +249,9 @@ fun ProjectMenuScreen(
     
     var selectedProjectForMenu by remember { mutableStateOf<ProjectItem?>(null) }
     var showProjectMenu by remember { mutableStateOf(false) }
+    var showCreateProjectSheet by remember { mutableStateOf(false) }
+    var isCreatingProject by remember { mutableStateOf(false) }
+    var createProjectError by remember { mutableStateOf<String?>(null) }
     var isDeleting by remember { mutableStateOf(false) }
     var isOpeningProject by remember { mutableStateOf(false) }
     var pendingBackupZipFile by remember { mutableStateOf<File?>(null) }
@@ -433,7 +438,8 @@ fun ProjectMenuScreen(
                     },
                     onClick = {
                         isFabExpanded = false
-                        Toast.makeText(context, context.getString(R.string.feature_new_empty_project), Toast.LENGTH_SHORT).show()
+                        createProjectError = null
+                        showCreateProjectSheet = true
                     },
                     icon = {
                         Icon(
@@ -744,6 +750,64 @@ fun ProjectMenuScreen(
             Spacer(modifier = Modifier.height(16.dp))
             Spacer(modifier = Modifier.height(32.dp))
         }
+    }
+
+    if (showCreateProjectSheet) {
+        CreateProjectSheet(
+            isCreating = isCreatingProject,
+            errorMessage = createProjectError,
+            onDismiss = {
+                if (!isCreatingProject) {
+                    showCreateProjectSheet = false
+                    createProjectError = null
+                }
+            },
+            onCreate = { projectName, packageName, preset, targetDirectory ->
+                isCreatingProject = true
+                createProjectError = null
+                scope.launch {
+                    try {
+                        val createdProject = withContext(Dispatchers.IO) {
+                            ProjectTemplateManager.createProject(
+                                context = context,
+                                projectName = projectName,
+                                packageName = packageName,
+                                preset = preset,
+                                targetDirectory = targetDirectory
+                            )
+                        }
+                        try {
+                            val defaultRoot = File(ConfigPath.VAR_PROJECTS_PATH).canonicalPath
+                            if (!createdProject.canonicalPath.startsWith(defaultRoot)) {
+                                SafProjectsManager.addProject(context, createdProject.absolutePath, "")
+                            }
+                        } catch (_: Exception) {}
+                        projects = withContext(Dispatchers.IO) {
+                            loadAllProjects(context)
+                        }
+                        showCreateProjectSheet = false
+                        isCreatingProject = false
+                        isOpeningProject = true
+                        onProjectSelected(
+                            ProjectItem(
+                                name = createdProject.name,
+                                path = createdProject.absolutePath,
+                                iconBitmap = findProjectIcon(createdProject)
+                            )
+                        )
+                    } catch (error: FileAlreadyExistsException) {
+                        isCreatingProject = false
+                        createProjectError = context.getString(R.string.project_already_exists)
+                    } catch (error: Exception) {
+                        isCreatingProject = false
+                        createProjectError = context.getString(
+                            R.string.project_create_failed,
+                            error.message ?: context.getString(R.string.project_create_failed_unknown)
+                        )
+                    }
+                }
+            }
+        )
     }
 }
 

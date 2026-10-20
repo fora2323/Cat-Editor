@@ -1,0 +1,14 @@
+plugins {
+    id 'application'
+}
+
+group = '__PACKAGE_NAME__'
+version = '1.0.0'
+
+repositories {
+    mavenCentral()
+}
+
+application {
+    mainClass = '__PACKAGE_NAME__.Main'
+}
